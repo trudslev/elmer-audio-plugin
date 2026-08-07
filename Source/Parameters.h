@@ -70,6 +70,17 @@ namespace Law
 
     inline bool hpIsOff (float position01) noexcept  { return position01 < 0.10f; }
 
+    /** The inverse, for the factory table, which stores readable frequencies rather than positions.
+        0 Hz means OFF and maps to position 0. */
+    inline float hpPositionForHz (float hz) noexcept
+    {
+        if (hz <= 0.0f)
+            return 0.0f;
+
+        return juce::jlimit (0.2f, 1.0f,
+                             0.2f + 0.8f * std::log (hz / 40.0f) / std::log (12.5f));
+    }
+
     /** ATTACK: `0.1 * 300^f` ms, spanning 0.1 to 30 ms. */
     inline float attackMsFromPosition (float position01) noexcept
     {

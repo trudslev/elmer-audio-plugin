@@ -4,6 +4,7 @@
 #include "DSP/IronStage.h"
 #include "DSP/LevelDetector.h"
 #include "DSP/OutputStage.h"
+#include "DSP/ProgramManager.h"
 #include "DSP/SidechainFilter.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -45,16 +46,17 @@ public:
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 0.0; }
 
-    int getNumPrograms() override { return 1; }
-    int getCurrentProgram() override { return 0; }
-    void setCurrentProgram (int) override {}
-    const juce::String getProgramName (int) override { return {}; }
+    int getNumPrograms() override { return programs.getNumPrograms(); }
+    int getCurrentProgram() override { return programs.getCurrentProgram(); }
+    void setCurrentProgram (int index) override { programs.setCurrentProgram (index); }
+    const juce::String getProgramName (int index) override { return programs.getProgramName (index); }
     void changeProgramName (int, const juce::String&) override {}
 
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
 
     juce::AudioProcessorValueTreeState apvts;
+    ProgramManager programs { apvts };
 
     /** Gain reduction in dB, for the meter. Relaxed - it is a display value, and a torn read costs
         one frame of a needle already integrating over 300 ms. */

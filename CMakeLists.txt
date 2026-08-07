@@ -87,7 +87,14 @@ target_sources(Elmer PRIVATE
     Source/DSP/GainComputer.cpp
     Source/DSP/AutoRelease.cpp
     Source/DSP/IronStage.cpp
-    Source/DSP/OutputStage.cpp)
+    Source/DSP/OutputStage.cpp
+    Source/DSP/ProgramManager.cpp
+    Source/GUI/KnobFilmstrip.cpp
+    Source/GUI/GainReductionMeter.cpp
+    Source/GUI/KneeButtons.cpp
+    Source/GUI/PanelBackground.cpp
+    Source/GUI/ProgramHeader.cpp
+    Source/GUI/ElmerEditorContent.cpp)
 
 target_compile_definitions(Elmer PUBLIC
     JUCE_WEB_BROWSER=0

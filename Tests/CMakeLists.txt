@@ -11,7 +11,8 @@ target_sources(ElmerTests PRIVATE
     ../Source/DSP/GainComputer.cpp
     ../Source/DSP/AutoRelease.cpp
     ../Source/DSP/IronStage.cpp
-    ../Source/DSP/OutputStage.cpp)
+    ../Source/DSP/OutputStage.cpp
+    ../Source/DSP/ProgramManager.cpp)
 
 target_compile_definitions(ElmerTests PRIVATE
     JUCE_WEB_BROWSER=0
