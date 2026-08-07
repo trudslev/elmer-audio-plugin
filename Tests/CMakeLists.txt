@@ -1,8 +1,17 @@
 juce_add_console_app(ElmerTests PRODUCT_NAME "ElmerTests")
 
+# A new DSP .cpp goes in BOTH this list and target_sources(Elmer ...) in the parent CMakeLists,
+# or it silently drops out of test coverage.
 target_sources(ElmerTests PRIVATE
     TestMain.cpp
-    PrintedScaleTests.cpp)
+    PrintedScaleTests.cpp
+    CompressorTests.cpp
+    ../Source/DSP/SidechainFilter.cpp
+    ../Source/DSP/LevelDetector.cpp
+    ../Source/DSP/GainComputer.cpp
+    ../Source/DSP/AutoRelease.cpp
+    ../Source/DSP/IronStage.cpp
+    ../Source/DSP/OutputStage.cpp)
 
 target_compile_definitions(ElmerTests PRIVATE
     JUCE_WEB_BROWSER=0

@@ -81,7 +81,13 @@ juce_add_plugin(Elmer
 
 target_sources(Elmer PRIVATE
     Source/PluginProcessor.cpp
-    Source/PluginEditor.cpp)
+    Source/PluginEditor.cpp
+    Source/DSP/SidechainFilter.cpp
+    Source/DSP/LevelDetector.cpp
+    Source/DSP/GainComputer.cpp
+    Source/DSP/AutoRelease.cpp
+    Source/DSP/IronStage.cpp
+    Source/DSP/OutputStage.cpp)
 
 target_compile_definitions(Elmer PUBLIC
     JUCE_WEB_BROWSER=0
