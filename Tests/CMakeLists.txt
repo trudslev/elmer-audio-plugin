@@ -6,6 +6,7 @@ target_sources(ElmerTests PRIVATE
     TestMain.cpp
     PrintedScaleTests.cpp
     CompressorTests.cpp
+    FactoryProgramTests.cpp
     ../Source/DSP/SidechainFilter.cpp
     ../Source/DSP/LevelDetector.cpp
     ../Source/DSP/GainComputer.cpp
