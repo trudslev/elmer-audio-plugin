@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#22201d; }
+  a { color:#c9c2b4; } a:hover { color:#fff; }
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;gap:48px;padding:40px;font-family:'Barlow Condensed',sans-serif">
+
+<section style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8d8577">
+    <span style="background:#3a3631;color:#e8e1d2;padding:3px 8px;border-radius:2px">1</span>
+    <span>ELMER — BUS COMPRESSOR · PANEL · 1120 × 776</span>
+  </div>
+
+  <div style="position:relative;width:1120px;height:776px;border-radius:5px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.06) inset;background:#a9a294">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(96deg, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,.035) 1px 2px, rgba(255,255,255,0) 2px 4px)"></div>
+    <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 28% 0%, rgba(255,255,255,.16), rgba(255,255,255,0) 58%), radial-gradient(120% 120% at 80% 110%, rgba(40,34,26,.03), rgba(0,0,0,0) 66%)"></div>
+
+    <div style="position:absolute;left:0;top:0;bottom:0;width:15px;background:linear-gradient(90deg,#847e73,#B4AE9F 60%,#98917f)"></div>
+    <div style="position:absolute;right:0;top:0;bottom:0;width:15px;background:linear-gradient(270deg,#847e73,#B4AE9F 60%,#98917f)"></div>
+
+    <div style="position:absolute;left:22px;top:20px;right:22px;bottom:20px;display:flex;flex-direction:column">
+
+      <!-- HEADER -->
+      <div style="display:flex;align-items:flex-start;gap:26px;height:112px;padding-right:13px">
+        <div style="width:340px;padding-top:2px;padding-left:15px">
+          <div style="position:relative;display:inline-block;padding:7px 20px 9px 18px;border-radius:3px;background:linear-gradient(180deg,#b4ad9a,#9b9488);box-shadow:0 1px 0 rgba(255,255,255,.42) inset, 0 -2px 3px rgba(48,42,32,.35) inset, 0 2px 3px rgba(40,35,26,.30)">
+            <div style="font-family:'Archivo Black',sans-serif;font-size:53px;line-height:1;letter-spacing:6px;color:#24231f;text-shadow:0 1px 0 rgba(255,255,255,.30), 0 -1px 0 rgba(0,0,0,.45), 0 2px 3px rgba(255,255,255,.14)">ELMER</div>
+          </div>
+          <div style="margin-top:8px;font-size:14px;letter-spacing:3.6px;color:#0f0f0c;font-weight:600;text-shadow:0 1px 0 rgba(255,255,255,.34)">BUS COMPRESSOR</div>
+          <div style="margin-top:2px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;letter-spacing:2.2px;color:#0f0f0c">MODEL GL-87 · STEREO</div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">PROGRAM</div>
+          <div style="display:flex;align-items:stretch;gap:9px">
+            <div style="flex:1;display:flex;align-items:stretch;height:38px;box-sizing:border-box;border-radius:3px;padding:3px;background:linear-gradient(180deg,#26241f,#3a372f);box-shadow:0 2px 5px rgba(35,30,22,.55) inset, 0 1px 0 rgba(255,255,255,.35)">
+              <div style="flex:1;display:flex;align-items:stretch;border-radius:2px;background:linear-gradient(180deg,#1b1a16,#242219);box-shadow:0 1px 4px rgba(0,0,0,.6) inset">
+                <div style="width:72px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(214,196,124,.22);font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:2.5px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)">{{ bankLabel }}</div>
+                <div style="flex:1;display:flex;align-items:center;padding:0 14px;font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:2.5px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)">{{ programLabel }}</div>
+              </div>
+            </div>
+            <div onClick="{{ onSave }}" style="width:66px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#302c24" style-active="transform:translateY(1px)">SAVE</div>
+            <div onClick="{{ onDelete }}" style="{{ deleteStyle }}">DELETE</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:9px">
+          <div style="width:74px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;margin-bottom:5px;text-shadow:0 1px 0 rgba(255,255,255,.30)">IN</div>
+            <div style="height:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:15px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ inDb }}</div>
+          </div>
+          <div style="width:74px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;margin-bottom:5px;text-shadow:0 1px 0 rgba(255,255,255,.30)">OUT</div>
+            <div style="height:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:15px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ outDb }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;margin:8px 0 14px;background:linear-gradient(90deg,rgba(60,54,44,.45),rgba(60,54,44,.18));box-shadow:0 1px 0 rgba(255,255,255,.28)"></div>
+
+      <!-- TOP ROW : DETECTION + WIDE METER -->
+      <div style="display:flex;gap:20px;height:352px">
+
+        <div style="width:340px;box-sizing:border-box;padding:14px 16px 12px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));box-shadow:0 1px 0 rgba(255,255,255,.30) inset, 0 -1px 0 rgba(50,44,34,.25) inset">
+          <div style="font-size:11.5px;font-weight:600;letter-spacing:3.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">DETECTION</div>
+          <div style="display:flex;justify-content:center;gap:4px;margin-top:16px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:112px;height:112px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-lg.png" width="108" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-4px;top:98px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">-40</div>
+                <div style="position:absolute;left:-26px;top:44px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">-30</div>
+                <div style="position:absolute;left:7px;top:-5px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">-20</div>
+                <div style="position:absolute;left:65px;top:-5px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">-10</div>
+                <div style="position:absolute;left:98px;top:44px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0</div>
+                <div style="position:absolute;left:76px;top:98px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">+10</div>
+                <div style="position:relative;width:84px;height:84px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragThreshold }}">
+                  <img src="assets/knob-detect-128.png" width="84" style="position:absolute;left:0;top:0;transform:translateY({{ frThreshold }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">THRESHOLD</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;width:140px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-sm.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-9px;top:90px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat0 }}">1.5:1</span></div>
+                <div style="position:absolute;left:-26px;top:24px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat1 }}">2:1</span></div>
+                <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat2 }}">4:1</span></div>
+                <div style="position:absolute;left:86px;top:24px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat3 }}">10:1</span></div>
+                <div style="position:absolute;left:69px;top:90px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat4 }}">20:1</span></div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragRatio }}">
+                  <img src="assets/knob-detect-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frRatio }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">RATIO</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:center;gap:4px;align-items:flex-start;margin-top:22px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-lg.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-5px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">OFF</div>
+                <div style="position:absolute;left:-24px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">40</div>
+                <div style="position:absolute;left:5px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">75</div>
+                <div style="position:absolute;left:55px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">140</div>
+                <div style="position:absolute;left:86px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">265</div>
+                <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">500</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragHp }}">
+                  <img src="assets/knob-detect-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frHp }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.2px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">SIDECHAIN HP · Hz</div>
+            </div>
+            <div style="width:140px;display:flex;flex-direction:column;align-items:center;padding-top:24px">
+              <div style="font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;margin-bottom:9px;text-shadow:0 1px 0 rgba(255,255,255,.32)">KNEE</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div onClick="{{ setKneeSoft }}" style="{{ btnFace }}"><div style="{{ kneeSoftLed }}"></div><span style="{{ kneeSoftLbl }}">SOFT</span></div>
+                <div onClick="{{ setKneeHard }}" style="{{ btnFace }}"><div style="{{ kneeHardLed }}"></div><span style="{{ kneeHardLbl }}">HARD</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="width:588px;display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:1.8px;color:#0f0f0c;margin-bottom:9px;text-shadow:0 1px 0 rgba(255,255,255,.28)">
+              <span>GAIN REDUCTION METER</span>
+              <span>STEREO LINKED · ONE DETECTOR</span>
+            </div>
+            <div style="position:relative;width:588px;height:236px;border-radius:4px;overflow:hidden;box-shadow:0 4px 12px rgba(35,30,22,.45), 0 1px 0 rgba(255,255,255,.34)">
+              <img src="assets/meter-face.png" width="588" style="position:absolute;left:0;top:0" />
+              <div style="position:absolute;left:294px;top:294px;width:0;height:0;transform:rotate({{ needleDeg }}deg)">
+                <img src="assets/meter-needle.png" width="35.3" style="position:absolute;left:-17.6px;top:-293.4px" />
+              </div>
+              <div style="position:absolute;inset:0;background:linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, rgba(255,255,255,0) 40%)"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:1.8px;color:#0f0f0c;margin-top:9px;text-shadow:0 1px 0 rgba(255,255,255,.28)">
+              <span>MOVING COIL · 300 ms BALLISTIC</span>
+              <span>GR {{ grText }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW : TIMING · CHARACTER · OUTPUT -->
+      <div style="display:flex;justify-content:space-between;margin-top:16px;height:190px">
+
+        <div style="width:340px;box-sizing:border-box;padding:14px 16px 12px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));box-shadow:0 1px 0 rgba(255,255,255,.30) inset, 0 -1px 0 rgba(50,44,34,.25) inset;display:flex;flex-direction:column">
+          <div style="font-size:11.5px;font-weight:600;letter-spacing:3.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">TIMING</div>
+          <div style="display:flex;justify-content:center;gap:4px;margin-top:10px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-lg.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-5px;top:87px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0.1</div>
+                <div style="position:absolute;left:-26px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0.3</div>
+                <div style="position:absolute;left:5px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">1</div>
+                <div style="position:absolute;left:55px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">3</div>
+                <div style="position:absolute;left:84px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">10</div>
+                <div style="position:absolute;left:65px;top:87px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">30</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragAttack }}">
+                  <img src="assets/knob-timing-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frAttack }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">ATTACK · ms</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-5.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-9px;top:90px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0.1s</div>
+                <div style="position:absolute;left:-26px;top:24px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0.3s</div>
+                <div style="position:absolute;left:30px;top:-8px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0.6s</div>
+                <div style="position:absolute;left:86px;top:24px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">1.2s</div>
+                <div style="position:absolute;left:69px;top:90px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">AUTO</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragRelease }}">
+                  <img src="assets/knob-timing-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frRelease }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">RELEASE</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width:230px;box-sizing:border-box;padding:14px 16px 12px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));box-shadow:0 1px 0 rgba(255,255,255,.30) inset, 0 -1px 0 rgba(50,44,34,.25) inset;display:flex;flex-direction:column">
+          <div style="font-size:11.5px;font-weight:600;letter-spacing:3.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">CHARACTER</div>
+          <div style="display:flex;justify-content:center;margin-top:10px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-sm.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-5px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0</div>
+                <div style="position:absolute;left:-21px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">25</div>
+                <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">50</div>
+                <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">75</div>
+                <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">100</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragIron }}">
+                  <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frIron }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">IRON</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width:340px;box-sizing:border-box;padding:14px 16px 12px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));box-shadow:0 1px 0 rgba(255,255,255,.30) inset, 0 -1px 0 rgba(50,44,34,.25) inset;display:flex;flex-direction:column">
+          <div style="font-size:11.5px;font-weight:600;letter-spacing:3.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">OUTPUT</div>
+          <div style="display:flex;justify-content:center;gap:4px;margin-top:10px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-sm.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-5px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0</div>
+                <div style="position:absolute;left:-21px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">5</div>
+                <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">10</div>
+                <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">15</div>
+                <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">20</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragMakeup }}">
+                  <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frMakeup }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MAKEUP · dB</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;width:150px">
+              <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
+                <img src="assets/scale-sm.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
+                <div style="position:absolute;left:-5px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0</div>
+                <div style="position:absolute;left:-21px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">25</div>
+                <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">50</div>
+                <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">75</div>
+                <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">100</div>
+                <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragMix }}">
+                  <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frMix }}px)" />
+                </div>
+              </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MIX · %</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px">
+        <div style="position:relative;transform:rotate(-2.4deg);margin-left:6px;padding:9px 30px 11px 32px;background:linear-gradient(178deg,#efe9d6,#ded7c0 55%,#e6dfca);clip-path:polygon(1.6% 0%, 98.6% 0%, 99.4% 17%, 97.6% 33%, 100% 52%, 98% 70%, 99.2% 86%, 97.8% 100%, 2.2% 100%, 0.8% 84%, 2.6% 66%, 0% 49%, 1.8% 31%, 0.6% 15%);font-family:'Permanent Marker',cursive;font-size:21px;line-height:1;letter-spacing:.5px;color:#2b2a26;text-shadow:0 1px 0 rgba(255,255,255,.5)">CH 24 — MIX BUS / GLUE</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:1.8px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.28)">GL-87 · CONSOLE MODULE · SN 0871 &nbsp;&nbsp;·&nbsp;&nbsp; v1.0</div>
+      </div>
+    </div>
+
+    <div style="position:absolute;left:5px;top:8px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ded8c9,#6d685e);box-shadow:0 1px 1px rgba(255,255,255,.4)"></div>
+    <div style="position:absolute;left:5px;bottom:8px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ded8c9,#6d685e);box-shadow:0 1px 1px rgba(255,255,255,.4)"></div>
+    <div style="position:absolute;right:5px;top:8px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ded8c9,#6d685e);box-shadow:0 1px 1px rgba(255,255,255,.4)"></div>
+    <div style="position:absolute;right:5px;bottom:8px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ded8c9,#6d685e);box-shadow:0 1px 1px rgba(255,255,255,.4)"></div>
+  </div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:16px;max-width:1120px">
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8d8577">PRODUCT ICON — FOUR DIRECTIONS · 1024 / 256 / 32 &nbsp;·&nbsp; <a href="Elmer Icon.dc.html">FULL ICON SHEET →</a></div>
+  <div style="display:flex;gap:18px;flex-wrap:wrap">
+
+    <div id="1a" style="width:266px;padding:16px;border-radius:4px;background:#2b2924;box-shadow:0 1px 0 rgba(255,255,255,.06) inset">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:#3f3b34;color:#e8e1d2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px">1a</span>
+        <span style="font-size:13px;letter-spacing:1.6px;color:#c9c2b4;font-weight:600">LAMPLIT METER</span>
+      </div>
+      <img src="icons/A-lamp-meter-1024.png" width="234" style="border-radius:8px;display:block" />
+      <div style="display:flex;align-items:flex-end;gap:14px;margin-top:14px">
+        <img src="icons/A-lamp-meter-256.png" width="64" style="border-radius:5px;display:block" />
+        <img src="icons/A-lamp-meter-32.png" width="32" style="border-radius:3px;display:block" />
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7d7669;line-height:1.5">256<br />32</div>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.45;color:#9a9385">The signature element straight: cream face, warm lamp, needle at mid-scale. Reads instrument, not category.</div>
+    </div>
+
+    <div id="1b" style="width:266px;padding:16px;border-radius:4px;background:#2b2924;box-shadow:0 1px 0 rgba(255,255,255,.06) inset">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:#3f3b34;color:#e8e1d2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px">1b</span>
+        <span style="font-size:13px;letter-spacing:1.6px;color:#c9c2b4;font-weight:600">NEEDLE, INVERTED</span>
+      </div>
+      <img src="icons/B-inverse-meter-1024.png" width="234" style="border-radius:8px;display:block" />
+      <div style="display:flex;align-items:flex-end;gap:14px;margin-top:14px">
+        <img src="icons/B-inverse-meter-256.png" width="64" style="border-radius:5px;display:block" />
+        <img src="icons/B-inverse-meter-32.png" width="32" style="border-radius:3px;display:block" />
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7d7669;line-height:1.5">256<br />32</div>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.45;color:#9a9385">Same silhouette on charcoal. Highest contrast in a light browser list; loses the cream-face material cue.</div>
+    </div>
+
+    <div id="1c" style="width:266px;padding:16px;border-radius:4px;background:#2b2924;box-shadow:0 1px 0 rgba(255,255,255,.06) inset">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:#3f3b34;color:#e8e1d2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px">1c</span>
+        <span style="font-size:13px;letter-spacing:1.6px;color:#c9c2b4;font-weight:600">THREE CAPS</span>
+      </div>
+      <img src="icons/C-colour-caps-1024.png" width="234" style="border-radius:8px;display:block" />
+      <div style="display:flex;align-items:flex-end;gap:14px;margin-top:14px">
+        <img src="icons/C-colour-caps-256.png" width="64" style="border-radius:5px;display:block" />
+        <img src="icons/C-colour-caps-32.png" width="32" style="border-radius:3px;display:block" />
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7d7669;line-height:1.5">256<br />32</div>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.45;color:#9a9385">The colour-coding as the mark. Distinct in colour, but at 32px it collapses toward the plain-knob trap.</div>
+    </div>
+
+    <div id="1d" style="width:266px;padding:16px;border-radius:4px;background:#2b2924;box-shadow:0 1px 0 rgba(255,255,255,.06) inset">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:#3f3b34;color:#e8e1d2;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px">1d</span>
+        <span style="font-size:13px;letter-spacing:1.6px;color:#c9c2b4;font-weight:600">BANDED SCALE</span>
+      </div>
+      <img src="icons/D-colour-arc-needle-1024.png" width="234" style="border-radius:8px;display:block" />
+      <div style="display:flex;align-items:flex-end;gap:14px;margin-top:14px">
+        <img src="icons/D-colour-arc-needle-256.png" width="64" style="border-radius:5px;display:block" />
+        <img src="icons/D-colour-arc-needle-32.png" width="32" style="border-radius:3px;display:block" />
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#7d7669;line-height:1.5">256<br />32</div>
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;line-height:1.45;color:#9a9385">Both traits at once — needle over the three group colours. Bands thickened so it holds at 32px, and it does.</div>
+    </div>
+  </div>
+  <div style="max-width:830px;font-size:13.5px;line-height:1.5;color:#9a9385">My pick is <a href="#1d">1d</a>, with <a href="#1a">1a</a> as the safe runner-up. Say the word and I export the chosen one at 1024 and 256.</div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:860},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#F3D021&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#F3D021&quot;,&quot;#C8E04A&quot;,&quot;#BFE6FF&quot;],&quot;section&quot;:&quot;Panel&quot;}}">
+const FR = 128;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const RATIOS = [1.5, 2, 4, 10, 20];
+
+class Component extends DCLogic {
+  state = {
+    threshold: -18.5, ratioIdx: 2, knee: 'soft', hp: 0.42,
+    attack: 0.34, release: 1,
+    iron: 0.34, makeup: 4.5, mix: 1.0,
+    gr: 0, level: -12, bank: 'FACT', program: '01 UNDER PRESSURE', userCount: 0, editing: null
+  };
+
+  componentDidMount() {
+    this.t = 0;
+    this.tick = () => {
+      this.t += 1 / 60;
+      const s = this.state;
+      const bar = Math.sin(this.t * 2.4);
+      const kick = Math.max(0, Math.sin(this.t * 6.1)) ** 3;
+      const level = -14 + 9 * kick + 3.2 * bar + 1.6 * Math.sin(this.t * 17.3);
+      const ratio = RATIOS[s.ratioIdx];
+      const over = level - s.threshold;
+      const kneeW = s.knee === 'soft' ? 7 : 1.5;
+      let comp;
+      if (over <= -kneeW / 2) comp = 0;
+      else if (over >= kneeW / 2) comp = over * (1 - 1 / ratio);
+      else {
+        const x = over + kneeW / 2;
+        comp = (x * x / (2 * kneeW)) * (1 - 1 / ratio);
+      }
+      const hpTrim = s.hp < 0.1 ? 1 : 1 - 0.35 * s.hp;
+      const target = clamp(comp * hpTrim * s.mix, 0, 20);
+      const atkMs = this.attackMs(s);
+      const relS = this.releaseMs(s) / 1000;
+      const coef = target > s.gr ? 1 - Math.exp(-16.7 / atkMs) : 1 - Math.exp(-0.0167 / relS);
+      const gr = s.gr + (target - s.gr) * clamp(coef, 0, 1) * 0.55;
+      this.setState({ gr, level });
+      this.raf = requestAnimationFrame(this.tick);
+    };
+    this.raf = requestAnimationFrame(this.tick);
+  }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); }
+
+  attackMs(s) { return 0.1 * Math.pow(300, clamp(s.attack, 0, 1)); }
+  releaseMs(s) { return s.release === 4 ? 420 : [100, 300, 600, 1200][s.release]; }
+
+  showParam(key) {
+    clearTimeout(this.revert);
+    this.setState({ editing: key });
+  }
+  releaseParam() {
+    clearTimeout(this.revert);
+    this.revert = setTimeout(() => this.setState({ editing: null }), 1200);
+  }
+
+  drag(key, opts) {
+    return (e) => {
+      e.preventDefault();
+      this.showParam(key);
+      const startY = e.clientY;
+      const start = this.state[key];
+      const move = (ev) => {
+        const d = (startY - ev.clientY) / 190;
+        if (opts.steps) {
+          const idx = clamp(Math.round(start + d * (opts.steps - 1) * 1.6), 0, opts.steps - 1);
+          this.setState({ [key]: idx });
+        } else {
+          this.setState({ [key]: clamp(start + d * (opts.max - opts.min), opts.min, opts.max) });
+        }
+      };
+      const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); this.releaseParam(); };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    };
+  }
+
+  ratLabel() {
+    return 'display:inline-block;color:#0f0f0c';
+  }
+  frame(norm, size) { return -Math.round(clamp(norm, 0, 1) * (FR - 1)) * size; }
+
+  btn() {
+    return 'width:74px;height:28px;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:2px;cursor:pointer;background:linear-gradient(180deg,#c3bcaa,#a8a294);box-shadow:0 1px 0 rgba(255,255,255,.38) inset, 0 1px 2px rgba(40,34,26,.26)';
+  }
+  btnLabel(active) {
+    const a = this.props.accent ?? '#F3D021';
+    const b = 'font-family:\'IBM Plex Mono\',monospace;font-size:9.5px;letter-spacing:1.6px;';
+    return active
+      ? b + `font-weight:600;color:#FFF6C9;text-shadow:0 0 5px rgba(255,247,196,.95), 0 0 11px ${a}, 0 0 18px ${a}`
+      : b + 'color:#1d1c17';
+  }
+  led(on, size) {
+    const a = this.props.accent ?? '#F3D021';
+    return on
+      ? `width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #fffdf0, ${a} 46%, #8a7108);box-shadow:0 0 9px ${a}, 0 0 20px rgba(243,208,33,.42), 0 1px 1px rgba(255,255,255,.4)`
+      : `width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #7d7466, #43403a 60%, #2a2825);box-shadow:0 1px 0 rgba(255,255,255,.35), 0 1px 3px rgba(0,0,0,.45) inset`;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const thrN = (s.threshold + 40) / 50;
+    const relMs = this.releaseMs(s);
+    const relS = relMs / 1000;
+    const atkMs = this.attackMs(s);
+    const atkText = (atkMs < 1 ? atkMs.toFixed(2) : atkMs < 10 ? atkMs.toFixed(1) : Math.round(atkMs)) + ' ms';
+    const relText = s.release === 4 ? 'AUTO' : (relMs / 1000).toFixed(1) + ' s';
+    const hpRaw = 40 * Math.pow(12.5, clamp((s.hp - 0.2) / 0.8, 0, 1));
+    const hpHz = hpRaw < 100 ? Math.round(hpRaw) : Math.round(hpRaw / 5) * 5;
+    const grDisp = s.gr;
+    const outLvl = s.level - grDisp + s.makeup;
+
+    return {
+      frThreshold: this.frame(thrN, 84),
+      frRatio: this.frame(s.ratioIdx / 4, 74),
+      frHp: this.frame(s.hp, 74),
+      frAttack: this.frame(s.attack, 74),
+      frRelease: this.frame(s.release / 4, 74),
+      frIron: this.frame(s.iron, 74),
+      frMakeup: this.frame(s.makeup / 20, 74),
+      frMix: this.frame(s.mix, 74),
+
+      dragThreshold: this.drag('threshold', { min: -40, max: 10 }),
+      dragRatio: this.drag('ratioIdx', { steps: 5 }),
+      dragHp: this.drag('hp', { min: 0, max: 1 }),
+      dragAttack: this.drag('attack', { min: 0, max: 1 }),
+      dragRelease: this.drag('release', { steps: 5 }),
+      dragIron: this.drag('iron', { min: 0, max: 1 }),
+      dragMakeup: this.drag('makeup', { min: 0, max: 20 }),
+      dragMix: this.drag('mix', { min: 0, max: 1 }),
+
+      thresholdText: s.threshold.toFixed(1) + ' dB',
+      ratioText: RATIOS[s.ratioIdx] + ':1',
+      hpText: s.hp < 0.1 ? 'OFF' : hpHz + ' Hz',
+      attackText: atkText,
+      releaseText: relText,
+      ironText: Math.round(s.iron * 100) + ' %',
+      makeupText: '+' + s.makeup.toFixed(1) + ' dB',
+      mixText: Math.round(s.mix * 100) + ' %',
+
+      needleDeg: 63 - (clamp(grDisp, 0, 20) / 20) * 126,
+      rat0: this.ratLabel(s.ratioIdx === 0), rat1: this.ratLabel(s.ratioIdx === 1),
+      rat2: this.ratLabel(s.ratioIdx === 2), rat3: this.ratLabel(s.ratioIdx === 3),
+      rat4: this.ratLabel(s.ratioIdx === 4),
+      grText: '-' + grDisp.toFixed(1) + ' dB',
+      inDb: s.level.toFixed(1),
+      outDb: outLvl.toFixed(1),
+
+      bankLabel: s.bank,
+      programLabel: (() => {
+        const P = {
+          threshold: ['THRESHOLD', s.threshold.toFixed(1) + ' dB'],
+          ratioIdx: ['RATIO', RATIOS[s.ratioIdx] + ':1'],
+          hp: ['SIDECHAIN HP', s.hp < 0.1 ? 'OFF' : hpHz + ' Hz'],
+          attack: ['ATTACK', atkText],
+          release: ['RELEASE', relText],
+          iron: ['IRON', Math.round(s.iron * 100) + ' %'],
+          makeup: ['MAKEUP', '+' + s.makeup.toFixed(1) + ' dB'],
+          mix: ['MIX', Math.round(s.mix * 100) + ' %'],
+          knee: ['KNEE', s.knee === 'soft' ? 'SOFT' : 'HARD']
+        }[s.editing];
+        return P ? P[0] + ' ' + P[1] : s.program;
+      })(),
+      deleteStyle: 'width:66px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:2px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;' + (s.bank === 'USER'
+        ? 'cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);color:#302c24'
+        : 'cursor:default;background:linear-gradient(180deg,#a5a094,#8f8a7e);box-shadow:0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2);color:#6f6a5f'),
+      onSave: () => {
+        const n = this.state.userCount + 1;
+        this.setState({ userCount: n, bank: 'USER', program: String(n).padStart(2, '0') + ' UNDER PRESSURE ' + String.fromCharCode(64 + n) });
+      },
+      onDelete: () => { if (this.state.bank === 'USER') this.setState({ bank: 'FACT', program: '01 UNDER PRESSURE' }); },
+
+      btnFace: this.btn(),
+      kneeSoftLbl: this.btnLabel(s.knee === 'soft'),
+      kneeHardLbl: this.btnLabel(s.knee === 'hard'),
+      kneeSoftLed: this.led(s.knee === 'soft', 6),
+      kneeHardLed: this.led(s.knee === 'hard', 6),
+      setKneeSoft: () => { this.setState({ knee: 'soft' }); this.showParam('knee'); this.releaseParam(); },
+      setKneeHard: () => { this.setState({ knee: 'hard' }); this.showParam('knee'); this.releaseParam(); },
+
+      kneeHint: s.knee
+    };
+  }
+}
+
+</script>
+</body>
+</html>
