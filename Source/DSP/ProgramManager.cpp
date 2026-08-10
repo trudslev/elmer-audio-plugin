@@ -1,5 +1,8 @@
 #include "ProgramManager.h"
 
+#include <cmath>
+#include <vector>
+
 using namespace Elmer;
 
 namespace
@@ -16,11 +19,63 @@ ProgramManager::ProgramManager (juce::AudioProcessorValueTreeState& s) : apvts (
 {
     rescanUserPrograms();
     applyFactory (defaultFactoryProgramIndex);
+
+    // Construction applies the default synchronously - no host or automation is attached yet - so
+    // the clean snapshot has to be taken here too. Without it isModified() has nothing to compare
+    // against and SAVE stays dark until the first Program CHANGE rather than the first edit.
+    captureSnapshot();
 }
 
 ProgramManager::~ProgramManager()
 {
     cancelPendingUpdate();
+}
+
+const juce::StringArray& ProgramManager::snapshotParamIds()
+{
+    // Everything a Program stores. Elmer has no momentary triggers, so unlike TapeRot - which must
+    // exclude STOP/FILTER/FAIL or holding one lights SAVE - this is simply the full set.
+    static const juce::StringArray ids {
+        ParamIDs::threshold, ParamIDs::ratio, ParamIDs::knee, ParamIDs::sidechainHp,
+        ParamIDs::attack, ParamIDs::release, ParamIDs::iron, ParamIDs::makeup, ParamIDs::mix };
+    return ids;
+}
+
+void ProgramManager::captureSnapshot()
+{
+    const auto& ids = snapshotParamIds();
+    std::vector<float> fresh;
+    fresh.reserve ((size_t) ids.size());
+
+    for (const auto& id : ids)
+        if (auto* v = apvts.getRawParameterValue (id))
+            fresh.push_back (v->load (std::memory_order_relaxed));
+        else
+            fresh.push_back (0.0f);
+
+    const juce::SpinLock::ScopedLockType lock (snapshotLock);
+    snapshot = std::move (fresh);
+}
+
+bool ProgramManager::isModified() const
+{
+    const auto& ids = snapshotParamIds();
+
+    const juce::SpinLock::ScopedLockType lock (snapshotLock);
+
+    if (snapshot.size() != (size_t) ids.size())
+        return false;                   // nothing captured yet - nothing to compare against
+
+    for (int i = 0; i < ids.size(); ++i)
+        if (auto* v = apvts.getRawParameterValue (ids[i]))
+        {
+            // Physical values, so the tolerance suits the widest range here (sidechain HP in Hz).
+            // Anything a user can hear moving is far larger than this.
+            if (std::abs (v->load (std::memory_order_relaxed) - snapshot[(size_t) i]) > 1.0e-3f)
+                return true;
+        }
+
+    return false;
 }
 
 juce::File ProgramManager::getUserProgramDirectory()
@@ -87,7 +142,9 @@ juce::String ProgramManager::getDisplayName (int index) const
 
 void ProgramManager::setCurrentProgram (int index)
 {
-    if (! juce::isPositiveAndBelow (index, getNumPrograms()))
+    // INIT is a legal target and is NOT in 0..getNumPrograms(), so it is admitted explicitly rather
+    // than by widening the range check - which would also admit every other negative index.
+    if (! isInit (index) && ! juce::isPositiveAndBelow (index, getNumPrograms()))
         return;
 
     pendingIndex.store (index);
@@ -96,17 +153,22 @@ void ProgramManager::setCurrentProgram (int index)
 
 void ProgramManager::handleAsyncUpdate()
 {
-    const int index = pendingIndex.exchange (-1);
+    // -2 is the idle sentinel, not -1: -1 is INIT, and using it here would make selecting INIT
+    // indistinguishable from having nothing to apply.
+    const int index = pendingIndex.exchange (-2);
 
-    if (index < 0)
+    if (index < -1)
         return;
 
     currentIndex = index;
 
-    if (isFactory (index))
+    if (isInit (index) || isFactory (index))
         applyFactory (index);
     else
         applyUser (index);
+
+    // Taken AFTER the values land, so the Program starts clean by definition.
+    captureSnapshot();
 
     if (onProgramChanged != nullptr)
         onProgramChanged();
@@ -120,8 +182,11 @@ void ProgramManager::setParam (const char* id, float actualValue)
 
 void ProgramManager::applyFactory (int index)
 {
-    const auto& fp = factoryPrograms[(size_t) index];
+    applyProgramValues (isInit (index) ? initProgram : factoryPrograms[(size_t) index]);
+}
 
+void ProgramManager::applyProgramValues (const FactoryProgram& fp)
+{
     setParam (ParamIDs::threshold,   fp.thresholdDb);
     setParam (ParamIDs::ratio,       (float) fp.ratioIndex);
     setParam (ParamIDs::knee,        (float) fp.kneeIndex);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "FactoryPrograms.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -29,12 +31,23 @@ public:
     int getCurrentProgram() const noexcept { return currentIndex; }
     juce::String getProgramName (int index) const;
     juce::String getDisplayName (int index) const;
-    bool isFactory (int index) const { return index < getNumFactoryPrograms(); }
+    bool isFactory (int index) const { return index >= 0 && index < getNumFactoryPrograms(); }
+    static bool isInit (int index) noexcept { return index == Elmer::initProgramIndex; }
 
     void setCurrentProgram (int index);
 
     /** Always creates a new Program; never overwrites. Returns its index. */
     int saveNewUserProgram (const juce::String& name);
+
+    /** True once any parameter has moved since the current Program was applied.
+
+        Drives both the display's dirty asterisk and SAVE's enablement, and the spec requires those
+        two to agree always - so they read the same flag rather than each deciding for themselves.
+
+        Compared against a snapshot taken from the LIVE APVTS at apply time, not rebuilt from the
+        Program's own definition: that keeps applyFactory the single description of what a Program
+        sets, with no second copy to drift out of step. */
+    bool isModified() const;
     void deleteUserProgram (int index);
 
     static juce::File getUserProgramDirectory();
@@ -48,11 +61,20 @@ private:
     void applyUser (int index);
     void rescanUserPrograms();
     void setParam (const char* id, float actualValue);
+    void applyProgramValues (const Elmer::FactoryProgram& p);
+    void captureSnapshot();
+
+    static const juce::StringArray& snapshotParamIds();
 
     juce::AudioProcessorValueTreeState& apvts;
     juce::Array<juce::File> userFiles;
     int currentIndex = Elmer::defaultFactoryProgramIndex;
-    std::atomic<int> pendingIndex { -1 };
+    std::atomic<int> pendingIndex { -2 };        // -1 is INIT, so "nothing pending" cannot be -1
+
+    // Guarded because setStateInformation can arrive on any thread while the GUI polls the flag on
+    // the message thread.
+    mutable juce::SpinLock snapshotLock;
+    std::vector<float> snapshot;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProgramManager)
 };

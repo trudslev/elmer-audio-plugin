@@ -37,6 +37,26 @@ struct FactoryProgram
 
 inline constexpr int defaultFactoryProgramIndex = 0;
 
+/** INIT's index. Negative on purpose: INIT sits OUTSIDE both banks rather than being Program 00, so
+    it cannot be addressed by a bank index without pushing every Factory number up by one. Factory
+    still starts at 01, which is what the display and the menu both print.
+
+    The host never sees it - getNumPrograms() counts Factory + User only, so the DAW's own Program
+    list is unchanged and INIT is reachable from the panel alone. That matches what it is: a place to
+    start from, not a stored sound worth recalling by automation. */
+inline constexpr int initProgramIndex = -1;
+
+/** A blank canvas: the compressor present but not engaging, so raising any single control
+    immediately shows what that control does.
+
+    Threshold is above anything a bus will reach, ratio is the gentlest available, and everything
+    that gives Elmer its character - Iron, sidechain filtering, makeup - sits at zero. **Mix stays at
+    100 %**, which is not a character setting here: Elmer is serial, and Mix is its
+    parallel-compression control. At anything less the compressor would be partly bypassed rather
+    than idle, and the first knob the user moved would appear weaker than it is. */
+inline constexpr FactoryProgram initProgram
+    { "INIT", 10.0f, 0, 0, 0.0f, 10.0f, 1, 0.0f, 0.0f, 100.0f };
+
 inline constexpr std::array<FactoryProgram, 16> factoryPrograms { {
     { "UNDER PRESSURE",     -14.0f, 1, 0,  75.0f, 10.0f,  4,  20.0f,  2.5f, 100.0f },
     { "ART OF GLUE",        -16.0f, 2, 0,  75.0f, 30.0f,  4,  25.0f,  3.5f, 100.0f },
