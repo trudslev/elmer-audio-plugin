@@ -71,7 +71,9 @@ Divider rule: `linear-gradient(90deg, rgba(60,54,44,.45), rgba(60,54,44,.18))` w
 | Section headers | Barlow Condensed 600 | 11.5 px, ls 3.4 px | `#0f0f0c` |
 | Control labels | Barlow Condensed 600 | 11.5 px, ls 2.4 px | `#0f0f0c` |
 | Printed knob legends | IBM Plex Mono 400 | **10 px**, line-height 12 px | `#0f0f0c` |
-| LCD / numeric readouts | IBM Plex Mono 400 | 16 px, ls 2.5 px | `#e6dcae` |
+| LCD / numeric readouts | IBM Plex Mono 400 | 14 px, ls 1.7 px | `#e6dcae` |
+| Program menu rows | IBM Plex Mono 400 | 12 px, ls 1.4 px | `#b9ae86`, selected `#f2e9c4` |
+| Program menu bank headers | IBM Plex Mono 400 | 9 px, ls 2.6 px | `#8a8163` |
 | Meter header + footer lines | IBM Plex Mono 600 | 11.5 px, ls 1.8 px | `#0f0f0c` |
 | Panel serial line | IBM Plex Mono 600 | 11.5 px, ls 1.8 px | `#0f0f0c` |
 | Lamp-button legends | IBM Plex Mono | 9.5 px, ls 1.6 px | unlit `#3a372e`, lit `#FFF6C9` |
@@ -130,7 +132,9 @@ Per BRAND.md, one accent colour per plugin, reserved for the single most importa
 | Character/Output cap | `#3A6FD0` blue (hi `#6E9CE8`, lo `#1E4189`) | IRON, MAKEUP, MIX |
 | Knob skirt | `linear-gradient(#E6E1D8 → #C0BAB0 → #948E85 → #726C64)` | all knobs |
 | Lamp button face | `linear-gradient(180deg,#c3bcaa,#a8a294)` | KNEE buttons |
-| Cream button face | `linear-gradient(180deg,#f0e9d3,#d6cdb2)` | SAVE / DELETE |
+| Cream button face | `linear-gradient(180deg,#f0e9d3,#d6cdb2)` | SAVE / DELETE, enabled |
+| Disabled button face | `linear-gradient(180deg,#a5a094,#8f8a7e)`, text `#6f6a5f` | DELETE, disabled |
+| Menu ground | `#16150f`, border `1px solid rgba(214,196,124,.30)` | program dropdown |
 | Meter cream | `#EFE7D2` warming to `#FFFCEF` at the lamp | meter face |
 
 The golden accent is **not** used anywhere else on the panel — not on knobs, not on labels, not
@@ -155,22 +159,127 @@ plate, gaffer scrawl).
 
 Beneath it, 8 px down: `BUS COMPRESSOR`, then `MODEL GL-87 · STEREO`.
 
-**Program display (centre, flexible width, 38 px tall, `box-sizing: border-box`).** A 3 px metal frame
+**Program display (centre, flexible width, 30 px tall, `box-sizing: border-box`).** A 3 px metal frame
 `linear-gradient(180deg,#26241f,#3a372f)` with `0 2px 5px rgba(35,30,22,.55) inset` around one
-continuous black glass. Inside the glass, flush against it:
-- a 72 px bank field reading **`FACT`** or **`USER`** — same 16 px IBM Plex Mono, same phosphor colour,
-  same black background as the program name, separated only by a
-  `1px solid rgba(214,196,124,.22)` hairline. It is one label that switches text, never two labels
-  with one greyed.
-- the program name, 14 px padding, e.g. `01 UNDER PRESSURE`.
+continuous black glass. Inside the glass, flush against it, three cells divided by
+`1px solid rgba(214,196,124,.22)` hairlines:
 
-**SAVE / DELETE (66 × 38 px cream buttons).** SAVE is always enabled. DELETE is enabled only on a
-User program; on a Factory program it renders visibly disabled:
-`linear-gradient(180deg,#a5a094,#8f8a7e)`, text `#6f6a5f`, `cursor: default`.
+| Cell | Width | Contents |
+|---|---|---|
+| Bank | 56 px | `FACT` / `USER` / `NAME` — one label that switches text, never two with one greyed. On **INIT** it reads an em-dash `—` at 42 % phosphor with no glow: INIT sits outside the banks, so naming it here would print the word twice |
+| Name | **269 px** | program name, **centred**, 11 px horizontal padding → **247 px of text** |
+| Chevron | 28 px | the drawn open/close indicator |
 
-**IN / OUT (two 74 px columns, 9 px gap).** Legend above, 38 px LCD readout below, top-aligned with
-the PROGRAM legend and glass so all three readouts share one baseline. Values are live dBFS with one
-decimal.
+**Character budget — 24 characters in the name cell.** IBM Plex Mono at **14 px with 1.7 px
+tracking** advances 10.1 px per character (8.4 px glyph + 1.7 px tracking); 247 px ÷ 10.1 = 24.5. The build **must cap user Program
+names at 19 characters** — the display prefixes a two-digit index and a space (`17 `, 3 chars) and
+appends a space and the dirty asterisk (2 chars) to give 24 total. A 20-character name would overrun the cell the
+moment it was edited. This clears the longest factory name (`03 MINNEAPOLIS SQUEEZE`, 22) and the longest
+parameter readout (`SIDECHAIN HP 500 Hz`, 19). The number is not inferable from the layout — cap
+against it explicitly.
+
+*Why these three moves together:* the display was 364 × 38 px, which read as a heavy block against a
+panel of fine printed detail, yet only held 21 characters. Dropping to 30 px and 14 px type while
+widening the cell to 269 px buys three characters and loses the weight.
+
+The program name is **centred** in its cell, not left-aligned — names run 11 to 22 characters and
+centring keeps the display balanced rather than leaving a ragged gap before the chevron. The naming
+field is centred too, so the text does not jump when the field appears.
+
+**Dirty marker.** When the loaded Program has been modified, an **asterisk is appended to the name
+after a single space** — `01 UNDER PRESSURE *` — in the **same 14 px phosphor type and the same
+`#e6dcae` with its glow** as the name itself. It is not distinguished by colour or weight: it is
+part of the name's own string, and the name stays centred in the cell with the asterisk included, so
+the text shifts left by half a character when it appears. This is the same marker the rest of the
+suite uses, and it appears in step with SAVE becoming enabled — the two always agree.
+
+Because the asterisk consumes a character cell, it is counted in the budget above.
+
+**Chevron (drawn, not typographic).** A live element that flips with menu state, so it cannot be
+baked into the display bitmap. Render as a stroked path in an 11 × 7 box, `stroke #e6dcae`,
+`stroke-width 1.6`, round cap and join, no fill:
+
+| State | Path |
+|---|---|
+| Closed | `M1 1.4 L5.5 5.6 L10 1.4` (points down) |
+| Open | `M1 5.6 L5.5 1.4 L10 5.6` (points up) |
+
+Specified as a path rather than a glyph so it renders identically regardless of platform font
+fallback. Clicking either the name cell or the chevron cell toggles the menu.
+
+**Program dropdown.** Hangs flush from the **glass's** lower edge: `top: 28px`,
+`left: 0` — both measured from the frame's padding box, so the menu meets the glass, not the
+outside of the 3 px metal frame (`30px − 2 × 3px` = 24 px of glass, plus 4 px so the menu clears the glass's inner shadow), **width 100% of the display** — it inherits the display's width rather than
+carrying its own, so the two read as one instrument. Ground `#16150f`, border
+`1px solid rgba(214,196,124,.30)` on the left, right and bottom only — **no top border**, radius
+`0 0 3px 3px`, `padding: 4px 0`, drop shadow `0 14px 24px -6px rgba(0,0,0,.55)` (negative spread
+so nothing bleeds upward). The menu meets the display's glass directly: no gap, no rule, no shadow
+between them, `max-height: 264px` with vertical scroll, `z-index: 40`.
+
+Rows are **22 px tall**, `padding: 0 12px 0 10px`, IBM Plex Mono 12 px / 1.4 px tracking:
+
+| Row state | Treatment |
+|---|---|
+| Normal | text `#b9ae86`, `border-left: 2px solid transparent` |
+| Hover | background `rgba(214,196,124,.13)`, text `#f2e9c4` |
+| Selected (current Program) | `border-left: 2px solid #e6dcae` with padding-left 8 px, background `rgba(214,196,124,.10)`, text `#f2e9c4` with the phosphor glow |
+
+The left bar is the current-Program marker — a lit rule rather than a tick glyph, so it reads at a
+glance down the column and needs no character cell.
+
+Contents, in this order:
+1. **INIT** — unnumbered, at the top, shown in the display as `—` / `INIT`, followed by a `1px rgba(214,196,124,.24)` divider inset 10 px.
+   It is a neutral starting point, not a stored sound, so it sits outside the bank rather than
+   being numbered `00`.
+2. **FACTORY** — a 9 px / 2.6 px-tracked header in `#8a8163`, then the sixteen authored Programs
+   numbered `01`–`16` (listed under *Factory bank* below).
+3. **USER** — same header treatment, saved Programs numbered continuing from Factory (`17`, `18`…).
+   **The entire USER section, header and divider included, is absent when there are no user
+   Programs** — not an empty heading.
+
+**Naming flow.** SAVE never overwrites, so pressing it must ask for a name. The display itself
+becomes the field — it is the only screen on the panel, and a floating dialog has no hardware
+equivalent:
+
+- The bank cell switches to **`NAME`**.
+- The name cell becomes an editable field in the same 14 px / 1.7 px phosphor type. The caret is the
+  native text caret at `caret-color: #e6dcae`, blinking at the platform rate; it is focused
+  automatically on entry, so the user types immediately.
+- The chevron cell is **hidden** while naming — the menu is unreachable mid-name.
+- Input is forced uppercase and hard-capped at **19 characters** (see the budget above) — what can
+  be typed matches what can be displayed once the asterisk appears.
+- **Confirm and cancel reuse the two buttons already in the row**: SAVE relabels to **STORE**,
+  DELETE relabels to **CANCEL**, both enabled. `Enter` confirms, `Esc` cancels. No new controls
+  appear — the row's geometry does not move.
+- On confirm the Program is appended to the User bank, selected, and the bank cell reads `USER`.
+  An empty name stores as `UNTITLED`.
+
+**SAVE / DELETE (62 × 30 px cream buttons, 7 px gaps).**
+
+**SAVE is disabled until the Program is dirty.** Loading a Program (or INIT) clears the dirty flag;
+moving any knob, switch or KNEE button sets it. With the loaded Program unmodified there is nothing
+to store, so SAVE renders in the same disabled treatment as DELETE below. It re-enables on the first
+parameter change, and clears again once the new Program is stored. While naming it is always
+enabled, as STORE.
+
+DELETE has exactly two states:
+
+| DELETE state | When | Treatment |
+|---|---|---|
+| Enabled | a **User** Program is current, or naming is in progress (as CANCEL) | `linear-gradient(180deg,#f0e9d3,#d6cdb2)`, text `#302c24`, `cursor: pointer`, raised bevel |
+| Disabled | any **Factory** Program, and **INIT** | `linear-gradient(180deg,#a5a094,#8f8a7e)`, text `#6f6a5f`, `cursor: default`, flat — `0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2)` |
+
+It stays in place and keeps its footprint when disabled; it never hides.
+
+**IN / OUT (two 74 px columns, 9 px gap).** Legend above, **30 px** LCD readout below, 14 px
+phosphor type. All four elements of the row — display, SAVE, DELETE, IN/OUT — share the same 30 px
+height deliberately, so they read as one band; the display was not allowed to become the odd one out
+when it came down from 38 px.
+
+**Header alignment.** The row is **vertically centred against the full 112 px header block**
+(`align-items: center`), not against the wordmark plate alone. The left column runs plate →
+`BUS COMPRESSOR` → `MODEL GL-87 · STEREO` and extends well below the plate; centring on the plate
+left the display sitting high against it.
 
 ### Top row (352 px)
 
@@ -232,6 +341,35 @@ Laws, precisely:
 - **RELEASE** — detent times `[100, 300, 600, 1200] ms`; the fifth position is AUTO, a
   program-dependent dual time-constant (the simulation uses an effective ~420 ms).
 
+**Units live in the arc gap, not on the control name.** The gap at the bottom of the tick arc,
+between the minimum and maximum numerals, carries the unit in the same 10 px IBM Plex Mono legend
+type (0.6 px tracking, ink `#0f0f0c`), with the control name below the knob.
+
+**Six controls carry a unit, three do not**, decided from the parameter definitions rather than from
+what the labels happened to print:
+
+| Control | Unit | |
+|---|---|---|
+| THRESHOLD | **dB** | scale runs −40 → +10 dB |
+| SIDECHAIN HP | **Hz** | |
+| ATTACK | **ms** | |
+| IRON | **%** | scale runs 0 → 100 |
+| MAKEUP | **dB** | |
+| MIX | **%** | |
+| RATIO | — | prints ratios (`4:1`) |
+| RELEASE | — | values carry their own suffixes (`0.6s`, `AUTO`) |
+| KNEE | — | no scale — a two-position button pair |
+
+No unit is invented for consistency's sake, and none is omitted for the sake of the original label
+text.
+
+**KNEE's label sits below its buttons**, like every other control name on the panel, on the same
+baseline as SIDECHAIN HP — its column carries `padding-top: 38px` and the label `margin-top: 15px`,
+matching the knob columns' label offset.
+
+**RATIO's column carries `padding-top: 12px`** so its label sits on THRESHOLD's line despite its
+smaller (100 px vs 112 px) tick ring. Control labels align across a section regardless of ring size.
+
 Legend placement: each numeral is centred on its tick's exact angle at a constant radius —
 **54 px** from centre on standard knobs, **62 px** on THRESHOLD, with a handful of ±2 px optical
 corrections. Tick counts are chosen so a mark falls on every printed value: 11 marks for the
@@ -291,10 +429,30 @@ floating tooltip, which has no hardware equivalent.
   marketing copy alike.
 - The FACT/USER indicator is a single label inside the LCD reading one or the other.
 - **SAVE always creates a new named Program and never overwrites**, even when a User program is
-  loaded. There is no separate "New Program" button. In a real build this opens a name prompt; the
-  prototype auto-names.
-- **DELETE only works on User programs** and is visibly disabled on Factory ones.
+  loaded. There is no separate "New Program" button. Pressing it enters the naming flow described
+  under *Header* above.
+- **DELETE only works on User programs** and is visibly disabled on Factory ones and on INIT.
+- Programs are selected from the panel via the LCD's chevron and dropdown — the plugin does not rely
+  on the host's own Program list.
 - Default state ships as `FACT` / `01 UNDER PRESSURE`.
+
+**Factory bank (16 Programs, numbered 01–16).** Names are capped at 22 characters including the
+index. User Programs continue the numbering from 17.
+
+```
+01 UNDER PRESSURE        09 HALFWAY THERE
+02 ART OF GLUE           10 KILIMANJARO
+03 MINNEAPOLIS SQUEEZE   11 WEST END
+04 BLUE TUESDAY          12 BITE THE DUST
+05 SHEFFIELD STEEL       13 DANCES ON THE SAND
+06 JERSEY BUS            14 PASADENA
+07 HAMMER DOWN           15 DON'T FORGET
+08 QUEENS SMASH          16 PANCAKE
+```
+
+The two longest are `03 MINNEAPOLIS SQUEEZE` (22) and `13 DANCES ON THE SAND` (21) — the character
+budget above is measured against these, not against invented placeholders. With the dirty asterisk
+they become 24 and 23 — both still inside 24, so factory names are unaffected by the cap change.
 
 **Meter animation** — continuous at 60 fps from the detector's gain-reduction value. The prototype
 drives it from a simulated programme signal; the real build takes the DSP's GR value.
@@ -315,8 +473,13 @@ drives it from a simulated programme signal; the real build takes the DSP's GR v
 | `makeup` | float 0–20 dB | 4.5 |
 | `mix` | float 0–1 | 1.0 |
 | `gr` | float 0–20 dB, read-only | 0 |
-| `bank` | enum FACT/USER | FACT |
-| `program` | string | `01 UNDER PRESSURE` |
+| `bank` | enum INIT/FACT/USER | FACT |
+| `progIdx` | int, index within the current bank | 0 |
+| `userBank` | string[], user Program names (≤ 19 chars each) | `[]` |
+| `menuOpen` | bool | false |
+| `naming` | bool | false |
+| `nameDraft` | string, ≤ 19 chars, uppercase | `''` |
+| `dirty` | bool — set by any parameter change, cleared on load/store | false |
 | `editing` | parameter key or null (LCD takeover) | null |
 
 ---
@@ -399,5 +562,10 @@ read as 20 dB of gain reduction, which is not a representative state.
 | `assets/icons/elmer-icon-1024.png`, `-256.png` | Shipping icon, JUCE sizes |
 | `BRAND.md` | Neon Foundry shared design system |
 | `screenshots/panel.png` | The panel as rendered, 2× (2240 × 1552) |
+| `screenshots/header.png` | The revised header alone, 3× |
+| `screenshots/panel-menu-open.png` | The panel with the Program dropdown open, 2× |
+| `screenshots/panel-naming.png` | The panel in naming mode (STORE / CANCEL), 2× |
+| `screenshots/header-naming.png` | The header alone in naming mode, 3× |
+| `screenshots/header-dirty.png` | The header with a dirty Program — asterisk shown, SAVE enabled, 3× |
 
 Open the HTML file directly in a browser; it needs no server.

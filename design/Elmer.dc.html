@@ -36,7 +36,7 @@
     <div style="position:absolute;left:22px;top:20px;right:22px;bottom:20px;display:flex;flex-direction:column">
 
       <!-- HEADER -->
-      <div style="display:flex;align-items:flex-start;gap:26px;height:112px;padding-right:13px">
+      <div style="display:flex;align-items:center;gap:26px;height:112px;padding-right:13px">
         <div style="width:340px;padding-top:2px;padding-left:15px">
           <div style="position:relative;display:inline-block;padding:7px 20px 9px 18px;border-radius:3px;background:linear-gradient(180deg,#b4ad9a,#9b9488);box-shadow:0 1px 0 rgba(255,255,255,.42) inset, 0 -2px 3px rgba(48,42,32,.35) inset, 0 2px 3px rgba(40,35,26,.30)">
             <div style="font-family:'Archivo Black',sans-serif;font-size:53px;line-height:1;letter-spacing:6px;color:#24231f;text-shadow:0 1px 0 rgba(255,255,255,.30), 0 -1px 0 rgba(0,0,0,.45), 0 2px 3px rgba(255,255,255,.14)">ELMER</div>
@@ -45,28 +45,57 @@
           <div style="margin-top:2px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;letter-spacing:2.2px;color:#0f0f0c">MODEL GL-87 · STEREO</div>
         </div>
 
-        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">PROGRAM</div>
-          <div style="display:flex;align-items:stretch;gap:9px">
-            <div style="flex:1;display:flex;align-items:stretch;height:38px;box-sizing:border-box;border-radius:3px;padding:3px;background:linear-gradient(180deg,#26241f,#3a372f);box-shadow:0 2px 5px rgba(35,30,22,.55) inset, 0 1px 0 rgba(255,255,255,.35)">
+        <div style="position:relative;flex:1">
+          <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">PROGRAM</div>
+          <div style="display:flex;align-items:stretch;gap:7px">
+            <div style="position:relative;flex:1;display:flex;align-items:stretch;height:30px;box-sizing:border-box;border-radius:3px;padding:3px;background:linear-gradient(180deg,#26241f,#3a372f);box-shadow:0 2px 5px rgba(35,30,22,.55) inset, 0 1px 0 rgba(255,255,255,.35)">
               <div style="flex:1;display:flex;align-items:stretch;border-radius:2px;background:linear-gradient(180deg,#1b1a16,#242219);box-shadow:0 1px 4px rgba(0,0,0,.6) inset">
-                <div style="width:72px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(214,196,124,.22);font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:2.5px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)">{{ bankLabel }}</div>
-                <div style="flex:1;display:flex;align-items:center;padding:0 14px;font-family:'IBM Plex Mono',monospace;font-size:16px;letter-spacing:2.5px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)">{{ programLabel }}</div>
+                <div style="{{ bankStyle }}">{{ bankLabel }}</div>
+                <sc-if value="{{ naming }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1;display:flex;align-items:center;padding:0 12px">
+                    <input value="{{ nameDraft }}" onChange="{{ onNameInput }}" onKeyDown="{{ onNameKey }}" ref="{{ nameRef }}" maxLength="{{ nameMax }}" spellCheck="false" style="width:100%;border:0;outline:0;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:1.7px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45);caret-color:#e6dcae;text-align:center" />
+                  </div>
+                </sc-if>
+                <sc-if value="{{ notNaming }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ toggleMenu }}" style="flex:1;display:flex;align-items:center;justify-content:center;padding:0 11px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:1.7px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)">{{ programLabel }}</div>
+                  <div onClick="{{ toggleMenu }}" style="width:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-left:1px solid rgba(214,196,124,.22)">
+                    <svg width="11" height="7" viewBox="0 0 11 7" fill="none" stroke="#e6dcae" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="{{ chevronPath }}"></path>
+                    </svg>
+                  </div>
+                </sc-if>
               </div>
+              <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:0;top:28px;width:100%;z-index:40;max-height:264px;overflow-y:auto;box-sizing:border-box;padding:4px 0;border-radius:0 0 3px 3px;border:1px solid rgba(214,196,124,.30);border-top:0;background:#16150f;box-shadow:0 14px 24px -6px rgba(0,0,0,.55)">
+                  <div onClick="{{ pickInit }}" style="{{ initRowStyle }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">INIT</div>
+                  <div style="height:1px;margin:4px 10px;background:rgba(214,196,124,.24)"></div>
+                  <div style="padding:3px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2.6px;color:#8a8163">FACTORY</div>
+                  <sc-for list="{{ factRows }}" as="row" hint-placeholder-count="6">
+                    <div onClick="{{ row.pick }}" style="{{ row.style }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">{{ row.label }}</div>
+                  </sc-for>
+                  <sc-if value="{{ hasUser }}" hint-placeholder-val="{{ false }}">
+                    <div style="height:1px;margin:4px 10px;background:rgba(214,196,124,.24)"></div>
+                    <div style="padding:3px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2.6px;color:#8a8163">USER</div>
+                    <sc-for list="{{ userRows }}" as="row" hint-placeholder-count="2">
+                      <div onClick="{{ row.pick }}" style="{{ row.style }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">{{ row.label }}</div>
+                    </sc-for>
+                  </sc-if>
+                </div>
+              </sc-if>
             </div>
-            <div onClick="{{ onSave }}" style="width:66px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#302c24" style-active="transform:translateY(1px)">SAVE</div>
-            <div onClick="{{ onDelete }}" style="{{ deleteStyle }}">DELETE</div>
+            <div onClick="{{ onSave }}" style="{{ saveStyle }}" style-active="transform:translateY(1px)">{{ saveLabel }}</div>
+            <div onClick="{{ onDelete }}" style="{{ deleteStyle }}">{{ deleteLabel }}</div>
           </div>
         </div>
 
         <div style="display:flex;gap:9px">
-          <div style="width:74px">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;margin-bottom:5px;text-shadow:0 1px 0 rgba(255,255,255,.30)">IN</div>
-            <div style="height:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:15px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ inDb }}</div>
+          <div style="position:relative;width:74px">
+            <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">IN</div>
+            <div style="height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ inDb }}</div>
           </div>
-          <div style="width:74px">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;margin-bottom:5px;text-shadow:0 1px 0 rgba(255,255,255,.30)">OUT</div>
-            <div style="height:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:15px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ outDb }}</div>
+          <div style="position:relative;width:74px">
+            <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">OUT</div>
+            <div style="height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ outDb }}</div>
           </div>
         </div>
       </div>
@@ -88,13 +117,14 @@
                 <div style="position:absolute;left:65px;top:-5px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">-10</div>
                 <div style="position:absolute;left:98px;top:44px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">0</div>
                 <div style="position:absolute;left:76px;top:98px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">+10</div>
+                <div style="position:absolute;left:36px;top:98px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">dB</div>
                 <div style="position:relative;width:84px;height:84px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragThreshold }}">
                   <img src="assets/knob-detect-128.png" width="84" style="position:absolute;left:0;top:0;transform:translateY({{ frThreshold }}px)" />
                 </div>
               </div>
               <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">THRESHOLD</div>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;width:140px">
+            <div style="display:flex;flex-direction:column;align-items:center;width:140px;padding-top:12px">
               <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
                 <img src="assets/scale-sm.png" width="96" style="position:absolute;left:2px;top:2px;opacity:.72" />
                 <div style="position:absolute;left:-9px;top:90px;width:40px;text-align:center;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px"><span style="{{ rat0 }}">1.5:1</span></div>
@@ -120,18 +150,19 @@
                 <div style="position:absolute;left:55px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">140</div>
                 <div style="position:absolute;left:86px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">265</div>
                 <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">500</div>
+                <div style="position:absolute;left:30px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">Hz</div>
                 <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragHp }}">
                   <img src="assets/knob-detect-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frHp }}px)" />
                 </div>
               </div>
-              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.2px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">SIDECHAIN HP · Hz</div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.2px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">SIDECHAIN HP</div>
             </div>
-            <div style="width:140px;display:flex;flex-direction:column;align-items:center;padding-top:24px">
-              <div style="font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;margin-bottom:9px;text-shadow:0 1px 0 rgba(255,255,255,.32)">KNEE</div>
+            <div style="width:140px;display:flex;flex-direction:column;align-items:center;padding-top:38px">
               <div style="display:flex;flex-direction:column;gap:7px">
                 <div onClick="{{ setKneeSoft }}" style="{{ btnFace }}"><div style="{{ kneeSoftLed }}"></div><span style="{{ kneeSoftLbl }}">SOFT</span></div>
                 <div onClick="{{ setKneeHard }}" style="{{ btnFace }}"><div style="{{ kneeHardLed }}"></div><span style="{{ kneeHardLbl }}">HARD</span></div>
               </div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">KNEE</div>
             </div>
           </div>
         </div>
@@ -172,11 +203,12 @@
                 <div style="position:absolute;left:55px;top:-4px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">3</div>
                 <div style="position:absolute;left:84px;top:40px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">10</div>
                 <div style="position:absolute;left:65px;top:87px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">30</div>
+                <div style="position:absolute;left:30px;top:87px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">ms</div>
                 <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragAttack }}">
                   <img src="assets/knob-timing-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frAttack }}px)" />
                 </div>
               </div>
-              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">ATTACK · ms</div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">ATTACK</div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;width:150px">
               <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
@@ -206,6 +238,7 @@
                 <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">50</div>
                 <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">75</div>
                 <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">100</div>
+                <div style="position:absolute;left:30px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">%</div>
                 <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragIron }}">
                   <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frIron }}px)" />
                 </div>
@@ -226,11 +259,12 @@
                 <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">10</div>
                 <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">15</div>
                 <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">20</div>
+                <div style="position:absolute;left:30px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">dB</div>
                 <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragMakeup }}">
                   <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frMakeup }}px)" />
                 </div>
               </div>
-              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MAKEUP · dB</div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MAKEUP</div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;width:150px">
               <div style="position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center">
@@ -240,11 +274,12 @@
                 <div style="position:absolute;left:30px;top:-10px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">50</div>
                 <div style="position:absolute;left:81px;top:26px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">75</div>
                 <div style="position:absolute;left:65px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;color:#0f0f0c">100</div>
+                <div style="position:absolute;left:30px;top:85px;width:40px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:12px;letter-spacing:.6px;color:#0f0f0c">%</div>
                 <div style="position:relative;width:74px;height:74px;overflow:hidden;border-radius:50%;cursor:ns-resize" onPointerDown="{{ dragMix }}">
                   <img src="assets/knob-output-128.png" width="74" style="position:absolute;left:0;top:0;transform:translateY({{ frMix }}px)" />
                 </div>
               </div>
-              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MIX · %</div>
+              <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">MIX</div>
             </div>
           </div>
         </div>
@@ -332,6 +367,10 @@
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:860},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#F3D021&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#F3D021&quot;,&quot;#C8E04A&quot;,&quot;#BFE6FF&quot;],&quot;section&quot;:&quot;Panel&quot;}}">
 const FR = 128;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const FACTORY = ['UNDER PRESSURE','ART OF GLUE','MINNEAPOLIS SQUEEZE','BLUE TUESDAY',
+  'SHEFFIELD STEEL','JERSEY BUS','HAMMER DOWN','QUEENS SMASH',
+  'HALFWAY THERE','KILIMANJARO','WEST END','BITE THE DUST',
+  'DANCES ON THE SAND','PASADENA',"DON'T FORGET",'PANCAKE'];
 const RATIOS = [1.5, 2, 4, 10, 20];
 
 class Component extends DCLogic {
@@ -339,7 +378,8 @@ class Component extends DCLogic {
     threshold: -18.5, ratioIdx: 2, knee: 'soft', hp: 0.42,
     attack: 0.34, release: 1,
     iron: 0.34, makeup: 4.5, mix: 1.0,
-    gr: 0, level: -12, bank: 'FACT', program: '01 UNDER PRESSURE', userCount: 0, editing: null
+    gr: 0, level: -12, bank: 'FACT', progIdx: 0, userBank: [], userCount: 0,
+    editing: null, menuOpen: false, naming: false, nameDraft: '', dirty: false
   };
 
   componentDidMount() {
@@ -395,9 +435,9 @@ class Component extends DCLogic {
         const d = (startY - ev.clientY) / 190;
         if (opts.steps) {
           const idx = clamp(Math.round(start + d * (opts.steps - 1) * 1.6), 0, opts.steps - 1);
-          this.setState({ [key]: idx });
+          this.setState({ [key]: idx, dirty: true });
         } else {
-          this.setState({ [key]: clamp(start + d * (opts.max - opts.min), opts.min, opts.max) });
+          this.setState({ [key]: clamp(start + d * (opts.max - opts.min), opts.min, opts.max), dirty: true });
         }
       };
       const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); this.releaseParam(); };
@@ -426,6 +466,77 @@ class Component extends DCLogic {
     return on
       ? `width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #fffdf0, ${a} 46%, #8a7108);box-shadow:0 0 9px ${a}, 0 0 20px rgba(243,208,33,.42), 0 1px 1px rgba(255,255,255,.4)`
       : `width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #7d7466, #43403a 60%, #2a2825);box-shadow:0 1px 0 rgba(255,255,255,.35), 0 1px 3px rgba(0,0,0,.45) inset`;
+  }
+
+  hdrBtn(enabled) {
+    return 'width:62px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:2px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;' + (enabled
+      ? 'cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);color:#302c24'
+      : 'cursor:default;background:linear-gradient(180deg,#a5a094,#8f8a7e);box-shadow:0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2);color:#6f6a5f');
+  }
+  menuRow(sel) {
+    return 'display:flex;align-items:center;height:22px;padding:0 12px 0 10px;cursor:pointer;font-family:\'IBM Plex Mono\',monospace;font-size:12px;letter-spacing:1.4px;white-space:nowrap;'
+      + (sel ? 'border-left:2px solid #e6dcae;padding-left:8px;background:rgba(214,196,124,.10);color:#f2e9c4;text-shadow:0 0 7px rgba(214,196,124,.45)' : 'border-left:2px solid transparent;color:#b9ae86');
+  }
+  programVals(readout) {
+    const s = this.state;
+    const num = n => String(n).padStart(2, '0');
+    const isInit = s.bank === 'INIT';
+    const current = isInit ? 'INIT'
+      : s.bank === 'FACT' ? num(s.progIdx + 1) + ' ' + FACTORY[s.progIdx]
+      : num(17 + s.progIdx) + ' ' + (s.userBank[s.progIdx] || '');
+    const pick = (bank, i) => () => this.setState({ bank, progIdx: i, menuOpen: false, naming: false, dirty: false });
+    return {
+      bankLabel: s.naming ? 'NAME' : (isInit ? '—' : s.bank),
+      bankStyle: 'width:56px;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(214,196,124,.22);font-family:\'IBM Plex Mono\',monospace;font-size:14px;letter-spacing:1.7px;'
+        + (isInit && !s.naming
+          ? 'color:rgba(230,220,174,.42)'
+          : 'color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45)'),
+      programLabel: readout || (s.dirty ? current + ' *' : current),
+      chevronPath: s.menuOpen ? 'M1 5.6 L5.5 1.4 L10 5.6' : 'M1 1.4 L5.5 5.6 L10 1.4',
+      menuOpen: s.menuOpen,
+      naming: s.naming,
+      notNaming: !s.naming,
+      nameDraft: s.nameDraft,
+      nameMax: 19,
+      nameRef: el => { if (el && document.activeElement !== el) el.focus(); },
+      onNameInput: e => this.setState({ nameDraft: e.target.value.toUpperCase().slice(0, 19) }),
+      onNameKey: e => {
+        if (e.key === 'Enter') this.commitName();
+        if (e.key === 'Escape') this.setState({ naming: false, nameDraft: '' });
+      },
+      toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      pickInit: () => this.setState({ bank: 'INIT', progIdx: 0, menuOpen: false, dirty: false }),
+      initRowStyle: this.menuRow(isInit),
+      factRows: FACTORY.map((n, i) => ({
+        label: num(i + 1) + ' ' + n, pick: pick('FACT', i),
+        style: this.menuRow(s.bank === 'FACT' && s.progIdx === i)
+      })),
+      userRows: s.userBank.map((n, i) => ({
+        label: num(17 + i) + ' ' + n, pick: pick('USER', i),
+        style: this.menuRow(s.bank === 'USER' && s.progIdx === i)
+      })),
+      hasUser: s.userBank.length > 0,
+      saveLabel: s.naming ? 'STORE' : 'SAVE',
+      saveStyle: this.hdrBtn(s.naming || s.dirty),
+      deleteLabel: s.naming ? 'CANCEL' : 'DELETE',
+      deleteStyle: this.hdrBtn(s.naming || s.bank === 'USER'),
+      onSave: () => {
+        if (s.naming) return this.commitName();
+        if (!s.dirty) return;
+        this.setState({ naming: true, menuOpen: false, nameDraft: '' });
+      },
+      onDelete: () => {
+        if (s.naming) return this.setState({ naming: false, nameDraft: '' });
+        if (s.bank !== 'USER') return;
+        const b = s.userBank.slice(); b.splice(s.progIdx, 1);
+        this.setState({ userBank: b, bank: 'FACT', progIdx: 0, dirty: false });
+      }
+    };
+  }
+  commitName() {
+    const n = (this.state.nameDraft || 'UNTITLED').trim().slice(0, 19) || 'UNTITLED';
+    const b = this.state.userBank.concat([n]);
+    this.setState({ userBank: b, bank: 'USER', progIdx: b.length - 1, naming: false, nameDraft: '', dirty: false });
   }
 
   renderVals() {
@@ -477,8 +588,7 @@ class Component extends DCLogic {
       inDb: s.level.toFixed(1),
       outDb: outLvl.toFixed(1),
 
-      bankLabel: s.bank,
-      programLabel: (() => {
+      ...this.programVals((() => {
         const P = {
           threshold: ['THRESHOLD', s.threshold.toFixed(1) + ' dB'],
           ratioIdx: ['RATIO', RATIOS[s.ratioIdx] + ':1'],
@@ -490,24 +600,16 @@ class Component extends DCLogic {
           mix: ['MIX', Math.round(s.mix * 100) + ' %'],
           knee: ['KNEE', s.knee === 'soft' ? 'SOFT' : 'HARD']
         }[s.editing];
-        return P ? P[0] + ' ' + P[1] : s.program;
-      })(),
-      deleteStyle: 'width:66px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:2px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;' + (s.bank === 'USER'
-        ? 'cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);color:#302c24'
-        : 'cursor:default;background:linear-gradient(180deg,#a5a094,#8f8a7e);box-shadow:0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2);color:#6f6a5f'),
-      onSave: () => {
-        const n = this.state.userCount + 1;
-        this.setState({ userCount: n, bank: 'USER', program: String(n).padStart(2, '0') + ' UNDER PRESSURE ' + String.fromCharCode(64 + n) });
-      },
-      onDelete: () => { if (this.state.bank === 'USER') this.setState({ bank: 'FACT', program: '01 UNDER PRESSURE' }); },
+        return P ? P[0] + ' ' + P[1] : null;
+      })()),
 
       btnFace: this.btn(),
       kneeSoftLbl: this.btnLabel(s.knee === 'soft'),
       kneeHardLbl: this.btnLabel(s.knee === 'hard'),
       kneeSoftLed: this.led(s.knee === 'soft', 6),
       kneeHardLed: this.led(s.knee === 'hard', 6),
-      setKneeSoft: () => { this.setState({ knee: 'soft' }); this.showParam('knee'); this.releaseParam(); },
-      setKneeHard: () => { this.setState({ knee: 'hard' }); this.showParam('knee'); this.releaseParam(); },
+      setKneeSoft: () => { this.setState({ knee: 'soft', dirty: true }); this.showParam('knee'); this.releaseParam(); },
+      setKneeHard: () => { this.setState({ knee: 'hard', dirty: true }); this.showParam('knee'); this.releaseParam(); },
 
       kneeHint: s.knee
     };

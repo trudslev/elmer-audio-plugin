@@ -25,14 +25,70 @@ ProgramManager::~ProgramManager()
 
 juce::File ProgramManager::getUserProgramDirectory()
 {
+    // **Application data, not ~/Library/Audio/Presets.** That directory is Apple's location for the
+    // AU PRESET FORMAT - .aupreset files the AU system itself scans, reads and writes. Our user
+    // Programs are not those; they are application-owned data in our own format, so they belong
+    // where an application keeps its data.
+    //
+    // The Application Support segment is JUCE's, not ours, and must never be hard-coded:
+    // userApplicationDataDirectory resolves to ~/Library/Application Support on macOS, %APPDATA% on
+    // Windows and ~/.config on Linux. A shared literal path would be wrong on two of the three.
+    //
+    // Company and product come from CMake rather than string literals - see the note in
+    // CMakeLists.txt for the drift that cost CHORUS-60 a directory.
     return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-               .getChildFile ("Neon Foundry")
-               .getChildFile ("Elmer")
+               .getChildFile (NF_COMPANY_NAME)
+               .getChildFile (NF_PRODUCT_NAME)
                .getChildFile ("Programs");
+}
+
+juce::File ProgramManager::getLegacyUserProgramDirectory()
+{
+   #if JUCE_MAC
+    return juce::File::getSpecialLocation (juce::File::userHomeDirectory)
+               .getChildFile ("Library/Audio/Presets")
+               .getChildFile (NF_COMPANY_NAME)
+               .getChildFile (NF_PRODUCT_NAME);
+   #else
+    return {};
+   #endif
+}
+
+void ProgramManager::migrateLegacyUserPrograms()
+{
+    // One-time move out of the old ~/Library/Audio/Presets location. Without it, every Program a
+    // user had already saved simply vanishes from the menu the first time they run a build with the
+    // corrected path - the files are still on disk, but nothing looks there any more.
+    //
+    // **Moved by exact name, one file at a time, and nothing else in that directory is touched.**
+    // No glob, no directory delete: a stray `rm *.taperotprogram` during cleanup once destroyed a
+    // Program the user had just saved, and there is no undo. An existing file at the destination is
+    // left alone rather than overwritten - if both exist the newer location wins, because that is
+    // the one the user has been editing.
+    const auto legacy = getLegacyUserProgramDirectory();
+
+    if (legacy == juce::File() || ! legacy.isDirectory())
+        return;
+
+    const auto destination = getUserProgramDirectory();
+
+    if (! destination.isDirectory() && ! destination.createDirectory())
+        return;
+
+    for (const auto& entry : legacy.findChildFiles (juce::File::findFiles, false,
+                                                    juce::String ("*") + fileExtension))
+    {
+        const auto target = destination.getChildFile (entry.getFileName());
+
+        if (! target.existsAsFile())
+            entry.moveFileTo (target);
+    }
 }
 
 void ProgramManager::rescanUserPrograms()
 {
+    migrateLegacyUserPrograms();
+
     userFiles.clear();
     auto dir = getUserProgramDirectory();
 

@@ -114,7 +114,15 @@ juce::String ProgramHeader::describeParameter (const juce::String& paramId) cons
     {
         const juce::String name = paramId == ParamIDs::ratio ? "RATIO"
                                 : paramId == ParamIDs::knee  ? "KNEE" : "RELEASE";
-        return name + " " + choice->getCurrentChoiceName().toUpperCase();
+        // **The value is NOT upper-cased.** The names above are already uppercase literals, so the
+        // transform only ever reached the value - and Release's choices carry a unit, so "0.1 s"
+        // rendered as "RELEASE 0.1 S". A capital S is a different unit from a lowercase one.
+        //
+        // Ratio's strings are digits and colons, so the transform was invisible there; Knee's now
+        // read as authored ("Soft"), which is the point. If the display should say SOFT, author the
+        // choice that way in Parameters.h so the host's automation lane agrees - do not re-case it
+        // here, or the two disagree again by exactly this route.
+        return name + " " + choice->getCurrentChoiceName();
     }
 
     return {};

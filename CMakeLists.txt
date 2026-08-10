@@ -57,9 +57,18 @@ else()
     set(ELMER_EXTRA_ARGS "")
 endif()
 
+# Single source of truth for the two identity strings that appear BOTH in the bundle metadata and
+# in ProgramManager's user-Programs path. ProgramManager cannot read JUCE's JucePlugin_* macros -
+# those exist only in the plugin target's generated header, and that file is also compiled into the
+# Tests console app - so it used to carry hand-written copies. CHORUS-60's did not stay in sync:
+# COMPANY_NAME became "Neon Foundry" while the copy still said "Tanis", quietly pointing saved
+# Programs at a dead directory. CMake hands both targets the same values, so drift is a build error.
+set(ELMER_COMPANY_NAME "Neon Foundry")
+set(ELMER_PRODUCT_NAME "Elmer")
+
 juce_add_plugin(Elmer
-    PRODUCT_NAME "Elmer"
-    COMPANY_NAME "Neon Foundry"
+    PRODUCT_NAME "${ELMER_PRODUCT_NAME}"
+    COMPANY_NAME "${ELMER_COMPANY_NAME}"
     BUNDLE_ID "com.neonfoundry.elmer"
     PLUGIN_MANUFACTURER_CODE Nfdy
     PLUGIN_CODE Gl87
@@ -103,7 +112,9 @@ target_compile_definitions(Elmer PUBLIC
     JUCE_DISPLAY_SPLASH_SCREEN=0)
 
 target_compile_definitions(Elmer PUBLIC
-    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    NF_COMPANY_NAME="${ELMER_COMPANY_NAME}"
+    NF_PRODUCT_NAME="${ELMER_PRODUCT_NAME}")
 
 target_link_libraries(Elmer
     PRIVATE
