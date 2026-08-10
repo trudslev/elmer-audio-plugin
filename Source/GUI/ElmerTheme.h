@@ -157,6 +157,10 @@ namespace Font
 //==============================================================================
 namespace Text
 {
+    /** U+2014, built from a codepoint: juce::String's const char* constructor decodes as LATIN-1,
+        so a UTF-8 literal would render as stray glyphs. */
+    inline juce::String emDash() { return juce::String::charToString ((juce::juce_wchar) 0x2014); }
+
     inline juce::String middleDot()
     {
         // Built from the codepoint: juce::String's const char* constructor decodes Latin-1, not
@@ -265,6 +269,32 @@ namespace Layout
     inline constexpr float lcdRowH = 38.0f;
     inline constexpr float programX = 388.0f;
     inline constexpr float programW = 364.0f;
+
+    /** The display's three cells, inside the 3px metal frame. Bank 56 + name 269 + chevron 28.
+        The name cell's 11px horizontal padding leaves 247px of text, which at IBM Plex Mono 14px
+        with 1.7px tracking (10.1px per character) is the 24-character budget the spec cites. */
+    inline constexpr float lcdFrameThickness = 3.0f;
+    inline constexpr float lcdBankCellW = 56.0f;
+    inline constexpr float lcdNameCellW = 269.0f;
+    inline constexpr float lcdChevronCellW = 28.0f;
+
+    /** The chevron, drawn as a stroked path in an 11 x 7 box so it renders identically whatever the
+        platform's font fallback does - and because it FLIPS with menu state, which a baked glyph
+        could not. */
+    inline constexpr float chevronW = 11.0f;
+    inline constexpr float chevronH = 7.0f;
+    inline constexpr float chevronStroke = 1.6f;
+
+    /** The menu hangs from the GLASS's lower edge, not the frame's outside: 30px display less two
+        3px frame edges is 24px of glass, plus 4px to clear its inner shadow. */
+    inline constexpr float menuTopOffset = 28.0f;
+
+    /** **19 characters, and the arithmetic is exact rather than comfortable.** The cell holds 24;
+        the two-digit index and its space take 3, and the dirty marker " *" takes 2. 3 + 19 + 2 = 24.
+        "03 MINNEAPOLIS SQUEEZE *" fills the cell precisely, so a 20-character user name would
+        overrun the moment it was edited. Not inferable from the layout - cap against it. */
+    inline constexpr int maxUserNameLength = 19;
+    inline constexpr int lcdCharacterBudget = 24;
     inline constexpr float bankFieldW = 72.0f;
     inline constexpr float lcdFrameRadius = 3.0f;
     inline constexpr float lcdGlassRadius = 2.0f;

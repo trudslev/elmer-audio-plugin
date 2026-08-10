@@ -19,11 +19,31 @@ juce::Rectangle<float> ProgramHeader::deleteBounds() const
     return { Layout::deleteX, Layout::lcdRowY, Layout::headerButtonW, Layout::lcdRowH };
 }
 
+juce::Rectangle<float> ProgramHeader::displayBounds() const
+{
+    return { Layout::programX, Layout::lcdRowY, Layout::programW, Layout::lcdRowH };
+}
+
+juce::Rectangle<float> ProgramHeader::chevronCellBounds() const
+{
+    auto d = displayBounds().reduced (Layout::lcdFrameThickness);
+    return d.removeFromRight (Layout::lcdChevronCellW);
+}
+
 bool hitsButton (juce::Rectangle<float> r, juce::Point<float> p) { return r.contains (p); }
 
 void ProgramHeader::mouseDown (const juce::MouseEvent& e)
 {
     const auto p = e.position;
+
+    // Clicking anywhere in the display opens the list - the name cell and the chevron cell alike,
+    // per the spec. The chevron is an affordance marking the display as a selector, not a button of
+    // its own, so treating it as a separate target would make the larger area feel dead.
+    if (hitsButton (displayBounds(), p))
+    {
+        showProgramMenu();
+        return;
+    }
 
     if (hitsButton (saveBounds(), p))
     {
@@ -128,6 +148,110 @@ juce::String ProgramHeader::describeParameter (const juce::String& paramId) cons
     return {};
 }
 
+void ProgramHeader::paintChevron (juce::Graphics& g) const
+{
+    const auto cell = chevronCellBounds();
+    const float left = cell.getCentreX() - Layout::chevronW * 0.5f;
+    const float top  = cell.getCentreY() - Layout::chevronH * 0.5f;
+
+    // Mirrored about the mark's own centre line rather than rotated, so the apex stays on one
+    // vertical axis and it reads as flipping in place instead of sliding sideways.
+    const float outerY = menuOpen ? top + Layout::chevronH * 0.6f : top + Layout::chevronH * 0.2f;
+    const float apexY  = menuOpen ? top + Layout::chevronH * 0.2f : top + Layout::chevronH * 0.8f;
+
+    juce::Path chevron;
+    chevron.startNewSubPath (left, outerY);
+    chevron.lineTo (left + Layout::chevronW * 0.5f, apexY);
+    chevron.lineTo (left + Layout::chevronW, outerY);
+
+    g.setColour (Colour::phosphor);
+    g.strokePath (chevron, { Layout::chevronStroke, juce::PathStrokeType::curved,
+                             juce::PathStrokeType::rounded });
+}
+
+void ProgramHeader::showProgramMenu()
+{
+    juce::PopupMenu menu;
+    menu.setLookAndFeel (&getLookAndFeel());
+
+    const int current = programs.getCurrentProgram();
+    const int factoryCount = programs.getNumFactoryPrograms();
+    const int total = programs.getNumPrograms();
+
+    // INIT first, unnumbered and outside both banks, with a divider beneath it. Its item ID is not
+    // index+1 like the rest - that would be 0, which PopupMenu reserves for "dismissed" - so it
+    // carries its own sentinel and is translated back on selection.
+    constexpr int initMenuId = 9999;
+    menu.addItem (initMenuId, "INIT", true, ProgramManager::isInit (current));
+    menu.addSeparator();
+
+    menu.addSectionHeader ("FACTORY");
+
+    for (int i = 0; i < factoryCount; ++i)
+        menu.addItem (i + 1, juce::String (i + 1).paddedLeft ('0', 2) + " " + programs.getProgramName (i),
+                      true, i == current);
+
+    // The USER section is absent entirely when empty - header and divider included - rather than
+    // showing an empty heading. The spec is explicit, and it differs from Reflect-84, which keeps
+    // the header and prints a placeholder row.
+    if (total > factoryCount)
+    {
+        menu.addSeparator();
+        menu.addSectionHeader ("USER");
+
+        for (int i = factoryCount; i < total; ++i)
+            menu.addItem (i + 1, juce::String (i + 1).paddedLeft ('0', 2) + " " + programs.getProgramName (i),
+                          true, i == current);
+    }
+
+    const auto glass = displayBounds().reduced (Layout::lcdFrameThickness).getSmallestIntegerContainer();
+
+    auto options = juce::PopupMenu::Options()
+                       .withTargetComponent (this)
+                       .withMaximumNumColumns (1);
+
+    if (menuParent != nullptr)
+    {
+        // A 1px anchor on the glass's lower edge, NOT the display rect: with a parent component JUCE
+        // first does constrainedWithin(parentArea), which would slide the whole display down into
+        // the host and open the list a display-height too low. 1px and not zero, because a
+        // zero-height rectangle is isEmpty() and that drops the list into the sideways placement
+        // meant for submenus. See ../../CLAUDE.md, "The Program dropdown".
+        const juce::Rectangle<int> anchor { glass.getX(), menuAnchorY() - 1, glass.getWidth(), 1 };
+
+        options = options.withTargetScreenArea (localAreaToGlobal (anchor))
+                         .withParentComponent (menuParent)
+                         .withMinimumWidth (glass.getWidth());
+    }
+    else
+    {
+        options = options.withTargetScreenArea (localAreaToGlobal (glass))
+                         .withMinimumWidth (glass.getWidth());
+    }
+
+    menuOpen = true;
+    repaint();
+
+    menu.showMenuAsync (options,
+                        [safeThis = juce::Component::SafePointer<ProgramHeader> (this)] (int result)
+                        {
+                            if (safeThis == nullptr)
+                                return;
+
+                            // Cleared here rather than on selection: JUCE runs this on a dismissal
+                            // too, so clicking away cannot leave the chevron stuck inverted.
+                            safeThis->menuOpen = false;
+                            safeThis->repaint();
+
+                            if (result == 0)
+                                return;
+
+                            safeThis->programs.setCurrentProgram (result == initMenuId
+                                                                      ? Elmer::initProgramIndex
+                                                                      : result - 1);
+                        });
+}
+
 juce::String ProgramHeader::currentLcdText() const
 {
     if (editingParam.isNotEmpty())
@@ -195,15 +319,22 @@ void ProgramHeader::paint (juce::Graphics& g)
     const auto lcdFont = Font::mono (Layout::lcdTextSize);
 
     // ONE field that switches its text. Never two labels with one greyed out.
-    Text::drawTracked (g, programs.isFactory (index) ? "FACT" : "USER", lcdFont,
-                       Layout::lcdTextTracking, bankArea, juce::Justification::centred,
-                       Colour::phosphor, false);
+    //
+    // On INIT it reads an em-dash at 42% phosphor with no glow: INIT sits outside both banks, so
+    // printing FACT or USER there would name it twice and name it wrongly.
+    const bool onInit = ProgramManager::isInit (index);
+
+    Text::drawTracked (g, onInit ? Text::emDash() : (programs.isFactory (index) ? "FACT" : "USER"),
+                       lcdFont, Layout::lcdTextTracking, bankArea, juce::Justification::centred,
+                       onInit ? Colour::phosphor.withAlpha (0.42f) : Colour::phosphor, false);
 
     g.setColour (Colour::lcdHairline);
     g.fillRect (bankArea.getRight(), glass.getY() + 1.0f, 1.0f, glass.getHeight() - 2.0f);
 
     Text::drawTracked (g, currentLcdText(), lcdFont, Layout::lcdTextTracking, nameArea,
                        juce::Justification::left, Colour::phosphor, false);
+
+    paintChevron (g);
 
     // --- SAVE / DELETE -------------------------------------------------------------------------
     const auto drawButton = [&g] (juce::Rectangle<float> r, const juce::String& label, bool enabled)

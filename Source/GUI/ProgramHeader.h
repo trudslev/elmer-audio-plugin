@@ -31,6 +31,19 @@ public:
     /** Starts the 1200 ms countdown back to the program name. */
     void releaseParameter();
 
+    /** The component the Program list lays out inside; its bounds fix the list's top edge and stop
+        it outgrowing the panel. See ../../CLAUDE.md, "The Program dropdown". */
+    void setMenuParent (juce::Component* parent) noexcept { menuParent = parent; }
+
+    static int menuAnchorY() noexcept
+    {
+        return (int) std::floor (ElmerTheme::Layout::lcdRowY + ElmerTheme::Layout::menuTopOffset);
+    }
+
+    /** NOT the anchor: JUCE clamps a menu to jmax(parentArea.getY() + 1, ...), so a host starting
+        exactly at the anchor can only open one pixel below it. */
+    static int menuHostTop() noexcept { return menuAnchorY() - 8; }
+
     void setLevels (float inDb, float outDb);
     void setGainReductionDb (float db);
     void refresh() { repaint(); }
@@ -43,6 +56,13 @@ private:
                        juce::Justification, float textSize);
     juce::Rectangle<float> saveBounds() const;
     juce::Rectangle<float> deleteBounds() const;
+    juce::Rectangle<float> displayBounds() const;
+    juce::Rectangle<float> chevronCellBounds() const;
+    void showProgramMenu();
+    void paintChevron (juce::Graphics&) const;
+
+    juce::Component* menuParent = nullptr;
+    bool menuOpen = false;
 
     juce::AudioProcessorValueTreeState& apvts;
     ProgramManager& programs;

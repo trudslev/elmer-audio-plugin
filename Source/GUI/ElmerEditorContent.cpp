@@ -57,6 +57,16 @@ ElmerEditorContent::ElmerEditorContent (ElmerAudioProcessor& p)
     }
 
     addAndMakeVisible (header);
+
+    // The list opens inside this, so it can neither move its top edge nor grow past the panel.
+    // A SIBLING of header, never a child: header spans the canvas and narrows its hitTest, and JUCE
+    // stops searching a component's children once its own hitTest rejects the point.
+    const int hostTop = ProgramHeader::menuHostTop();
+    menuHost.setBounds (0, hostTop, getWidth(), getHeight() - hostTop);
+    menuHost.setInterceptsMouseClicks (false, true);
+    addAndMakeVisible (menuHost);
+    menuHost.toFront (false);
+    header.setMenuParent (&menuHost);
     header.toBack();
     background.toBack();
 

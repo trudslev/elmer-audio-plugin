@@ -30,6 +30,10 @@ private:
     KneeButtons kneeButtons;
     ProgramHeader header;
 
+    /** Paints nothing and takes no clicks of its own; it exists so the Program list has a parent
+        area to lay out in, which is what stops it moving or outgrowing the panel. */
+    juce::Component menuHost;
+
     std::vector<std::unique_ptr<KnobFilmstrip>> knobs;
     std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>> attachments;
 
