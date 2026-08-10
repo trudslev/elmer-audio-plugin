@@ -36,59 +36,22 @@ juce::File ProgramManager::getUserProgramDirectory()
     //
     // Company and product come from CMake rather than string literals - see the note in
     // CMakeLists.txt for the drift that cost CHORUS-60 a directory.
+    //
+    // **There is deliberately no migration from ~/Library/Audio/Presets, and that is a decision
+    // rather than an omission.** One was written and then removed: nothing in this suite has
+    // shipped at a released version, so no installed build has ever written a Program to the old
+    // location for anyone but us, and our own were disposable. Migration code guarding a case that
+    // cannot occur is dead weight that still costs a directory probe on every rescan.
+    //
+    // If a version ever ships and the path changes AGAIN, that is when this becomes necessary.
     return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
                .getChildFile (NF_COMPANY_NAME)
                .getChildFile (NF_PRODUCT_NAME)
                .getChildFile ("Programs");
 }
 
-juce::File ProgramManager::getLegacyUserProgramDirectory()
-{
-   #if JUCE_MAC
-    return juce::File::getSpecialLocation (juce::File::userHomeDirectory)
-               .getChildFile ("Library/Audio/Presets")
-               .getChildFile (NF_COMPANY_NAME)
-               .getChildFile (NF_PRODUCT_NAME);
-   #else
-    return {};
-   #endif
-}
-
-void ProgramManager::migrateLegacyUserPrograms()
-{
-    // One-time move out of the old ~/Library/Audio/Presets location. Without it, every Program a
-    // user had already saved simply vanishes from the menu the first time they run a build with the
-    // corrected path - the files are still on disk, but nothing looks there any more.
-    //
-    // **Moved by exact name, one file at a time, and nothing else in that directory is touched.**
-    // No glob, no directory delete: a stray `rm *.taperotprogram` during cleanup once destroyed a
-    // Program the user had just saved, and there is no undo. An existing file at the destination is
-    // left alone rather than overwritten - if both exist the newer location wins, because that is
-    // the one the user has been editing.
-    const auto legacy = getLegacyUserProgramDirectory();
-
-    if (legacy == juce::File() || ! legacy.isDirectory())
-        return;
-
-    const auto destination = getUserProgramDirectory();
-
-    if (! destination.isDirectory() && ! destination.createDirectory())
-        return;
-
-    for (const auto& entry : legacy.findChildFiles (juce::File::findFiles, false,
-                                                    juce::String ("*") + fileExtension))
-    {
-        const auto target = destination.getChildFile (entry.getFileName());
-
-        if (! target.existsAsFile())
-            entry.moveFileTo (target);
-    }
-}
-
 void ProgramManager::rescanUserPrograms()
 {
-    migrateLegacyUserPrograms();
-
     userFiles.clear();
     auto dir = getUserProgramDirectory();
 

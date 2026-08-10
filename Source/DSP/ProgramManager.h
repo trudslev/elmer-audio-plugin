@@ -39,9 +39,6 @@ public:
 
     static juce::File getUserProgramDirectory();
 
-    /** The pre-migration macOS location, ~/Library/Audio/Presets/<Company>/<Product>. Returns an
-        empty File off macOS, where no such convention exists and nothing was ever written there. */
-    static juce::File getLegacyUserProgramDirectory();
 
     std::function<void()> onProgramChanged;
 
@@ -50,7 +47,6 @@ private:
     void applyFactory (int index);
     void applyUser (int index);
     void rescanUserPrograms();
-    static void migrateLegacyUserPrograms();
     void setParam (const char* id, float actualValue);
 
     juce::AudioProcessorValueTreeState& apvts;
