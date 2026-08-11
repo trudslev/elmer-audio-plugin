@@ -36,6 +36,24 @@ public:
 
     void setCurrentProgram (int index);
 
+    /** Restores WHICH Program is showing without touching a single parameter.
+
+        Session restore has already put every value where it belongs; re-applying the Program on top
+        would overwrite exactly what was just restored. This also re-takes the clean snapshot, so a
+        session that was saved untouched reopens without a dirty asterisk over it. */
+    void setCurrentProgramIndexWithoutApplying (int index);
+
+    /** Cancels a queued apply. Essential around setStateInformation: a change requested just before
+        the restore would otherwise land just after it and overwrite everything restored. */
+    void cancelPendingChange();
+
+    /** Session-state attributes. **These three strings are a contract** - rename one and the
+        session still parses while the Program silently reverts to the default, with no error
+        anywhere. See ../../CLAUDE.md, "Parameters and saved state". */
+    static constexpr const char* sessionSchemaAttribute  = "elmerSessionSchema";
+    static constexpr const char* currentProgramAttribute = "elmerCurrentProgram";
+    static constexpr int currentSessionSchemaVersion = 1;
+
     /** Always creates a new Program; never overwrites. Returns its index. */
     int saveNewUserProgram (const juce::String& name);
 

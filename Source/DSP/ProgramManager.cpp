@@ -125,6 +125,9 @@ int ProgramManager::getNumPrograms() const
 
 juce::String ProgramManager::getProgramName (int index) const
 {
+    if (isInit (index))
+        return "INIT";
+
     if (isFactory (index))
         return juce::isPositiveAndBelow (index, getNumFactoryPrograms())
                    ? juce::String (factoryPrograms[(size_t) index].name) : juce::String();
@@ -137,6 +140,12 @@ juce::String ProgramManager::getProgramName (int index) const
 juce::String ProgramManager::getDisplayName (int index) const
 {
     // The LCD shows a two-digit number and the name, e.g. "01 UNDER PRESSURE".
+    //
+    // INIT is UNNUMBERED - here as well as in the menu. Numbering it would put it in a bank, and it
+    // is in neither; the arithmetic would also print "00", since its index is -1.
+    if (isInit (index))
+        return getProgramName (index);
+
     return juce::String (index + 1).paddedLeft ('0', 2) + " " + getProgramName (index);
 }
 
@@ -149,6 +158,22 @@ void ProgramManager::setCurrentProgram (int index)
 
     pendingIndex.store (index);
     triggerAsyncUpdate();
+}
+
+void ProgramManager::setCurrentProgramIndexWithoutApplying (int index)
+{
+    currentIndex = (isInit (index) || juce::isPositiveAndBelow (index, getNumPrograms()))
+                       ? index : Elmer::defaultFactoryProgramIndex;
+    captureSnapshot();
+
+    if (onProgramChanged != nullptr)
+        onProgramChanged();
+}
+
+void ProgramManager::cancelPendingChange()
+{
+    pendingIndex.store (-2);
+    cancelPendingUpdate();
 }
 
 void ProgramManager::handleAsyncUpdate()
@@ -223,7 +248,10 @@ int ProgramManager::saveNewUserProgram (const juce::String& name)
     auto dir = getUserProgramDirectory();
     dir.createDirectory();
 
-    const auto safe = juce::File::createLegalFileName (name.isEmpty() ? "UNTITLED" : name);
+    // Trimmed BEFORE the emptiness test, so a name of nothing but spaces falls back rather than
+    // producing a file whose name is invisible in the menu.
+    const auto trimmed = name.trim();
+    const auto safe = juce::File::createLegalFileName (trimmed.isEmpty() ? "UNTITLED" : trimmed);
 
     // A name collision creates a distinct file rather than silently overwriting - Reflect-84's fix,
     // and the reason SAVE can promise never to overwrite.
@@ -244,6 +272,11 @@ int ProgramManager::saveNewUserProgram (const juce::String& name)
         if (userFiles[i] == file)
         {
             currentIndex = getNumFactoryPrograms() + i;
+
+            // The snapshot is re-taken against what was just written, so SAVE goes dark and the
+            // asterisk clears the instant the Program exists. Without this the panel keeps claiming
+            // unsaved changes against the PREVIOUS Program's baseline, immediately after saving.
+            captureSnapshot();
 
             if (onProgramChanged != nullptr)
                 onProgramChanged();

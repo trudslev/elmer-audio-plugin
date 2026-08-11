@@ -125,15 +125,48 @@ juce::AudioProcessorEditor* ElmerAudioProcessor::createEditor()
 
 void ElmerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    if (auto xml = apvts.copyState().createXml())
-        copyXmlToBinary (*xml, destData);
+    auto xml = apvts.copyState().createXml();
+
+    if (xml == nullptr)
+        return;
+
+    // WHICH Program is showing is session state in its own right. Without it a reopened session
+    // restored every value correctly and then labelled them "01 UNDER PRESSURE" whatever had
+    // actually been selected - and, because the clean snapshot was never re-taken either, hung a
+    // dirty asterisk over a session nobody had touched.
+    xml->setAttribute (ProgramManager::sessionSchemaAttribute,
+                       ProgramManager::currentSessionSchemaVersion);
+    xml->setAttribute (ProgramManager::currentProgramAttribute, programs.getCurrentProgram());
+
+    copyXmlToBinary (*xml, destData);
 }
 
 void ElmerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    if (auto xml = getXmlFromBinary (data, sizeInBytes))
-        if (xml->hasTagName (apvts.state.getType()))
-            apvts.replaceState (juce::ValueTree::fromXml (*xml));
+    auto xml = getXmlFromBinary (data, sizeInBytes);
+
+    if (xml == nullptr || ! xml->hasTagName (apvts.state.getType()))
+        return;
+
+    // Read, not merely written: restoring an older layout otherwise leaves surviving IDs at their
+    // saved values while new ones fall back to defaults, a silent hybrid nothing reports.
+    const int savedSchema = xml->getIntAttribute (ProgramManager::sessionSchemaAttribute, 0);
+
+    programs.cancelPendingChange();
+
+    if (savedSchema != ProgramManager::currentSessionSchemaVersion)
+    {
+        // Pre-schema sessions (no attribute at all) carry values but no Program identity. Applying
+        // the default is honest: the alternative is naming a Program that was never recorded.
+        programs.setCurrentProgram (Elmer::defaultFactoryProgramIndex);
+        return;
+    }
+
+    apvts.replaceState (juce::ValueTree::fromXml (*xml));
+
+    programs.setCurrentProgramIndexWithoutApplying (
+        xml->getIntAttribute (ProgramManager::currentProgramAttribute,
+                              Elmer::defaultFactoryProgramIndex));
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
