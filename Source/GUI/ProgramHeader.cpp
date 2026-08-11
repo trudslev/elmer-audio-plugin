@@ -25,9 +25,30 @@ juce::Rectangle<float> ProgramHeader::displayBounds() const
     return { Layout::programX, Layout::lcdRowY, Layout::programW, Layout::lcdRowH };
 }
 
+juce::Rectangle<float> ProgramHeader::glassBounds() const
+{
+    return displayBounds().reduced (Layout::lcdFrameThickness);
+}
+
+/** The three cells, left to right, with a 1px hairline in each join. They are stated as explicit
+    widths rather than as fractions of the glass because the NAME cell's width is what the character
+    budget is computed from - 269 less 2 x 11px padding is 247px of text, 24 characters at 10.1px.
+    A proportional split would let a change in the glass width silently change how many characters
+    fit, and the cap on typed names would no longer match. */
+juce::Rectangle<float> ProgramHeader::bankCellBounds() const
+{
+    return glassBounds().withWidth (Layout::lcdBankCellW);
+}
+
+juce::Rectangle<float> ProgramHeader::nameCellBounds() const
+{
+    return glassBounds().withTrimmedLeft (Layout::lcdBankCellW + Layout::lcdCellHairline)
+                        .withWidth (Layout::lcdNameCellW);
+}
+
 juce::Rectangle<float> ProgramHeader::chevronCellBounds() const
 {
-    auto d = displayBounds().reduced (Layout::lcdFrameThickness);
+    auto d = glassBounds();
     return d.removeFromRight (Layout::lcdChevronCellW);
 }
 
@@ -371,37 +392,6 @@ juce::String ProgramHeader::currentLcdText() const
     return programs.getDisplayName (index) + (programs.isModified() ? " *" : "");
 }
 
-void ProgramHeader::drawLcdPanel (juce::Graphics& g, juce::Rectangle<float> frame,
-                                  const juce::String& text, juce::Justification just,
-                                  float textSize)
-{
-    g.setGradientFill (Paint::vertical (frame, Colour::lcdFrameTop, Colour::lcdFrameBottom));
-    g.fillRoundedRectangle (frame, Layout::lcdFrameRadius);
-
-    const auto glass = frame.reduced (Layout::lcdFramePad);
-    g.setGradientFill (Paint::vertical (glass, Colour::lcdGlassTop, Colour::lcdGlassBottom));
-    g.fillRoundedRectangle (glass, Layout::lcdGlassRadius);
-
-    g.setColour (juce::Colours::white.withAlpha (0.35f));
-    g.drawLine (frame.getX() + 2.0f, frame.getY() + 0.5f, frame.getRight() - 2.0f, frame.getY() + 0.5f, 1.0f);
-
-    if (text.isNotEmpty())
-    {
-        const auto font = Font::mono (textSize);
-        const auto area = glass.reduced (Layout::lcdNamePadX, 0.0f);
-
-        // The phosphor bloom, drawn as two soft passes under the glyphs.
-        for (auto [dx, alpha] : { std::pair { 1.4f, 0.16f }, std::pair { 0.7f, 0.26f } })
-        {
-            juce::ignoreUnused (dx);
-            Text::drawTracked (g, text, font, Layout::lcdTextTracking, area, just,
-                               Colour::phosphor.withAlpha (alpha), false);
-        }
-
-        Text::drawTracked (g, text, font, Layout::lcdTextTracking, area, just, Colour::phosphor, false);
-    }
-}
-
 void ProgramHeader::paint (juce::Graphics& g)
 {
     const int index = programs.getCurrentProgram();
@@ -413,15 +403,16 @@ void ProgramHeader::paint (juce::Graphics& g)
     g.setGradientFill (Paint::vertical (frame, Colour::lcdFrameTop, Colour::lcdFrameBottom));
     g.fillRoundedRectangle (frame, Layout::lcdFrameRadius);
 
-    const auto glass = frame.reduced (Layout::lcdFramePad);
+    const auto glass = glassBounds();
     g.setGradientFill (Paint::vertical (glass, Colour::lcdGlassTop, Colour::lcdGlassBottom));
     g.fillRoundedRectangle (glass, Layout::lcdGlassRadius);
 
     g.setColour (juce::Colours::white.withAlpha (0.35f));
     g.drawLine (frame.getX() + 2.0f, frame.getY() + 0.5f, frame.getRight() - 2.0f, frame.getY() + 0.5f, 1.0f);
 
-    const auto bankArea = glass.withWidth (Layout::bankFieldW);
-    const auto nameArea = glass.withTrimmedLeft (Layout::bankFieldW).reduced (Layout::lcdNamePadX, 0.0f);
+    const auto bankArea = bankCellBounds();
+    const auto nameCell = nameCellBounds();
+    const auto nameArea = nameCell.reduced (Layout::lcdNamePadX, 0.0f);
     const auto lcdFont = Font::mono (Layout::lcdTextSize);
 
     // ONE field that switches its text. Never two labels with one greyed out.
@@ -440,7 +431,8 @@ void ProgramHeader::paint (juce::Graphics& g)
                        false);
 
     g.setColour (Colour::lcdHairline);
-    g.fillRect (bankArea.getRight(), glass.getY() + 1.0f, 1.0f, glass.getHeight() - 2.0f);
+    g.fillRect (bankArea.getRight(), glass.getY() + 1.0f, Layout::lcdCellHairline, glass.getHeight() - 2.0f);
+    g.fillRect (nameCell.getRight(), glass.getY() + 1.0f, Layout::lcdCellHairline, glass.getHeight() - 2.0f);
 
     if (namingMode)
     {
@@ -459,8 +451,11 @@ void ProgramHeader::paint (juce::Graphics& g)
     }
     else
     {
+        // CENTRED, matching the naming field. Names run 11 to 22 characters; left-aligning left a
+        // ragged gap before the chevron, and it is also why the dirty asterisk shifts the text half
+        // a character rather than appearing in dead space.
         Text::drawTracked (g, currentLcdText(), lcdFont, Layout::lcdTextTracking, nameArea,
-                           juce::Justification::left, Colour::phosphor, false);
+                           juce::Justification::centred, Colour::phosphor, false);
     }
 
     // The chevron is hidden while naming: the display is a text field then, not a menu trigger, and

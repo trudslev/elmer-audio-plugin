@@ -277,10 +277,30 @@ namespace Layout
     inline constexpr float captionSize = 9.5f;      // PROGRAM / IN / OUT
     inline constexpr float captionTracking = 3.0f;
 
-    inline constexpr float lcdRowY = 37.0f;
-    inline constexpr float lcdRowH = 38.0f;
-    inline constexpr float programX = 388.0f;
-    inline constexpr float programW = 364.0f;
+    /** The caption row, measured off the reference render rather than derived: cap ink lands at
+        y 47..54 there, so the 12px box that centres it starts at 44.5. The captions used to sit at
+        contentY, which was right for a row that began at 37 and is 24px too high for one that
+        begins at 61. */
+    inline constexpr float captionY = 45.0f;
+
+    /** **The header row: 30px tall, at y 61.** Every element in it - display, SAVE, DELETE, IN and
+        OUT - is the same 30px height and shares this Y, so the band reads as one instrument; the
+        display is not allowed to be the odd one out.
+
+        61 is not a free choice: the row is centred against the FULL 112px header block, which
+        starts at the 20px content inset, so (112 - 30) / 2 + 20 = 61. Centring on the wordmark
+        plate instead - which is what the previous 37 amounted to - left the display sitting high.
+
+        The display was 364 x 38 and held 21 characters. At 361 x 30 with 14px type it holds 24: the
+        weight comes off and three characters come back. */
+    inline constexpr float lcdRowY = 61.0f;
+    inline constexpr float lcdRowH = 30.0f;
+    inline constexpr float programX = 403.0f;
+
+    /** 361, not the 359 the cell widths alone give: 56 + 269 + 28 is 353, plus TWO 1px hairlines
+        between the three cells, plus the 3px frame on each side. Measured 403..764 in the reference
+        render, which agrees exactly. */
+    inline constexpr float programW = 361.0f;
 
     /** The display's three cells, inside the 3px metal frame. Bank 56 + name 269 + chevron 28.
         The name cell's 11px horizontal padding leaves 247px of text, which at IBM Plex Mono 14px
@@ -307,25 +327,27 @@ namespace Layout
         overrun the moment it was edited. Not inferable from the layout - cap against it. */
     inline constexpr int maxUserNameLength = 19;
     inline constexpr int lcdCharacterBudget = 24;
-    inline constexpr float bankFieldW = 72.0f;
     inline constexpr float lcdFrameRadius = 3.0f;
     inline constexpr float lcdGlassRadius = 2.0f;
-    inline constexpr float lcdFramePad = 3.0f;
-    inline constexpr float lcdTextSize = 16.0f;
-    inline constexpr float lcdTextTracking = 2.5f;
-    inline constexpr float lcdNamePadX = 14.0f;
+    inline constexpr float lcdCellHairline = 1.0f;
 
+    /** 14px IBM Plex Mono at 1.7px tracking advances 10.1px per character. That figure is what the
+        24-character budget is computed from, so changing either without re-deriving the cap silently
+        breaks the guarantee that what can be typed can be shown. */
+    inline constexpr float lcdTextSize = 14.0f;
+    inline constexpr float lcdTextTracking = 1.7f;
+    inline constexpr float lcdNamePadX = 11.0f;
 
-    inline constexpr float saveX = 761.0f;
-    inline constexpr float deleteX = 836.0f;
-    inline constexpr float headerButtonW = 66.0f;
+    inline constexpr float saveX = 771.0f;
+    inline constexpr float deleteX = 840.0f;
+    inline constexpr float headerButtonW = 62.0f;
     inline constexpr float buttonTextSize = 10.0f;
     inline constexpr float buttonTracking = 2.0f;
 
     inline constexpr float meterInX = 928.0f;
     inline constexpr float meterOutX = 1011.0f;
     inline constexpr float levelBoxW = 74.0f;
-    inline constexpr float levelTextSize = 15.0f;
+    inline constexpr float levelTextSize = 14.0f;
 
     // --- divider --------------------------------------------------------------
     inline constexpr float dividerY = 140.0f;       // headerBottom + 8
@@ -467,15 +489,50 @@ namespace Layout
         { "mix",         "MIX",               { 1005.0f, 606.0f }, 100.0f, 96.0f, 74.0f,
           Strip::output, Ring::small9,  671.0f } } };
 
-    /** Units are printed as part of the label, with a middle dot: "ATTACK · ms". Built at draw time
-        because the dot has to come from its codepoint. */
-    inline const std::array<const char*, 8> knobLabelUnits { {
-        nullptr, nullptr, "Hz", "ms", nullptr, nullptr, "dB", "%" } };
+    /** **Units live in the ARC GAP, not on the control name.** They sit on the bottom legend row,
+        between the minimum and maximum numerals, in the same 10px legend type at 0.6px tracking -
+        so a unit reads as part of the printed scale it qualifies rather than as part of the
+        control's name. "ATTACK - ms" is gone.
 
-    /** The KNEE column: 140px wide, centred at the same x as RATIO, sitting in row 2 of DETECTION
-        with 24px of top padding. */
-    inline constexpr float kneeLabelY = 386.0f;
-    inline constexpr juce::Point<float> kneeButtonsTopLeft { 232.0f, 407.0f };
+        Literal offsets transcribed from the prototype, like `legends` above and for the same
+        reason: THRESHOLD's is left 36 on a 112px area and the rest are left 30 on a 100px area,
+        which is the box centred in both cases, but ATTACK's top is 87 where its neighbours' is 85.
+        A formula would erase that.
+
+        **Six controls carry a unit and three do not**, decided from the parameter definitions
+        rather than from what the labels happened to print: RATIO prints ratios (`4:1`), RELEASE's
+        values carry their own suffixes (`0.6s`, `AUTO`), and KNEE has no scale at all. No unit is
+        invented for consistency's sake and none is dropped for the sake of the old label text. */
+    inline constexpr float unitTracking = 0.6f;
+
+    inline const std::array<Legend, 8> knobArcUnits { {
+        { 36, 98, "dB" },       // THRESHOLD
+        { 0, 0, nullptr },      // RATIO - prints ratios
+        { 30, 85, "Hz" },       // SIDECHAIN HP
+        { 30, 87, "ms" },       // ATTACK
+        { 0, 0, nullptr },      // RELEASE - values carry their own suffixes
+        { 30, 85, "%" },        // IRON
+        { 30, 85, "dB" },       // MAKEUP
+        { 30, 85, "%" } } };    // MIX
+
+    /** The KNEE column: 140px wide, centred at the same x as RATIO, in row 2 of DETECTION.
+
+        **The label sits BELOW the buttons**, like every other control name on the panel, and shares
+        SIDECHAIN HP's label line - it used to sit above them, which made KNEE the only control on
+        the panel named from the top.
+
+        Note that `design/screenshots/panel.png` still shows the label above: the render is stale on
+        this one element, and `design/Elmer.dc.html` and the handoff prose both agree it goes below
+        (`padding-top: 38px`, buttons, then `margin-top: 15px`). Raised with the designers; do not
+        "correct" this back to the render.
+
+        The buttons start at 399 rather than the prototype's literal 400 so that 63px of buttons
+        plus the 15px label margin lands the label on SIDECHAIN HP's 477 exactly. The prototype's
+        own arithmetic (38 + 63 + 15 = 116 against the knob column's 100 + 15 = 115) puts it 1px
+        lower; a shared baseline is the property that is visible, so it wins over the literal
+        padding figure. */
+    inline constexpr juce::Point<float> kneeButtonsTopLeft { 232.0f, 399.0f };
+    inline constexpr float kneeLabelY = 477.0f;
 
     // --- KNEE lamp buttons ----------------------------------------------------
     inline constexpr float lampW = 74.0f;

@@ -246,13 +246,13 @@ void PanelBackground::paintHeaderChrome (juce::Graphics& g)
     const auto caption = Font::mono (Layout::captionSize);
 
     Text::drawTracked (g, "PROGRAM", caption, Layout::captionTracking,
-                       { Layout::programX, Layout::contentY, 200.0f, 12.0f },
+                       { Layout::programX, Layout::captionY, 200.0f, 12.0f },
                        juce::Justification::left, Colour::ink);
     Text::drawTracked (g, "IN", caption, Layout::captionTracking,
-                       { Layout::meterInX, Layout::contentY, 100.0f, 12.0f },
+                       { Layout::meterInX, Layout::captionY, 100.0f, 12.0f },
                        juce::Justification::left, Colour::ink);
     Text::drawTracked (g, "OUT", caption, Layout::captionTracking,
-                       { Layout::meterOutX, Layout::contentY, 100.0f, 12.0f },
+                       { Layout::meterOutX, Layout::captionY, 100.0f, 12.0f },
                        juce::Justification::left, Colour::ink);
 
     // --- divider: an incised score line in the metal ------------------------------------------
@@ -322,12 +322,15 @@ void PanelBackground::paintKnobFurniture (juce::Graphics& g)
                                juce::Justification::centred, Colour::ink);
         }
 
-        juce::String label { spec.label };
+        // The unit, in the arc gap. Drawn with the legends because it IS one - same type, same
+        // 40px centred box, same ink - and never appended to the control's name.
+        if (const auto& unit = Layout::knobArcUnits[k]; unit.text != nullptr)
+            Text::drawTracked (g, unit.text, legendFont, Layout::unitTracking,
+                               { areaTopLeft.x + unit.left, areaTopLeft.y + unit.top,
+                                 Layout::legendBoxWidth, Layout::legendLineHeight },
+                               juce::Justification::centred, Colour::ink);
 
-        if (Layout::knobLabelUnits[k] != nullptr)
-            label += " " + Text::middleDot() + " " + juce::String (Layout::knobLabelUnits[k]);
-
-        Text::drawTracked (g, label, labelFont, Layout::controlLabelTracking,
+        Text::drawTracked (g, spec.label, labelFont, Layout::controlLabelTracking,
                            { spec.areaCentre.x - 120.0f, spec.labelY, 240.0f, 14.0f },
                            juce::Justification::centred, Colour::ink);
     }

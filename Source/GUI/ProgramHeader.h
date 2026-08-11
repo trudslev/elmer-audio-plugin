@@ -39,7 +39,9 @@ public:
 
     static int menuAnchorY() noexcept
     {
-        return (int) std::floor (ElmerTheme::Layout::lcdRowY + ElmerTheme::Layout::menuTopOffset);
+        // From the GLASS's top, not the frame's: 24px of glass plus 4px to clear its inner shadow.
+        return (int) std::floor (ElmerTheme::Layout::lcdRowY + ElmerTheme::Layout::lcdFrameThickness
+                                     + ElmerTheme::Layout::menuTopOffset);
     }
 
     /** NOT the anchor: JUCE clamps a menu to jmax(parentArea.getY() + 1, ...), so a host starting
@@ -54,11 +56,12 @@ private:
     void timerCallback() override;
     juce::String currentLcdText() const;
     juce::String describeParameter (const juce::String& paramId) const;
-    void drawLcdPanel (juce::Graphics&, juce::Rectangle<float>, const juce::String& text,
-                       juce::Justification, float textSize);
     juce::Rectangle<float> saveBounds() const;
     juce::Rectangle<float> deleteBounds() const;
     juce::Rectangle<float> displayBounds() const;
+    juce::Rectangle<float> glassBounds() const;
+    juce::Rectangle<float> bankCellBounds() const;
+    juce::Rectangle<float> nameCellBounds() const;
     juce::Rectangle<float> chevronCellBounds() const;
     void showProgramMenu();
     void paintChevron (juce::Graphics&) const;
