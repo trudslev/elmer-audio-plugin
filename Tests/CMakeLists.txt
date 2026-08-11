@@ -7,6 +7,7 @@ target_sources(ElmerTests PRIVATE
     PrintedScaleTests.cpp
     CompressorTests.cpp
     FactoryProgramTests.cpp
+    DisplayBudgetTests.cpp
     ../Source/DSP/SidechainFilter.cpp
     ../Source/DSP/LevelDetector.cpp
     ../Source/DSP/GainComputer.cpp
@@ -27,7 +28,11 @@ target_compile_definitions(ElmerTests PRIVATE
 
 target_include_directories(ElmerTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../Source)
 
+# ElmerBinaryData, because DisplayBudgetTests asserts against ElmerTheme.h and the theme header
+# includes BinaryData.h for the embedded faces. Linking the real generated header rather than
+# stubbing it is the point: a token the tests check has to be the token the panel draws with.
 target_link_libraries(ElmerTests PRIVATE
+    ElmerBinaryData
     juce::juce_dsp
     juce::juce_audio_basics
     juce::juce_audio_processors
