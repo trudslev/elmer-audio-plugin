@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ElmerMenuLookAndFeel.h"
 #include "ElmerTheme.h"
 #include "../DSP/ProgramManager.h"
 
@@ -72,6 +73,7 @@ private:
     bool saveEnabled() const;
     bool deleteEnabled() const;
 
+    ElmerMenuLookAndFeel menuLookAndFeel;
     juce::Component* menuParent = nullptr;
     bool menuOpen = false;
 

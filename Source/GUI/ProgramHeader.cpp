@@ -294,7 +294,7 @@ void ProgramHeader::paintChevron (juce::Graphics& g) const
 void ProgramHeader::showProgramMenu()
 {
     juce::PopupMenu menu;
-    menu.setLookAndFeel (&getLookAndFeel());
+    menu.setLookAndFeel (&menuLookAndFeel);
 
     const int current = programs.getCurrentProgram();
     const int factoryCount = programs.getNumFactoryPrograms();
@@ -326,7 +326,12 @@ void ProgramHeader::showProgramMenu()
                           true, i == current);
     }
 
-    const auto glass = displayBounds().reduced (Layout::lcdFrameThickness).getSmallestIntegerContainer();
+    // The list takes the display's OUTER width - frame edges included - so the two share a left and
+    // a right edge and read as one instrument. Measured 403..764 in design/screenshots/
+    // panel-menu-open.png, which is the display's border box, not its 355px of glass. The prose's
+    // "left: 0, width: 100%" would resolve against the padding box in CSS and give 355; the render
+    // is the artefact, so it wins.
+    const auto rail = displayBounds().getSmallestIntegerContainer();
 
     auto options = juce::PopupMenu::Options()
                        .withTargetComponent (this)
@@ -339,16 +344,16 @@ void ProgramHeader::showProgramMenu()
         // the host and open the list a display-height too low. 1px and not zero, because a
         // zero-height rectangle is isEmpty() and that drops the list into the sideways placement
         // meant for submenus. See ../../CLAUDE.md, "The Program dropdown".
-        const juce::Rectangle<int> anchor { glass.getX(), menuAnchorY() - 1, glass.getWidth(), 1 };
+        const juce::Rectangle<int> anchor { rail.getX(), menuAnchorY() - 1, rail.getWidth(), 1 };
 
         options = options.withTargetScreenArea (localAreaToGlobal (anchor))
                          .withParentComponent (menuParent)
-                         .withMinimumWidth (glass.getWidth());
+                         .withMinimumWidth (rail.getWidth());
     }
     else
     {
-        options = options.withTargetScreenArea (localAreaToGlobal (glass))
-                         .withMinimumWidth (glass.getWidth());
+        options = options.withTargetScreenArea (localAreaToGlobal (rail))
+                         .withMinimumWidth (rail.getWidth());
     }
 
     menuOpen = true;
