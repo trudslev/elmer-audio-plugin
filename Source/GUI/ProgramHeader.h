@@ -2,6 +2,8 @@
 
 #include "ElmerMenuLookAndFeel.h"
 #include "ElmerTheme.h"
+
+#include <vector>
 #include "../DSP/ProgramManager.h"
 
 /**
@@ -74,6 +76,10 @@ private:
     bool deleteEnabled() const;
 
     ElmerMenuLookAndFeel menuLookAndFeel;
+
+    /** The Programs the open menu was built from, in row order. The callback indexes this rather
+        than reconstructing a Program from a number. */
+    std::vector<ProgramId> menuRows;
     juce::Component* menuParent = nullptr;
     bool menuOpen = false;
 

@@ -321,11 +321,17 @@ namespace Layout
         3px frame edges is 24px of glass, plus 4px to clear its inner shadow. */
     inline constexpr float menuTopOffset = 28.0f;
 
-    /** **19 characters, and the arithmetic is exact rather than comfortable.** The cell holds 24;
-        the two-digit index and its space take 3, and the dirty marker " *" takes 2. 3 + 19 + 2 = 24.
-        "03 MINNEAPOLIS SQUEEZE *" fills the cell precisely, so a 20-character user name would
-        overrun the moment it was edited. Not inferable from the layout - cap against it. */
-    inline constexpr int maxUserNameLength = 19;
+    /** **22 = 24 - 2, and the three characters it gained are the "NN " prefix that user names no
+        longer carry.**
+
+        Only FACTORY Programs are numbered now: User Programs sort alphabetically, so a number would
+        change whenever one was saved. The cell still holds 24, and the dirty marker " *" still takes
+        2 - the naming cursor takes 1, so the marker is the binding constraint.
+
+        The factory side is unchanged and still the tighter case: "03 MINNEAPOLIS SQUEEZE *" is
+        3 + 19 + 2 = 24 and fills the cell precisely. That is why the budget test is three separate
+        cases rather than one formula - the prefix applies to one bank only. */
+    inline constexpr int maxUserNameLength = 22;
     inline constexpr int lcdCharacterBudget = 24;
     inline constexpr float lcdFrameRadius = 3.0f;
     inline constexpr float lcdGlassRadius = 2.0f;

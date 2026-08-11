@@ -24,12 +24,17 @@ public:
     {
         using namespace ElmerTheme::Layout;
 
-        beginTest ("The cap, the index and the marker add up to the budget");
-        constexpr int indexPrefix = 3;      // "01 "
+        constexpr int indexPrefix = 3;      // "01 ", FACTORY Programs only
         constexpr int dirtyMarker = 2;      // " *"
-        expectEquals (indexPrefix + maxUserNameLength + dirtyMarker, lcdCharacterBudget);
+        constexpr int cursorCell  = 1;      // the naming field's block cursor
 
-        beginTest ("The longest factory Program fits, marker included");
+        // **Three cases, because the display has three shapes.** The single
+        // prefix + cap + marker == budget identity this replaced encoded the old model where USER
+        // names carried the "NN " prefix too; with the prefix gone it would read 3 + 22 + 2 = 27
+        // against a 24-character cell and fail. Each case is still a relationship between
+        // independent constants, which is what catches one moving without the other.
+
+        beginTest ("Factory: the longest name plus its NN prefix and the marker fits");
         int longest = 0;
         juce::String longestName;
 
@@ -43,8 +48,14 @@ public:
         expect (indexPrefix + longest + dirtyMarker <= lcdCharacterBudget,
                 "\"" + longestName + "\" overruns the name cell once the dirty marker appears");
 
-        beginTest ("A maximum-length user name fits, marker included");
-        expect (indexPrefix + maxUserNameLength + dirtyMarker <= lcdCharacterBudget);
+        beginTest ("User: a maximum-length name fits, with NO prefix");
+        expect (maxUserNameLength + dirtyMarker <= lcdCharacterBudget);
+
+        beginTest ("Naming: a maximum-length name plus the cursor fits");
+        expect (maxUserNameLength + cursorCell <= lcdCharacterBudget);
+
+        beginTest ("The cap is the budget less whichever of the marker and the cursor is larger");
+        expectEquals (maxUserNameLength, lcdCharacterBudget - juce::jmax (dirtyMarker, cursorCell));
 
         beginTest ("The budget matches the cell the type is actually drawn into");
         // 269px of cell less 2 x 11px padding is 247px of text; 14px IBM Plex Mono at 1.7px

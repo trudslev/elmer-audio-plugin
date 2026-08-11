@@ -18,7 +18,7 @@ namespace
 ProgramManager::ProgramManager (juce::AudioProcessorValueTreeState& s) : apvts (s)
 {
     rescanUserPrograms();
-    applyFactory (defaultFactoryProgramIndex);
+    applyProgram (factoryIdAt (defaultFactoryProgramIndex));
 
     // Construction applies the default synchronously - no host or automation is attached yet - so
     // the clean snapshot has to be taken here too. Without it isModified() has nothing to compare
@@ -129,55 +129,142 @@ void ProgramManager::rescanUserPrograms()
                                                  "*" + juce::String (fileExtension)))
             userFiles.add (f);
 
-    userFiles.sort();
+    // **The displayed name, case-insensitively.** userFiles.sort() used juce::File::operator<,
+    // which compares the FULL PATH via compareFilenames - and that ignores case on macOS/Windows
+    // but respects it on Linux, so this casting alone sorted differently by OS. It also compared
+    // the extension, which sorts "AB C" before "AB" (space 0x20 precedes dot 0x2E).
+    std::sort (userFiles.begin(), userFiles.end(),
+               [] (const juce::File& a, const juce::File& b)
+               {
+                   return a.getFileNameWithoutExtension()
+                           .compareIgnoreCase (b.getFileNameWithoutExtension()) < 0;
+               });
 }
 
-int ProgramManager::getNumPrograms() const
+//==============================================================================
+// Identity. Nothing below addresses a Program by position except the deliberate crossings.
+
+ProgramId ProgramManager::factoryIdAt (int factoryPosition)
 {
-    return getNumFactoryPrograms() + userFiles.size();
+    const auto& p = Elmer::factoryPrograms[(size_t) factoryPosition];
+    return { ProgramBank::factory, p.slug, p.name };
 }
 
-juce::String ProgramManager::getProgramName (int index) const
+ProgramId ProgramManager::initId()
 {
-    if (isInit (index))
-        return "INIT";
-
-    if (isFactory (index))
-        return juce::isPositiveAndBelow (index, getNumFactoryPrograms())
-                   ? juce::String (factoryPrograms[(size_t) index].name) : juce::String();
-
-    const int userIndex = index - getNumFactoryPrograms();
-    return juce::isPositiveAndBelow (userIndex, userFiles.size())
-               ? userFiles[userIndex].getFileNameWithoutExtension() : juce::String();
+    return { ProgramBank::init, Elmer::initProgram.slug, Elmer::initProgram.name };
 }
 
-juce::String ProgramManager::getDisplayName (int index) const
+int ProgramManager::factoryPositionOf (const juce::String& slug)
 {
-    // The LCD shows a two-digit number and the name, e.g. "01 UNDER PRESSURE".
-    //
-    // INIT is UNNUMBERED - here as well as in the menu. Numbering it would put it in a bank, and it
-    // is in neither; the arithmetic would also print "00", since its index is -1.
-    if (isInit (index))
-        return getProgramName (index);
+    for (size_t i = 0; i < Elmer::factoryPrograms.size(); ++i)
+        if (slug == Elmer::factoryPrograms[i].slug)
+            return (int) i;
 
-    return juce::String (index + 1).paddedLeft ('0', 2) + " " + getProgramName (index);
+    return -1;
 }
 
-void ProgramManager::setCurrentProgram (int index)
+ProgramId ProgramManager::getCurrentProgramId() const
 {
-    // INIT is a legal target and is NOT in 0..getNumPrograms(), so it is admitted explicitly rather
-    // than by widening the range check - which would also admit every other negative index.
-    if (! isInit (index) && ! juce::isPositiveAndBelow (index, getNumPrograms()))
-        return;
+    const juce::SpinLock::ScopedLockType lock (currentIdLock);
+    return currentId;
+}
 
-    pendingIndex.store (index);
+void ProgramManager::setCurrentId (const ProgramId& id)
+{
+    const juce::SpinLock::ScopedLockType lock (currentIdLock);
+    currentId = id;
+}
+
+int ProgramManager::getCurrentFactoryPosition() const
+{
+    const auto id = getCurrentProgramId();
+
+    if (id.bank == ProgramBank::factory)
+        if (const int pos = factoryPositionOf (id.id); pos >= 0)
+            return pos;
+
+    return 0;
+}
+
+ProgramId ProgramManager::resolve (ProgramBank bank, const juce::String& id,
+                                    const juce::String& displayName) const
+{
+    if (bank == ProgramBank::init && id == Elmer::initProgram.slug)
+        return initId();
+
+    if (bank == ProgramBank::factory)
+        if (const int pos = factoryPositionOf (id); pos >= 0)
+            return factoryIdAt (pos);
+
+    if (bank == ProgramBank::user)
+        for (const auto& f : userFiles)
+            if (f.getFileNameWithoutExtension() == id)
+                return { ProgramBank::user, id, id };
+
+    // **Degrade honestly.** The restored values are correct and stay put; only the name is unknown.
+    return { ProgramBank::unresolved, id, displayName.isNotEmpty() ? displayName : id };
+}
+
+std::vector<ProgramId> ProgramManager::listPrograms() const
+{
+    std::vector<ProgramId> out;
+    out.reserve (1 + Elmer::factoryPrograms.size() + (size_t) userFiles.size());
+
+    out.push_back (initId());
+
+    for (size_t i = 0; i < Elmer::factoryPrograms.size(); ++i)
+        out.push_back (factoryIdAt ((int) i));
+
+    for (const auto& f : userFiles)
+    {
+        const auto stem = f.getFileNameWithoutExtension();
+        out.push_back ({ ProgramBank::user, stem, stem });
+    }
+
+    return out;
+}
+
+juce::String ProgramManager::displayLabelFor (const ProgramId& id) const
+{
+    if (id.bank == ProgramBank::factory)
+        if (const int pos = factoryPositionOf (id.id); pos >= 0)
+            return juce::String (pos + 1).paddedLeft ('0', 2) + " " + id.displayName;
+
+    return id.displayName;
+}
+
+juce::File ProgramManager::userProgramFile (const juce::String& stem) const
+{
+    for (const auto& f : userFiles)
+        if (f.getFileNameWithoutExtension() == stem)
+            return f;
+
+    return {};
+}
+
+void ProgramManager::requestProgramChange (const ProgramId& id)
+{
+    {
+        const juce::SpinLock::ScopedLockType lock (pendingLock);
+        pendingProgram = id;
+        hasPendingProgram = true;
+    }
+
     triggerAsyncUpdate();
 }
 
-void ProgramManager::setCurrentProgramIndexWithoutApplying (int index)
+juce::String ProgramManager::getProgramName (int factoryPosition) const
 {
-    currentIndex = (isInit (index) || juce::isPositiveAndBelow (index, getNumPrograms()))
-                       ? index : Elmer::defaultFactoryProgramIndex;
+    // Raw, unnumbered - what the HOST's list wants, since a host renders its own numbering.
+    return juce::isPositiveAndBelow (factoryPosition, getNumFactoryPrograms())
+               ? juce::String (factoryPrograms[(size_t) factoryPosition].name)
+               : juce::String();
+}
+
+void ProgramManager::setCurrentProgramWithoutApplying (const ProgramId& id)
+{
+    setCurrentId (id);
     captureSnapshot();
 
     if (onProgramChanged != nullptr)
@@ -186,25 +273,66 @@ void ProgramManager::setCurrentProgramIndexWithoutApplying (int index)
 
 void ProgramManager::cancelPendingChange()
 {
-    pendingIndex.store (-2);
+    {
+        const juce::SpinLock::ScopedLockType lock (pendingLock);
+        hasPendingProgram = false;
+    }
+
     cancelPendingUpdate();
 }
 
 void ProgramManager::handleAsyncUpdate()
 {
-    // -2 is the idle sentinel, not -1: -1 is INIT, and using it here would make selecting INIT
-    // indistinguishable from having nothing to apply.
-    const int index = pendingIndex.exchange (-2);
+    ProgramId id;
 
-    if (index < -1)
-        return;
+    {
+        const juce::SpinLock::ScopedLockType lock (pendingLock);
 
-    currentIndex = index;
+        if (! hasPendingProgram)
+            return;
 
-    if (isInit (index) || isFactory (index))
-        applyFactory (index);
-    else
-        applyUser (index);
+        id = pendingProgram;
+        hasPendingProgram = false;
+    }
+
+    applyProgram (id);
+}
+
+void ProgramManager::applyProgram (const ProgramId& id)
+{
+    if (id.bank == ProgramBank::init)
+    {
+        // The slug is checked, not just the bank: an id claiming to be INIT with some other
+        // identifier names nothing, and applying INIT anyway would be the same "land on whatever is
+        // nearby" failure this model exists to prevent.
+        if (id.id != initProgram.slug)
+            return;
+
+        applyProgramValues (initProgram);
+    }
+    else if (id.bank == ProgramBank::factory)
+    {
+        const int pos = factoryPositionOf (id.id);
+
+        if (pos < 0)
+            return;
+
+        applyProgramValues (factoryPrograms[(size_t) pos]);
+    }
+    else if (id.bank == ProgramBank::user)
+    {
+        const auto file = userProgramFile (id.id);
+
+        if (file == juce::File())
+            return;
+
+        if (! applyUserFile (file))
+            return;
+    }
+
+    // Unresolved falls through: the values are whatever the session restored and stay exactly as
+    // they are. Only the identity is recorded, so the panel can say it does not know the name.
+    setCurrentId (id);
 
     // Taken AFTER the values land, so the Program starts clean by definition.
     captureSnapshot();
@@ -217,11 +345,6 @@ void ProgramManager::setParam (const char* id, float actualValue)
 {
     if (auto* p = dynamic_cast<juce::RangedAudioParameter*> (apvts.getParameter (id)))
         p->setValueNotifyingHost (p->convertTo0to1 (actualValue));
-}
-
-void ProgramManager::applyFactory (int index)
-{
-    applyProgramValues (isInit (index) ? initProgram : factoryPrograms[(size_t) index]);
 }
 
 void ProgramManager::applyProgramValues (const FactoryProgram& fp)
@@ -237,27 +360,27 @@ void ProgramManager::applyProgramValues (const FactoryProgram& fp)
     setParam (ParamIDs::mix,         fp.mixPercent);
 }
 
-void ProgramManager::applyUser (int index)
+bool ProgramManager::applyUserFile (const juce::File& file)
 {
-    const int userIndex = index - getNumFactoryPrograms();
+    auto xml = juce::XmlDocument::parse (file);
 
-    if (! juce::isPositiveAndBelow (userIndex, userFiles.size()))
-        return;
+    if (xml == nullptr)
+        return false;
 
-    if (auto xml = juce::XmlDocument::parse (userFiles[userIndex]))
-    {
-        // Read the schema version rather than only writing it - Reflect-84's improvement. A newer
-        // file is skipped whole rather than half-applied.
-        if (xml->getIntAttribute ("schema", 1) > stateSchemaVersion)
-            return;
+    // Read the schema version rather than only writing it. A file this build cannot read is skipped
+    // WHOLE rather than half-applied - a Program that loads two-thirds of itself is worse than one
+    // that refuses, because nothing reports it.
+    if (xml->getIntAttribute ("schema", 1) > stateSchemaVersion)
+        return false;
 
-        for (const auto* id : allParamIds)
-            if (xml->hasAttribute (id))
-                setParam (id, (float) xml->getDoubleAttribute (id));
-    }
+    for (const auto* id : allParamIds)
+        if (xml->hasAttribute (id))
+            setParam (id, (float) xml->getDoubleAttribute (id));
+
+    return true;
 }
 
-int ProgramManager::saveNewUserProgram (const juce::String& name)
+ProgramId ProgramManager::saveNewUserProgram (const juce::String& name)
 {
     auto dir = getUserProgramDirectory();
     dir.createDirectory();
@@ -285,7 +408,8 @@ int ProgramManager::saveNewUserProgram (const juce::String& name)
     {
         if (userFiles[i] == file)
         {
-            currentIndex = getNumFactoryPrograms() + i;
+            setCurrentId ({ ProgramBank::user, file.getFileNameWithoutExtension(),
+                            file.getFileNameWithoutExtension() });
 
             // The snapshot is re-taken against what was just written, so SAVE goes dark and the
             // asterisk clears the instant the Program exists. Without this the panel keeps claiming
@@ -295,29 +419,28 @@ int ProgramManager::saveNewUserProgram (const juce::String& name)
             if (onProgramChanged != nullptr)
                 onProgramChanged();
 
-            return currentIndex;
+            return getCurrentProgramId();
         }
     }
 
-    return currentIndex;
+    return getCurrentProgramId();
 }
 
-void ProgramManager::deleteUserProgram (int index)
+void ProgramManager::deleteUserProgram (const ProgramId& id)
 {
-    if (isFactory (index))
-        return;                                   // gated in the model, not only at the button
-
-    const int userIndex = index - getNumFactoryPrograms();
-
-    if (! juce::isPositiveAndBelow (userIndex, userFiles.size()))
+    // Gated on the BANK, which is stronger than the old index range: an id from any other bank
+    // simply cannot address a file. Gated in the model, not only at the button.
+    if (id.bank != ProgramBank::user)
         return;
 
-    userFiles[userIndex].deleteFile();
+    const auto file = userProgramFile (id.id);
+
+    if (file == juce::File())
+        return;
+
+    file.deleteFile();
     rescanUserPrograms();
 
-    currentIndex = defaultFactoryProgramIndex;
-    applyFactory (currentIndex);
-
-    if (onProgramChanged != nullptr)
-        onProgramChanged();
+    // Deliberately NOT the unresolved state: deleting from the panel is unambiguous intent.
+    applyProgram (factoryIdAt (defaultFactoryProgramIndex));
 }

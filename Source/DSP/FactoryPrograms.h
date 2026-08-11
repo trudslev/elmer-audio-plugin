@@ -1,8 +1,35 @@
 #pragma once
 
+#include <juce_core/juce_core.h>
+
 #include "../Parameters.h"
 
 #include <array>
+
+/** Which list a Program belongs to. INIT is its own bank rather than a magic index; `unresolved`
+    is a stored identifier that no longer names anything. */
+enum class ProgramBank
+{
+    init,
+    factory,
+    user,
+    unresolved
+};
+
+/** **How a Program is identified everywhere except the host adapter.** Not a position - positions
+    change when the bank is reordered or extended.
+
+    `displayName` is carried because a factory slug is not presentable: "under-pressure?" in the LCD
+    would read as a rendering fault. It is display only and never resolves anything. */
+struct ProgramId
+{
+    ProgramBank bank = ProgramBank::factory;
+    juce::String id;
+    juce::String displayName;
+
+    bool operator== (const ProgramId& o) const noexcept { return bank == o.bank && id == o.id; }
+    bool operator!= (const ProgramId& o) const noexcept { return ! operator== (o); }
+};
 
 namespace Elmer
 {
@@ -23,6 +50,10 @@ namespace Elmer
 */
 struct FactoryProgram
 {
+    /** **The permanent identity, fixed at creation and never changed again.** `name` is a label the
+        designers may revise; `slug` may not be, because it is what a saved session stores. */
+    const char* slug;
+
     const char* name;
     float thresholdDb;
     int   ratioIndex;      // into ratioNames
@@ -55,25 +86,25 @@ inline constexpr int initProgramIndex = -1;
     parallel-compression control. At anything less the compressor would be partly bypassed rather
     than idle, and the first knob the user moved would appear weaker than it is. */
 inline constexpr FactoryProgram initProgram
-    { "INIT", 10.0f, 0, 0, 0.0f, 10.0f, 1, 0.0f, 0.0f, 100.0f };
+    { "init", "INIT", 10.0f, 0, 0, 0.0f, 10.0f, 1, 0.0f, 0.0f, 100.0f };
 
 inline constexpr std::array<FactoryProgram, 16> factoryPrograms { {
-    { "UNDER PRESSURE",     -14.0f, 1, 0,  75.0f, 10.0f,  4,  20.0f,  2.5f, 100.0f },
-    { "ART OF GLUE",        -16.0f, 2, 0,  75.0f, 30.0f,  4,  25.0f,  3.5f, 100.0f },
-    { "MINNEAPOLIS SQUEEZE",-18.0f, 2, 1, 140.0f,  3.0f,  1,  30.0f,  4.0f, 100.0f },
-    { "BLUE TUESDAY",       -20.0f, 2, 1, 140.0f, 10.0f,  0,  35.0f,  5.0f, 100.0f },
-    { "SHEFFIELD STEEL",    -18.0f, 2, 0,  75.0f, 10.0f,  1,  45.0f,  4.5f, 100.0f },
-    { "JERSEY BUS",         -16.0f, 1, 0,  75.0f, 30.0f,  2,  40.0f,  3.0f, 100.0f },
-    { "HAMMER DOWN",        -20.0f, 2, 1, 140.0f,  3.0f,  1,  40.0f,  5.0f, 100.0f },
-    { "QUEENS SMASH",       -30.0f, 3, 1,   0.0f,  0.1f,  0,  55.0f,  8.0f,  40.0f },
-    { "HALFWAY THERE",      -18.0f, 2, 0,  40.0f, 10.0f,  1,  30.0f,  4.0f, 100.0f },
-    { "KILIMANJARO",        -16.0f, 1, 0,  40.0f, 30.0f,  4,  20.0f,  3.0f, 100.0f },
-    { "WEST END",           -20.0f, 2, 1,  75.0f,  1.0f,  1,  25.0f,  5.0f, 100.0f },
-    { "BITE THE DUST",      -18.0f, 2, 0,  75.0f,  3.0f,  0,  35.0f,  4.0f, 100.0f },
-    { "DANCES ON THE SAND", -16.0f, 1, 0,  40.0f, 10.0f,  1,  25.0f,  3.0f, 100.0f },
-    { "PASADENA",           -18.0f, 2, 1, 140.0f,  3.0f,  1,  45.0f,  4.0f, 100.0f },
-    { "DON'T FORGET",       -12.0f, 0, 0,  75.0f, 30.0f,  4,  15.0f,  2.0f, 100.0f },
-    { "PANCAKE",            -38.0f, 4, 1,   0.0f,  0.1f,  0, 100.0f, 15.0f, 100.0f } } };
+    { "under-pressure", "UNDER PRESSURE",     -14.0f, 1, 0,  75.0f, 10.0f,  4,  20.0f,  2.5f, 100.0f },
+    { "art-of-glue", "ART OF GLUE",        -16.0f, 2, 0,  75.0f, 30.0f,  4,  25.0f,  3.5f, 100.0f },
+    { "minneapolis-squeeze", "MINNEAPOLIS SQUEEZE",-18.0f, 2, 1, 140.0f,  3.0f,  1,  30.0f,  4.0f, 100.0f },
+    { "blue-tuesday", "BLUE TUESDAY",       -20.0f, 2, 1, 140.0f, 10.0f,  0,  35.0f,  5.0f, 100.0f },
+    { "sheffield-steel", "SHEFFIELD STEEL",    -18.0f, 2, 0,  75.0f, 10.0f,  1,  45.0f,  4.5f, 100.0f },
+    { "jersey-bus", "JERSEY BUS",         -16.0f, 1, 0,  75.0f, 30.0f,  2,  40.0f,  3.0f, 100.0f },
+    { "hammer-down", "HAMMER DOWN",        -20.0f, 2, 1, 140.0f,  3.0f,  1,  40.0f,  5.0f, 100.0f },
+    { "queens-smash", "QUEENS SMASH",       -30.0f, 3, 1,   0.0f,  0.1f,  0,  55.0f,  8.0f,  40.0f },
+    { "halfway-there", "HALFWAY THERE",      -18.0f, 2, 0,  40.0f, 10.0f,  1,  30.0f,  4.0f, 100.0f },
+    { "kilimanjaro", "KILIMANJARO",        -16.0f, 1, 0,  40.0f, 30.0f,  4,  20.0f,  3.0f, 100.0f },
+    { "west-end", "WEST END",           -20.0f, 2, 1,  75.0f,  1.0f,  1,  25.0f,  5.0f, 100.0f },
+    { "bite-the-dust", "BITE THE DUST",      -18.0f, 2, 0,  75.0f,  3.0f,  0,  35.0f,  4.0f, 100.0f },
+    { "dances-on-the-sand", "DANCES ON THE SAND", -16.0f, 1, 0,  40.0f, 10.0f,  1,  25.0f,  3.0f, 100.0f },
+    { "pasadena", "PASADENA",           -18.0f, 2, 1, 140.0f,  3.0f,  1,  45.0f,  4.0f, 100.0f },
+    { "dont-forget", "DON'T FORGET",       -12.0f, 0, 0,  75.0f, 30.0f,  4,  15.0f,  2.0f, 100.0f },
+    { "pancake", "PANCAKE",            -38.0f, 4, 1,   0.0f,  0.1f,  0, 100.0f, 15.0f, 100.0f } } };
 
 /** QUEENS SMASH is the only Program with Mix below 100 - the New York parallel setting, where a
     heavily crushed signal sits under the dry. If a second one ever appears below 100, it should be

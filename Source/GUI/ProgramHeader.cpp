@@ -88,7 +88,7 @@ void ProgramHeader::mouseDown (const juce::MouseEvent& e)
 
     if (hitsButton (deleteBounds(), p) && deleteEnabled())
     {
-        programs.deleteUserProgram (programs.getCurrentProgram());
+        programs.deleteUserProgram (programs.getCurrentProgramId());
         repaint();
     }
 }
@@ -193,8 +193,9 @@ bool ProgramHeader::deleteEnabled() const
 {
     // Two states only. Enabled for a User Program, or as CANCEL while naming. Disabled for every
     // Factory Program AND for INIT - INIT is not a stored thing, so there is nothing to delete.
-    const int index = programs.getCurrentProgram();
-    return namingMode || (! ProgramManager::isInit (index) && ! programs.isFactory (index));
+    // Only a User Program can be deleted. INIT and an unresolved id are not stored things, and a
+    // Factory Program is read-only. Always live while naming, as CANCEL.
+    return namingMode || programs.getCurrentProgramId().bank == ProgramBank::user;
 }
 
 void ProgramHeader::enterNamingMode()
@@ -253,7 +254,8 @@ bool ProgramHeader::keyPressed (const juce::KeyPress& key)
     const auto c = key.getTextCharacter();
 
     // Forced uppercase, and hard-capped at 19 so what CAN be typed matches what can be displayed
-    // once the index and the dirty asterisk are added - see Layout::maxUserNameLength.
+    // once the dirty asterisk is added - see Layout::maxUserNameLength. User names carry no index
+    // any more, which is where the three extra characters came from.
     if (c >= 32 && c != 127 && typedName.length() < Layout::maxUserNameLength)
     {
         typedName += juce::String::charToString (c).toUpperCase();
@@ -296,34 +298,37 @@ void ProgramHeader::showProgramMenu()
     juce::PopupMenu menu;
     menu.setLookAndFeel (&menuLookAndFeel);
 
-    const int current = programs.getCurrentProgram();
-    const int factoryCount = programs.getNumFactoryPrograms();
-    const int total = programs.getNumPrograms();
+    const auto current = programs.getCurrentProgramId();
 
-    // INIT first, unnumbered and outside both banks, with a divider beneath it. Its item ID is not
-    // index+1 like the rest - that would be 0, which PopupMenu reserves for "dismissed" - so it
-    // carries its own sentinel and is translated back on selection.
-    constexpr int initMenuId = 9999;
-    menu.addItem (initMenuId, "INIT", true, ProgramManager::isInit (current));
-    menu.addSeparator();
+    // **Row IDs are positions in THIS menu, not Program indices.** PopupMenu needs an int per row
+    // and reserves 0 for "dismissed"; the callback maps the row back to the ProgramId it was built
+    // from, so no Program is addressed by a bank position here.
+    menuRows = programs.listPrograms();
 
-    menu.addSectionHeader ("FACTORY");
+    bool factoryHeaderDone = false;
+    bool userHeaderDone = false;
 
-    for (int i = 0; i < factoryCount; ++i)
-        menu.addItem (i + 1, juce::String (i + 1).paddedLeft ('0', 2) + " " + programs.getProgramName (i),
-                      true, i == current);
-
-    // The USER section is absent entirely when empty - header and divider included - rather than
-    // showing an empty heading. The spec is explicit, and it differs from Reflect-84, which keeps
-    // the header and prints a placeholder row.
-    if (total > factoryCount)
+    for (size_t i = 0; i < menuRows.size(); ++i)
     {
-        menu.addSeparator();
-        menu.addSectionHeader ("USER");
+        const auto& id = menuRows[i];
 
-        for (int i = factoryCount; i < total; ++i)
-            menu.addItem (i + 1, juce::String (i + 1).paddedLeft ('0', 2) + " " + programs.getProgramName (i),
-                          true, i == current);
+        // INIT first, unnumbered and outside both banks, with a divider beneath it.
+        if (id.bank == ProgramBank::factory && ! std::exchange (factoryHeaderDone, true))
+        {
+            menu.addSeparator();
+            menu.addSectionHeader ("FACTORY");
+        }
+
+        // The USER section is absent entirely when empty - header and divider included - rather
+        // than showing an empty heading. This differs from Reflect-84, which keeps the header and
+        // prints a placeholder row.
+        if (id.bank == ProgramBank::user && ! std::exchange (userHeaderDone, true))
+        {
+            menu.addSeparator();
+            menu.addSectionHeader ("USER");
+        }
+
+        menu.addItem ((int) i + 1, programs.displayLabelFor (id), true, id == current);
     }
 
     // The list takes the display's OUTER width - frame edges included - so the two share a left and
@@ -373,9 +378,10 @@ void ProgramHeader::showProgramMenu()
                             if (result == 0)
                                 return;
 
-                            safeThis->programs.setCurrentProgram (result == initMenuId
-                                                                      ? Elmer::initProgramIndex
-                                                                      : result - 1);
+                            const auto row = (size_t) (result - 1);
+
+                            if (row < safeThis->menuRows.size())
+                                safeThis->programs.requestProgramChange (safeThis->menuRows[row]);
                         });
 }
 
@@ -389,17 +395,23 @@ juce::String ProgramHeader::currentLcdText() const
             return described;
     }
 
-    const int index = programs.getCurrentProgram();
+    const auto id = programs.getCurrentProgramId();
+
+    // An identifier the session named but the bank no longer has: the VALUES are correct and
+    // untouched, only the name is unknown, so the panel says so rather than pretending. No dirty
+    // asterisk either - there is no baseline to differ from.
+    if (id.bank == ProgramBank::unresolved)
+        return id.displayName + "?";
 
     // The asterisk and SAVE's enablement read the SAME predicate, so the panel cannot show a lit
-    // SAVE over an unmarked name or the reverse. Budget: 3 ("01 ") + 19 (name) + 2 (" *") = 24, the
-    // lcdCharacterBudget the name cell is sized for - see Layout::maxUserNameLength.
-    return programs.getDisplayName (index) + (programs.isModified() ? " *" : "");
+    // SAVE over an unmarked name or the reverse. Only Factory Programs carry a number, computed
+    // from their bank position at paint time.
+    return programs.displayLabelFor (id) + (programs.isModified() ? " *" : "");
 }
 
 void ProgramHeader::paint (juce::Graphics& g)
 {
-    const int index = programs.getCurrentProgram();
+    const auto currentId = programs.getCurrentProgramId();
 
     // --- PROGRAM: one continuous glass, with a bank field separated only by a hairline ---------
     const juce::Rectangle<float> frame { Layout::programX, Layout::lcdRowY,
@@ -424,11 +436,14 @@ void ProgramHeader::paint (juce::Graphics& g)
     //
     // On INIT it reads an em-dash at 42% phosphor with no glow: INIT sits outside both banks, so
     // printing FACT or USER there would name it twice and name it wrongly.
-    const bool onInit = ProgramManager::isInit (index);
+    // **An em-dash where the Program is in neither bank** - INIT, or an unresolved identifier.
+    const bool onInit = currentId.bank == ProgramBank::init
+                         || currentId.bank == ProgramBank::unresolved;
 
     const auto bankText = namingMode ? juce::String ("NAME")
                                      : (onInit ? Text::emDash()
-                                               : juce::String (programs.isFactory (index) ? "FACT" : "USER"));
+                                               : juce::String (currentId.bank == ProgramBank::user
+                                                                    ? "USER" : "FACT"));
 
     Text::drawTracked (g, bankText, lcdFont, Layout::lcdTextTracking, bankArea,
                        juce::Justification::centred,

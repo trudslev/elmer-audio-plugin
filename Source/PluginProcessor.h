@@ -46,16 +46,40 @@ public:
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 0.0; }
 
+    //==============================================================================
+    /** **The host adapter - the ONLY place a Program is addressed by position.**
+
+        **The list is the Factory bank and nothing else.** juce_AudioProcessor.h documents
+        getNumPrograms as "The value returned must be valid as soon as this object is created, and
+        must not change over its lifetime"; a count including User Programs changed on every save.
+        JUCE's VST3 wrapper builds the automatable Program parameter ONCE from this value, so a
+        Program saved afterwards was unreachable from the host. Excluding INIT too means host index
+        n IS Factory Program n+1.
+
+        **Accepted divergence.** getCurrentProgram answers 0 while a User Program is loaded, so a
+        host's menu shows a Factory name while the panel shows the user's Program. Sound and panel
+        are both correct; only the host's own menu is wrong. */
     int getNumPrograms() override { return programs.getNumPrograms(); }
-    int getCurrentProgram() override { return programs.getCurrentProgram(); }
-    void setCurrentProgram (int index) override { programs.setCurrentProgram (index); }
+    int getCurrentProgram() override { return programs.getCurrentFactoryPosition(); }
+    void setCurrentProgram (int index) override;
     const juce::String getProgramName (int index) override { return programs.getProgramName (index); }
+    /** Deliberately a no-op: with Factory-only exposure nothing on the host's list can be renamed.
+        Implementing it would be a back door into the Factory bank. */
     void changeProgramName (int, const juce::String&) override {}
+
+    /** Clears the stale-replay guard. Called from the editor when a change is USER-originated. */
+    void noteUserEdit() noexcept { justRestoredState.store (false, std::memory_order_relaxed); }
 
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
 
     juce::AudioProcessorValueTreeState apvts;
+    /** **Guards a host replaying a stale program index over a just-restored session.** Armed by
+        setStateInformation, disarmed by the first setCurrentProgram (ignored only when it matches
+        what getCurrentProgram reports) or the first USER-originated edit. Automation must not
+        disarm it: a host may write automation on load before replaying. */
+    std::atomic<bool> justRestoredState { false };
+
     ProgramManager programs { apvts };
 
     /** Gain reduction in dB, for the meter. Relaxed - it is a display value, and a torn read costs

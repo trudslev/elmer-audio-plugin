@@ -26,22 +26,37 @@ public:
     explicit ProgramManager (juce::AudioProcessorValueTreeState&);
     ~ProgramManager() override;
 
-    int getNumPrograms() const;
-    int getNumFactoryPrograms() const { return (int) Elmer::factoryPrograms.size(); }
-    int getCurrentProgram() const noexcept { return currentIndex; }
-    juce::String getProgramName (int index) const;
-    juce::String getDisplayName (int index) const;
-    bool isFactory (int index) const { return index >= 0 && index < getNumFactoryPrograms(); }
-    static bool isInit (int index) noexcept { return index == Elmer::initProgramIndex; }
+    /** The Factory bank's size - what the host is told, and it never changes. */
+    int getNumPrograms() const noexcept { return getNumFactoryPrograms(); }
 
-    void setCurrentProgram (int index);
+    ProgramId getCurrentProgramId() const;
+    static ProgramId factoryIdAt (int factoryPosition);
+    static ProgramId initId();
+    static int factoryPositionOf (const juce::String& slug);
+
+    /** The Factory position of the current Program, or 0 when it is INIT, a User Program or
+        unresolved - none of which the host's list contains. */
+    int getCurrentFactoryPosition() const;
+
+    ProgramId resolve (ProgramBank bank, const juce::String& id, const juce::String& displayName) const;
+    std::vector<ProgramId> listPrograms() const;
+
+    /** **What the LCD and the dropdown print - a label, not a key.** Only Factory Programs get the
+        two-digit number, computed from their bank position at paint time. */
+    juce::String displayLabelFor (const ProgramId& id) const;
+
+    /** Applies a Program by identity. Safe from any thread - defers through the AsyncUpdater. */
+    void requestProgramChange (const ProgramId& id);
+    int getNumFactoryPrograms() const { return (int) Elmer::factoryPrograms.size(); }
+    juce::String getProgramName (int index) const;
+
 
     /** Restores WHICH Program is showing without touching a single parameter.
 
         Session restore has already put every value where it belongs; re-applying the Program on top
         would overwrite exactly what was just restored. This also re-takes the clean snapshot, so a
         session that was saved untouched reopens without a dirty asterisk over it. */
-    void setCurrentProgramIndexWithoutApplying (int index);
+    void setCurrentProgramWithoutApplying (const ProgramId& id);
 
     /** Cancels a queued apply. Essential around setStateInformation: a change requested just before
         the restore would otherwise land just after it and overwrite everything restored. */
@@ -52,10 +67,60 @@ public:
         anywhere. See ../../CLAUDE.md, "Parameters and saved state". */
     static constexpr const char* sessionSchemaAttribute  = "elmerSessionSchema";
     static constexpr const char* currentProgramAttribute = "elmerCurrentProgram";
-    static constexpr int currentSessionSchemaVersion = 1;
+    static constexpr int currentSessionSchemaVersion = 2;
 
-    /** Always creates a new Program; never overwrites. Returns its index. */
-    int saveNewUserProgram (const juce::String& name);
+    /** The schema at which the session stopped storing a positional index and started storing bank
+        + identifier. */
+    static constexpr int identitySchemaVersion = 2;
+
+    /** **The oldest session schema whose values can still be interpreted, pinned to a literal.**
+        Elmer has only ever had one, and the identity bump is purely additive.
+
+        A literal on purpose: the gate read `!= currentSessionSchemaVersion`, which is correct
+        exactly once - this bump would otherwise have discarded every existing session's parameter
+        values over a change that alters no parameter's meaning. */
+    static constexpr int oldestReadableSessionSchema = 1;
+
+    /** The identity attributes, joining the contract above. `...ProgramName` is DISPLAY ONLY. */
+    static constexpr const char* programBankAttribute = "elmerProgramBank";
+    static constexpr const char* programIdAttribute   = "elmerProgramId";
+    static constexpr const char* programNameAttribute = "elmerProgramName";
+
+    /** Three outcomes, deliberately distinct: too old to interpret, too new to know about, usable. */
+    enum class SchemaVerdict { tooOld, tooNew, readable };
+
+    static SchemaVerdict classifySessionSchema (int savedSchema) noexcept
+    {
+        if (savedSchema < oldestReadableSessionSchema) return SchemaVerdict::tooOld;
+        if (savedSchema > currentSessionSchemaVersion) return SchemaVerdict::tooNew;
+
+        return SchemaVerdict::readable;
+    }
+
+    static juce::String bankAttributeValue (ProgramBank bank)
+    {
+        switch (bank)
+        {
+            case ProgramBank::init:       return "init";
+            case ProgramBank::factory:    return "factory";
+            case ProgramBank::user:       return "user";
+            case ProgramBank::unresolved: return "unresolved";
+        }
+
+        return "factory";
+    }
+
+    static ProgramBank bankFromAttribute (const juce::String& value)
+    {
+        if (value == "init")       return ProgramBank::init;
+        if (value == "user")       return ProgramBank::user;
+        if (value == "unresolved") return ProgramBank::unresolved;
+
+        return ProgramBank::factory;
+    }
+
+    /** Always creates a new Program; never overwrites. Selects and returns it. */
+    ProgramId saveNewUserProgram (const juce::String& name);
 
     /** True once any parameter has moved since the current Program was applied.
 
@@ -66,7 +131,7 @@ public:
         Program's own definition: that keeps applyFactory the single description of what a Program
         sets, with no second copy to drift out of step. */
     bool isModified() const;
-    void deleteUserProgram (int index);
+    void deleteUserProgram (const ProgramId& id);
 
     static juce::File getUserProgramDirectory();
 
@@ -75,19 +140,26 @@ public:
 
 private:
     void handleAsyncUpdate() override;
-    void applyFactory (int index);
-    void applyUser (int index);
+    bool applyUserFile (const juce::File& file);
     void rescanUserPrograms();
     void setParam (const char* id, float actualValue);
     void applyProgramValues (const Elmer::FactoryProgram& p);
+    void applyProgram (const ProgramId& id);
+    void setCurrentId (const ProgramId& id);
+    juce::File userProgramFile (const juce::String& stem) const;
     void captureSnapshot();
 
     static const juce::StringArray& snapshotParamIds();
 
     juce::AudioProcessorValueTreeState& apvts;
     juce::Array<juce::File> userFiles;
-    int currentIndex = Elmer::defaultFactoryProgramIndex;
-    std::atomic<int> pendingIndex { -2 };        // -1 is INIT, so "nothing pending" cannot be -1
+    mutable juce::SpinLock currentIdLock;
+    ProgramId currentId;
+
+    // "Nothing pending" is its own flag now rather than a sentinel value.
+    juce::SpinLock pendingLock;
+    bool hasPendingProgram = false;
+    ProgramId pendingProgram;
 
     // Guarded because setStateInformation can arrive on any thread while the GUI polls the flag on
     // the message thread.

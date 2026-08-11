@@ -136,7 +136,12 @@ void ElmerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // dirty asterisk over a session nobody had touched.
     xml->setAttribute (ProgramManager::sessionSchemaAttribute,
                        ProgramManager::currentSessionSchemaVersion);
-    xml->setAttribute (ProgramManager::currentProgramAttribute, programs.getCurrentProgram());
+    // **The bank, the identifier, and the full parameter state.** The values make the session sound
+    // right; the identity only decides what the panel CALLS them.
+    const auto id = programs.getCurrentProgramId();
+    xml->setAttribute (ProgramManager::programBankAttribute, ProgramManager::bankAttributeValue (id.bank));
+    xml->setAttribute (ProgramManager::programIdAttribute, id.id);
+    xml->setAttribute (ProgramManager::programNameAttribute, id.displayName);
 
     copyXmlToBinary (*xml, destData);
 }
@@ -154,19 +159,60 @@ void ElmerAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 
     programs.cancelPendingChange();
 
-    if (savedSchema != ProgramManager::currentSessionSchemaVersion)
+    // **Two branches, both pinned to literals.** Too old (including pre-schema sessions with no
+    // attribute at all, which carry values but no Program identity): applying the default is honest,
+    // since the alternative is naming a Program that was never recorded. Too new: written by a later
+    // build, and reading it with today's assumptions would give plausible wrong values.
+    //
+    // This replaced `savedSchema != currentSessionSchemaVersion`, which was correct exactly once.
+    if (ProgramManager::classifySessionSchema (savedSchema) != ProgramManager::SchemaVerdict::readable)
     {
-        // Pre-schema sessions (no attribute at all) carry values but no Program identity. Applying
-        // the default is honest: the alternative is naming a Program that was never recorded.
-        programs.setCurrentProgram (Elmer::defaultFactoryProgramIndex);
+        programs.requestProgramChange (ProgramManager::factoryIdAt (Elmer::defaultFactoryProgramIndex));
         return;
     }
 
     apvts.replaceState (juce::ValueTree::fromXml (*xml));
 
-    programs.setCurrentProgramIndexWithoutApplying (
-        xml->getIntAttribute (ProgramManager::currentProgramAttribute,
-                              Elmer::defaultFactoryProgramIndex));
+    ProgramId restored;
+
+    if (savedSchema >= ProgramManager::identitySchemaVersion)
+    {
+        restored = programs.resolve (
+            ProgramManager::bankFromAttribute (
+                xml->getStringAttribute (ProgramManager::programBankAttribute)),
+            xml->getStringAttribute (ProgramManager::programIdAttribute),
+            xml->getStringAttribute (ProgramManager::programNameAttribute));
+    }
+    else
+    {
+        // Schema 1 stored a position. Map it through the CURRENT bank.
+        const int savedIndex = xml->getIntAttribute (ProgramManager::currentProgramAttribute,
+                                                      Elmer::defaultFactoryProgramIndex);
+
+        if (savedIndex == -1)
+            restored = ProgramManager::initId();
+        else if (juce::isPositiveAndBelow (savedIndex, (int) Elmer::factoryPrograms.size()))
+            restored = ProgramManager::factoryIdAt (savedIndex);
+        else
+            restored = ProgramManager::factoryIdAt (Elmer::defaultFactoryProgramIndex);
+    }
+
+    programs.setCurrentProgramWithoutApplying (restored);
+
+    // **Armed AFTER replaceState**, or the restore's own writes would disarm it.
+    justRestoredState.store (true, std::memory_order_relaxed);
+}
+
+void ElmerAudioProcessor::setCurrentProgram (int index)
+{
+    if (! juce::isPositiveAndBelow (index, programs.getNumPrograms()))
+        return;
+
+    // The stale-replay guard, disarmed by this call whether or not it is honoured.
+    if (justRestoredState.exchange (false, std::memory_order_relaxed) && index == getCurrentProgram())
+        return;
+
+    programs.requestProgramChange (ProgramManager::factoryIdAt (index));
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
