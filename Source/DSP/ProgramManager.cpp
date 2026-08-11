@@ -85,9 +85,17 @@ juce::File ProgramManager::getUserProgramDirectory()
     // Programs are not those; they are application-owned data in our own format, so they belong
     // where an application keeps its data.
     //
-    // The Application Support segment is JUCE's, not ours, and must never be hard-coded:
-    // userApplicationDataDirectory resolves to ~/Library/Application Support on macOS, %APPDATA% on
-    // Windows and ~/.config on Linux. A shared literal path would be wrong on two of the three.
+    // **macOS needs the "Application Support" segment added by hand, and only macOS.** JUCE's
+    // userApplicationDataDirectory is `~/Library` there - NOT `~/Library/Application Support` -
+    // while it is `%APPDATA%` on Windows and `~/.config` on Linux, both of which are already the
+    // right root. JUCE's own PropertiesFile appends the segment the same way, for the same reason.
+    //
+    // This was got wrong once in exactly the plausible direction: the note here used to claim JUCE
+    // resolved the segment for us, and that hard-coding it would be wrong on two platforms out of
+    // three. The first half was false, and the second half only argues for the `#if` - it is one
+    // platform's extra segment, not a shared literal path. Programs landed directly in
+    // `~/Library/<Company>/` for a while, which is not where application data goes on macOS and is
+    // not a folder anything else writes into.
     //
     // Company and product come from CMake rather than string literals - see the note in
     // CMakeLists.txt for the drift that cost CHORUS-60 a directory.
@@ -99,7 +107,13 @@ juce::File ProgramManager::getUserProgramDirectory()
     // cannot occur is dead weight that still costs a directory probe on every rescan.
     //
     // If a version ever ships and the path changes AGAIN, that is when this becomes necessary.
-    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+    auto dir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory);
+
+   #if JUCE_MAC
+    dir = dir.getChildFile ("Application Support");
+   #endif
+
+    return dir
                .getChildFile (NF_COMPANY_NAME)
                .getChildFile (NF_PRODUCT_NAME)
                .getChildFile ("Programs");
