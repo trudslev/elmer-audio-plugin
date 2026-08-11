@@ -60,19 +60,52 @@ namespace Colour
     inline const juce::Colour phosphorGlow   { juce::Colour::fromRGBA (214, 196, 124, 115) };
     inline const juce::Colour lcdHairline    { juce::Colour::fromRGBA (214, 196, 124, 56) };  // .22
 
-    // --- buttons -------------------------------------------------------------
-    inline const juce::Colour creamTop       { 0xFFF0E9D3 };
-    inline const juce::Colour creamBottom    { 0xFFD6CDB2 };
-    inline const juce::Colour creamText      { 0xFF302C24 };
-    inline const juce::Colour creamOffTop    { 0xFFA5A094 };
-    inline const juce::Colour creamOffBottom { 0xFF8F8A7E };
-    // Darkened from #6F6A5F, which read 1.56:1 against its own cap - absent rather than dim.
-    // contrast: 3.19-4.22:1 vs creamOffTop,creamOffBottom [state]
-    inline const juce::Colour creamOffText   { 0xFF3F3C36 };
+    // --- Program buttons: split-legend annunciator caps -----------------------
+    /** **One body, two independently-lamped windows, stacked.** The resting function on top, what
+        the button becomes while naming beneath it. Neither button relabels and neither wears a
+        disabled face; only the lamps change.
 
+        The cream cap is gone and should not return. It was a pale face carrying dark text with a
+        separate greyed-out disabled treatment, and both halves of that were wrong: a printed panel
+        legend cannot rewrite itself, and no rack unit greys a button out - its lamp goes out. The
+        retired values were #F0E9D3 -> #D6CDB2 with #302C24 ink, and a disabled face of
+        #A5A094 -> #8F8A7E whose #6F6A5F label measured **1.56:1**. */
+    inline const juce::Colour capTop         { 0xFF57503F };
+    inline const juce::Colour capBottom      { 0xFF211F19 };
+
+    /** **The lens body never changes - only the characters light.** Both windows render this same
+        ground lit or unlit; what differs is the legend and the halo the glowing characters throw
+        onto the ground around them.
+
+        An earlier revision warmed the whole lit window, and it read as a filled rectangle lighting
+        up rather than as a bulb behind a legend - which is precisely the failure BRAND.md names
+        when it says the lamp lights the letters, not the button. */
+    inline const juce::Colour windowTop      { 0xFF2A2822 };
+    inline const juce::Colour windowBottom   { 0xFF1E1C17 };
+
+    // contrast: 4.30-5.00:1 vs windowTop,windowBottom [state]
+    inline const juce::Colour legendUnlit    { 0xFF8F8A7C };
+    /** Warm white - incandescent, not any of Elmer's three function-group colours, and NOT the
+        panel accent #F3D021, which stays reserved for the KNEE lamp.
+        // contrast: 13.10-15.10:1 vs windowTop,windowBottom [functional] */
+    inline const juce::Colour legendLit      { 0xFFFFEFD0 };
+
+    // --- KNEE lamp -----------------------------------------------------------
+    /** **The lit face is DARKER than the unlit one, and that is the fix, not a mistake.**
+
+        This is Elmer's only lit indicator, and it used to be the least legible label on the panel:
+        one face served both states, so the selected legend drew #FFF6C9 on mid-grey at
+        **2.28-3.17:1** while the unselected one sat at 4.94-5.86. The engaged state was harder to
+        read than the disengaged one. No runtime change could fix it - lifting #FFF6C9 off that
+        grey is not possible - so it needed the face itself to darken when lit, which is what the
+        2026-08-11 handoff delivered. */
     inline const juce::Colour lampFaceTop    { 0xFFA9A496 };
     inline const juce::Colour lampFaceBottom { 0xFF8E8A7D };
+    // contrast: 6.90-4.90:1 vs lampFaceTop,lampFaceBottom [functional]
     inline const juce::Colour lampLegendOff  { 0xFF1D1C17 };
+    inline const juce::Colour lampFaceLitTop    { 0xFF46402F };
+    inline const juce::Colour lampFaceLitBottom { 0xFF322D21 };
+    // contrast: 9.50-12.60:1 vs lampFaceLitTop,lampFaceLitBottom [functional]
     inline const juce::Colour lampLegendOn   { 0xFFFFF6C9 };
 
     /** The one accent, per BRAND.md, and the ONLY lit indicator anywhere on this panel. Reserved
@@ -281,23 +314,38 @@ namespace Layout
     inline constexpr float captionTracking = 3.0f;
 
     /** The caption row, measured off the reference render rather than derived: cap ink lands at
-        y 47..54 there, so the 12px box that centres it starts at 44.5. The captions used to sit at
-        contentY, which was right for a row that began at 37 and is 24px too high for one that
-        begins at 61. */
-    inline constexpr float captionY = 45.0f;
+        y 45..52 there, so the 12px box that centres it starts at 42.5. The captions sit 5px above
+        the row and rise with it - the 34px band moved the row up 2px, and the captions follow,
+        which is why this is not a constant anyone should pin independently.
 
-    /** **The header row: 30px tall, at y 61.** Every element in it - display, SAVE, DELETE, IN and
-        OUT - is the same 30px height and shares this Y, so the band reads as one instrument; the
-        display is not allowed to be the odd one out.
+        They used to sit at contentY, which was right for a row that began at 37 and is 24px too
+        high for one that begins at 59. */
+    inline constexpr float captionY = 43.0f;
 
-        61 is not a free choice: the row is centred against the FULL 112px header block, which
-        starts at the 20px content inset, so (112 - 30) / 2 + 20 = 61. Centring on the wordmark
-        plate instead - which is what the previous 37 amounted to - left the display sitting high.
+    /** **The header row: 34px tall, at y 59.** Every element in it - display, SAVE, DELETE, IN and
+        OUT - is the same height and shares this Y, so the band reads as one instrument; the display
+        is not allowed to be the odd one out.
 
-        The display was 364 x 38 and held 21 characters. At 361 x 30 with 14px type it holds 24: the
+        **34 is the suite's figure, not this panel's.** BRAND.md fixes the header part height at
+        34px in every casting - not a proportion of the panel, because the castings are
+        differently-sized units rather than scales of one design, and a manufacturer uses the same
+        physical part across a product line. It came up from 30 with that ruling.
+
+        59 is not a free choice either: the row is centred against the FULL 112px header block,
+        which starts at the 20px content inset, so (112 - 34) / 2 + 20 = 59. Centring on the
+        wordmark plate instead - which is what the old 37 amounted to - left the display sitting
+        high against a left column running well below it. `DisplayBudgetTests` asserts that
+        relationship rather than the literal, so the row cannot gain height without moving its Y:
+        that half-update is exactly what would otherwise ship.
+
+        **Widths are unchanged by the 34px change** - the display stays 361 at x 403..764, the
+        buttons 62, the meters 74 - so the character budget is untouched at 24. The height went
+        into the buttons, which now carry two stacked legends each.
+
+        The display was 364 x 38 and held 21 characters. At 361 with 14px type it holds 24: the
         weight comes off and three characters come back. */
-    inline constexpr float lcdRowY = 61.0f;
-    inline constexpr float lcdRowH = 30.0f;
+    inline constexpr float lcdRowY = 59.0f;
+    inline constexpr float lcdRowH = 34.0f;
     inline constexpr float programX = 403.0f;
 
     /** 361, not the 359 the cell widths alone give: 56 + 269 + 28 is 353, plus TWO 1px hairlines
@@ -320,9 +368,10 @@ namespace Layout
     inline constexpr float chevronH = 7.0f;
     inline constexpr float chevronStroke = 1.6f;
 
-    /** The menu hangs from the GLASS's lower edge, not the frame's outside: 30px display less two
-        3px frame edges is 24px of glass, plus 4px to clear its inner shadow. */
-    inline constexpr float menuTopOffset = 28.0f;
+    /** The menu hangs from the GLASS's lower edge, not the frame's outside: the 34px display less
+        two 3px frame edges is 28px of glass, plus 4px to clear its inner shadow. Rose with the
+        band; it is 34 - 2 x 3 + 4 and not a free number. */
+    inline constexpr float menuTopOffset = 32.0f;
 
     /** **22 = 24 - 2, and the three characters it gained are the "NN " prefix that user names no
         longer carry.**
@@ -350,8 +399,21 @@ namespace Layout
     inline constexpr float saveX = 771.0f;
     inline constexpr float deleteX = 840.0f;
     inline constexpr float headerButtonW = 62.0f;
+    /** 10px is BRAND.md's floor for functional text and **both** legends are functional, so
+        neither is set smaller than the other to make the pair fit. Tracking came in from 2.0 to
+        1.4 because two stacked legends at 2.0 crowd DELETE/CANCEL against the 62px cap. */
     inline constexpr float buttonTextSize = 10.0f;
-    inline constexpr float buttonTracking = 2.0f;
+    inline constexpr float buttonTracking = 1.4f;
+
+    /** The cap's 2px padding, then two windows of 15px each: 2 + 15 + 15 + 2 = 34. The windows
+        share an edge with no gap, deliberately - the ground is continuous so a lit legend's halo
+        can spill into the neighbouring legend's half, which is what a real bulb behind a split
+        lens does. **No rib, divider, bezel or lamp is drawn as its own element**: BRAND.md forbids
+        it, and the two legends separate by their own leading plus the difference in kind between a
+        luminous and a matte legend. */
+    inline constexpr float capPadding = 2.0f;
+    inline constexpr float legendWindowH = 15.0f;
+    inline constexpr float windowRadius = 2.0f;
 
     inline constexpr float meterInX = 928.0f;
     inline constexpr float meterOutX = 1011.0f;

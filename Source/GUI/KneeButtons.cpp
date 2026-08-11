@@ -29,11 +29,20 @@ void KneeButtons::mouseDown (const juce::MouseEvent& e)
 void KneeButtons::drawLamp (juce::Graphics& g, juce::Rectangle<float> r,
                             const juce::String& legend, bool lit)
 {
-    // The face is identical whether or not this button is selected.
-    g.setGradientFill (Paint::vertical (r, Colour::lampFaceTop, Colour::lampFaceBottom));
+    /*  **The face DARKENS when lit**, and it has to: this is the panel's only lit indicator, and
+        while one face served both states the selected legend drew #FFF6C9 on mid-grey at
+        2.28-3.17:1 against the unselected one's 4.94-5.86. The engaged state was the least legible
+        label on the panel - the exact inversion of what an indicator is for.
+
+        No runtime change could fix it. Lifting #FFF6C9 off that grey is not possible, so the fix
+        had to come from the artwork, and the 2026-08-11 handoff delivered it: lit is now
+        #46402F -> #322D21 carrying the same legend at 9.5-12.6:1. */
+    g.setGradientFill (Paint::vertical (r, lit ? Colour::lampFaceLitTop : Colour::lampFaceTop,
+                                           lit ? Colour::lampFaceLitBottom : Colour::lampFaceBottom));
     g.fillRoundedRectangle (r, Layout::lampRadius);
 
-    g.setColour (juce::Colours::white.withAlpha (0.30f));
+    // The machined top edge catches far less light on the dark face than on the pale one.
+    g.setColour (juce::Colours::white.withAlpha (lit ? 0.14f : 0.30f));
     g.drawLine (r.getX() + 1.0f, r.getY() + 0.5f, r.getRight() - 1.0f, r.getY() + 0.5f, 1.0f);
 
     const auto font = Font::mono (Layout::lampLegendSize);

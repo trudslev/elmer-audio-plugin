@@ -483,23 +483,93 @@ void ProgramHeader::paint (juce::Graphics& g)
     if (! namingMode)
         paintChevron (g);
 
-    // --- SAVE / DELETE -------------------------------------------------------------------------
-    const auto drawButton = [&g] (juce::Rectangle<float> r, const juce::String& label, bool enabled)
+    // --- SAVE / STORE and DELETE / CANCEL ------------------------------------------------------
+    /*  A split-legend annunciator cap: one body, two windows, each independently lamped. Nothing
+        here branches on "enabled" - the body and both window grounds are identical in every state,
+        including the state that used to be disabled. A dark legend is a function with nothing to
+        do, not a control that has been switched off. */
+    const auto drawLegendWindow = [&g] (juce::Rectangle<float> window, const juce::String& label,
+                                        bool lit, bool roundTop)
     {
-        g.setGradientFill (Paint::vertical (r, enabled ? Colour::creamTop : Colour::creamOffTop,
-                                            enabled ? Colour::creamBottom : Colour::creamOffBottom));
-        g.fillRoundedRectangle (r, Layout::lcdGlassRadius);
+        // The ground is the same lit or unlit. Drawing it as a full rounded rect and then squaring
+        // off the inner edge keeps the two windows sharing one continuous surface, so a halo can
+        // cross the join.
+        g.setGradientFill (Paint::vertical (window, Colour::windowTop, Colour::windowBottom));
+        g.fillRoundedRectangle (window, Layout::windowRadius);
+        g.fillRect (roundTop ? window.withTrimmedTop (Layout::windowRadius)
+                             : window.withTrimmedBottom (Layout::windowRadius));
 
-        g.setColour (juce::Colours::white.withAlpha (enabled ? 0.85f : 0.22f));
-        g.drawLine (r.getX() + 1.5f, r.getY() + 0.5f, r.getRight() - 1.5f, r.getY() + 0.5f, 1.0f);
+        const auto font = Font::mono (Layout::buttonTextSize);
 
-        Text::drawTracked (g, label, Font::mono (Layout::buttonTextSize), Layout::buttonTracking, r,
+        if (lit)
+        {
+            /*  The spec's three-layer text-shadow (3px / 7px / 13px, warm and widening). JUCE has
+                no text-shadow and no cheap blur for a string, so each layer is the same tracked
+                text drawn at eight points around a circle - overlapping copies sum to a halo,
+                which is what a blur of that radius gives at 10px type.
+
+                The colours warm as they widen, exactly as the spec's do: a white core over an
+                amber spill is what an incandescent bulb behind a legend looks like. Alphas are
+                tuned against the render, not lifted from it - eight overlapping copies at alpha a
+                reach 1-(1-a)^8 where they coincide. */
+            struct Halo { float radius, alpha; juce::Colour colour; };
+            const Halo halo[] {
+                { 6.5f, 0.030f, juce::Colour (0xFFFFC46E) },
+                { 3.5f, 0.055f, juce::Colour (0xFFFFD696) },
+                { 1.0f, 0.110f, Colour::legendLit }
+            };
+
+            for (const auto& layer : halo)
+                for (int i = 0; i < 8; ++i)
+                {
+                    const float angle = juce::MathConstants<float>::twoPi * (float) i / 8.0f;
+
+                    Text::drawTracked (g, label, font, Layout::buttonTracking,
+                                       window.translated (std::cos (angle) * layer.radius,
+                                                          std::sin (angle) * layer.radius),
+                                       juce::Justification::centred,
+                                       layer.colour.withAlpha (layer.alpha), false);
+                }
+        }
+
+        Text::drawTracked (g, label, font, Layout::buttonTracking, window,
                            juce::Justification::centred,
-                           enabled ? Colour::creamText : Colour::creamOffText, false);
+                           lit ? Colour::legendLit : Colour::legendUnlit, false);
     };
 
-    drawButton (saveBounds(), namingMode ? "STORE" : "SAVE", saveEnabled());
-    drawButton (deleteBounds(), namingMode ? "CANCEL" : "DELETE", deleteEnabled());
+    const auto drawButton = [&g, &drawLegendWindow] (juce::Rectangle<float> r,
+                                                     const juce::String& topLabel,
+                                                     const juce::String& bottomLabel,
+                                                     bool topLit, bool bottomLit)
+    {
+        g.setGradientFill (Paint::vertical (r, Colour::capTop, Colour::capBottom));
+        g.fillRoundedRectangle (r, Layout::lcdGlassRadius);
+
+        // 0 1px 0 rgba(255,255,255,.34) - the machined top edge of the collar.
+        g.setColour (juce::Colours::white.withAlpha (0.34f));
+        g.drawLine (r.getX() + 1.5f, r.getY() + 0.5f, r.getRight() - 1.5f, r.getY() + 0.5f, 1.0f);
+
+        auto lens = r.reduced (Layout::capPadding);
+        const juce::Graphics::ScopedSaveState state (g);
+        g.reduceClipRegion (lens.getSmallestIntegerContainer());
+
+        drawLegendWindow (lens.removeFromTop (Layout::legendWindowH), topLabel, topLit, true);
+        drawLegendWindow (lens.removeFromTop (Layout::legendWindowH), bottomLabel, bottomLit, false);
+    };
+
+    /*  GUI-SPEC's "which legend is live" table, in full:
+
+        | Condition                        | SAVE | STORE | DELETE | CANCEL |
+        | Factory or INIT, unmodified      | dark | dark  | dark   | dark   |
+        | Factory or INIT, edited          | LIT  | dark  | dark   | dark   |
+        | User Program, unmodified         | dark | dark  | LIT    | dark   |
+        | User Program, edited             | LIT  | dark  | LIT    | dark   |
+        | Naming                           | dark | LIT   | dark   | LIT    |
+
+        saveEnabled() and deleteEnabled() already report both regions live while naming, so the
+        naming row is what decides which of each button's two legends that liveness belongs to. */
+    drawButton (saveBounds(),   "SAVE",   "STORE",  ! namingMode && saveEnabled(),   namingMode);
+    drawButton (deleteBounds(), "DELETE", "CANCEL", ! namingMode && deleteEnabled(), namingMode);
 
     // --- IN / OUT ------------------------------------------------------------------------------
     const auto level = [&g, this] (float x, float db)

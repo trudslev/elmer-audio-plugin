@@ -41,11 +41,12 @@ agrees with the renders — and `#6f6a5f` on that cream is the 1.56:1 the suite 
 face the two-legend ruling abolished. Raised with the designers; the stale prose is to be deleted,
 not reconciled.
 
-**KNEE's lamp inversion is fixed in this revision**, which unblocks a defect that needed artwork:
-the lit face is now *darker* than the unlit one (`#46402f → #322d21` against `#a9a496 → #8e8a7d`),
-so the selected legend reads **9.5:1 → 12.6:1** where it used to measure 2.28–3.17:1. Elmer's one
-lit indicator had been its least legible label. `KneeButtons.cpp` still paints the old single face
-for both states — that is the code half of the fix and it is not done yet.
+**KNEE's lamp inversion is fixed**, artwork and code both. The lit face is now *darker* than the
+unlit one (`#46402f → #322d21` against `#a9a496 → #8e8a7d`), so the selected legend reads
+**9.5:1 → 12.6:1** where it used to measure 2.28–3.17:1. Elmer's one lit indicator had been its
+least legible label, which is the exact inversion of what an indicator is for — and no runtime
+change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
+face to darken, which is a plate decision, not a code one.
 
 ## Commands
 
@@ -203,11 +204,31 @@ is at `-26`. A formula erases every one of those.
 AUTO is a position on the RELEASE switch, not a button, so it needs no lamp — the pointer is the
 state. No knob ever dims, greys out or goes inert.
 
-**The header row is one 30px band, and 61 is derived, not chosen.** Display, SAVE, DELETE and the
-IN/OUT readouts are all 30 px tall on one Y, so the band reads as a single instrument. The row is
-centred against the **full 112 px header block** from the 20 px content inset — (112 − 30) / 2 + 20 —
+**The header row is one 34px band, and 59 is derived, not chosen.** Display, SAVE, DELETE and the
+IN/OUT readouts are all 34 px tall on one Y, so the band reads as a single instrument. The row is
+centred against the **full 112 px header block** from the 20 px content inset — (112 − 34) / 2 + 20 —
 not against the wordmark plate, which is what the old 37 amounted to and which left the display
 sitting high against a left column that runs well below it.
+
+**34 is the suite's figure rather than this panel's**, per BRAND.md: the castings are
+differently-sized units, not scales of one design, so the header part is the same physical size in
+all six. It came up from 30 with that ruling, taking the row's Y from 61 to 59 and the captions from
+45 to 43 with it. `DisplayBudgetTests` asserts the centring *relationship* rather than the literal,
+so the height cannot move without its Y — that half-update is exactly what would otherwise ship.
+**Widths did not change**, so the character budget is untouched at 24 and the cap at 22; the extra
+height went entirely into the buttons.
+
+**The Program buttons are split-legend annunciator caps** — one body, two independently-lamped
+windows, SAVE above STORE and DELETE above CANCEL. Neither relabels and neither has a disabled face.
+The cream cap and its greyed-out disabled treatment are both gone and neither should return: a
+printed panel legend cannot rewrite itself, no rack unit greys a button out, and that disabled label
+measured **1.56:1**. Both legends dark is the "nothing to do here" state now, at 4.3–5.0:1.
+
+**The lens body is identical lit and unlit; only the characters light.** An earlier revision warmed
+the whole lit window and it read as a rectangle lighting up rather than a bulb behind a legend —
+the failure BRAND.md names when it says the lamp lights the letters, not the button. The two windows
+share a continuous ground with no rib or divider between them, so a lit legend's halo spills into
+the neighbouring half the way a real bulb behind a split lens does.
 
 The display is 403 × 361, and 361 rather than the 353 the cells alone give: three cells
 (56 + 269 + 28) plus **two** 1 px hairlines plus the 3 px frame each side. The cells are explicit
