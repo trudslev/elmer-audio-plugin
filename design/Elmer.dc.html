@@ -48,7 +48,7 @@
         <div style="position:relative;flex:1">
           <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">PROGRAM</div>
           <div style="display:flex;align-items:stretch;gap:7px">
-            <div style="position:relative;flex:1;display:flex;align-items:stretch;height:30px;box-sizing:border-box;border-radius:3px;padding:3px;background:linear-gradient(180deg,#26241f,#3a372f);box-shadow:0 2px 5px rgba(35,30,22,.55) inset, 0 1px 0 rgba(255,255,255,.35)">
+            <div style="position:relative;flex:1;display:flex;align-items:stretch;height:34px;box-sizing:border-box;border-radius:3px;padding:3px;background:linear-gradient(180deg,#26241f,#3a372f);box-shadow:0 2px 5px rgba(35,30,22,.55) inset, 0 1px 0 rgba(255,255,255,.35)">
               <div style="flex:1;display:flex;align-items:stretch;border-radius:2px;background:linear-gradient(180deg,#1b1a16,#242219);box-shadow:0 1px 4px rgba(0,0,0,.6) inset">
                 <div style="{{ bankStyle }}">{{ bankLabel }}</div>
                 <sc-if value="{{ naming }}" hint-placeholder-val="{{ false }}">
@@ -66,36 +66,43 @@
                 </sc-if>
               </div>
               <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="position:absolute;left:0;top:28px;width:100%;z-index:40;max-height:665px;overflow-y:auto;box-sizing:border-box;padding:4px 0;border-radius:0 0 3px 3px;border:1px solid rgba(214,196,124,.30);border-top:0;background:#16150f;box-shadow:0 14px 24px -6px rgba(0,0,0,.55)">
+                <div style="position:absolute;left:0;top:32px;width:100%;z-index:40;max-height:665px;overflow-y:auto;box-sizing:border-box;padding:4px 0;border-radius:0 0 3px 3px;border:1px solid rgba(214,196,124,.30);border-top:0;background:#16150f;box-shadow:0 14px 24px -6px rgba(0,0,0,.55)">
                   <div onClick="{{ pickInit }}" style="{{ initRowStyle }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">INIT</div>
                   <div style="height:1px;margin:4px 10px;background:rgba(214,196,124,.24)"></div>
                   <div style="padding:3px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2.6px;color:#8a8163">FACTORY</div>
                   <sc-for list="{{ factRows }}" as="row" hint-placeholder-count="6">
                     <div onClick="{{ row.pick }}" style="{{ row.style }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">{{ row.label }}</div>
                   </sc-for>
-                  <sc-if value="{{ hasUser }}" hint-placeholder-val="{{ false }}">
-                    <div style="height:1px;margin:4px 10px;background:rgba(214,196,124,.24)"></div>
-                    <div style="padding:3px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2.6px;color:#8a8163">USER</div>
-                    <sc-for list="{{ userRows }}" as="row" hint-placeholder-count="2">
-                      <div onClick="{{ row.pick }}" style="{{ row.style }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">{{ row.label }}</div>
-                    </sc-for>
+                  <div style="height:1px;margin:4px 10px;background:rgba(214,196,124,.24)"></div>
+                  <div style="padding:3px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2.6px;color:#8a8163">USER</div>
+                  <sc-for list="{{ userRows }}" as="row" hint-placeholder-count="2">
+                    <div onClick="{{ row.pick }}" style="{{ row.style }}" style-hover="background:rgba(214,196,124,.13);color:#f2e9c4">{{ row.label }}</div>
+                  </sc-for>
+                  <sc-if value="{{ noUser }}" hint-placeholder-val="{{ true }}">
+                    <div style="padding:3px 12px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:1.1px;color:#7a7460;cursor:default">— none saved —</div>
                   </sc-if>
                 </div>
               </sc-if>
             </div>
-            <div onClick="{{ onSave }}" style="{{ saveStyle }}" style-active="transform:translateY(1px)">{{ saveLabel }}</div>
-            <div onClick="{{ onDelete }}" style="{{ deleteStyle }}">{{ deleteLabel }}</div>
+            <div onClick="{{ onSave }}" style="width:62px;height:34px;box-sizing:border-box;display:flex;flex-direction:column;border-radius:3px;padding:2px;cursor:pointer;background:linear-gradient(180deg,#57503f,#211f19);box-shadow:0 1px 0 rgba(255,255,255,.34), 0 2px 3px rgba(40,34,26,.42)" style-active="transform:translateY(1px)">
+              <div style="{{ winSave }}">SAVE</div>
+              <div style="{{ winStore }}">STORE</div>
+            </div>
+            <div onClick="{{ onDelete }}" style="width:62px;height:34px;box-sizing:border-box;display:flex;flex-direction:column;border-radius:3px;padding:2px;cursor:pointer;background:linear-gradient(180deg,#57503f,#211f19);box-shadow:0 1px 0 rgba(255,255,255,.34), 0 2px 3px rgba(40,34,26,.42)" style-active="transform:translateY(1px)">
+              <div style="{{ winDelete }}">DELETE</div>
+              <div style="{{ winCancel }}">CANCEL</div>
+            </div>
           </div>
         </div>
 
         <div style="display:flex;gap:9px">
           <div style="position:relative;width:74px">
             <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">IN</div>
-            <div style="height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ inDb }}</div>
+            <div style="height:34px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ inDb }}</div>
           </div>
           <div style="position:relative;width:74px">
             <div style="position:absolute;left:0;bottom:100%;margin-bottom:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:3px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.30)">OUT</div>
-            <div style="height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ outDb }}</div>
+            <div style="height:34px;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#1b1a16,#262419);box-shadow:0 2px 5px rgba(0,0,0,.55) inset, 0 1px 0 rgba(255,255,255,.32);font-family:'IBM Plex Mono',monospace;font-size:14px;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.4)">{{ outDb }}</div>
           </div>
         </div>
       </div>
@@ -159,8 +166,8 @@
             </div>
             <div style="width:140px;display:flex;flex-direction:column;align-items:center;padding-top:37px">
               <div style="display:flex;flex-direction:column;gap:7px">
-                <div onClick="{{ setKneeSoft }}" style="{{ btnFace }}"><div style="{{ kneeSoftLed }}"></div><span style="{{ kneeSoftLbl }}">SOFT</span></div>
-                <div onClick="{{ setKneeHard }}" style="{{ btnFace }}"><div style="{{ kneeHardLed }}"></div><span style="{{ kneeHardLbl }}">HARD</span></div>
+                <div onClick="{{ setKneeSoft }}" style="{{ kneeSoftFace }}"><div style="{{ kneeSoftLed }}"></div><span style="{{ kneeSoftLbl }}">SOFT</span></div>
+                <div onClick="{{ setKneeHard }}" style="{{ kneeHardFace }}"><div style="{{ kneeHardLed }}"></div><span style="{{ kneeHardLbl }}">HARD</span></div>
               </div>
               <div style="margin-top:15px;font-size:11.5px;font-weight:600;letter-spacing:2.4px;color:#0f0f0c;text-shadow:0 1px 0 rgba(255,255,255,.32)">KNEE</div>
             </div>
@@ -451,8 +458,11 @@ class Component extends DCLogic {
   }
   frame(norm, size) { return -Math.round(clamp(norm, 0, 1) * (FR - 1)) * size; }
 
-  btn() {
-    return 'width:74px;height:28px;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:2px;cursor:pointer;background:linear-gradient(180deg,#c3bcaa,#a8a294);box-shadow:0 1px 0 rgba(255,255,255,.38) inset, 0 1px 2px rgba(40,34,26,.26)';
+  btn(lit) {
+    const base = 'width:74px;height:28px;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:2px;cursor:pointer;';
+    return lit
+      ? base + 'background:linear-gradient(180deg,#46402f,#322d21);box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 0 10px rgba(243,208,33,.10) inset, 0 1px 2px rgba(40,34,26,.34)'
+      : base + 'background:linear-gradient(180deg,#a9a496,#8e8a7d);box-shadow:0 1px 0 rgba(255,255,255,.30) inset, 0 1px 2px rgba(40,34,26,.30)';
   }
   btnLabel(active) {
     const a = this.props.accent ?? '#F3D021';
@@ -468,7 +478,16 @@ class Component extends DCLogic {
       : `width:${size}px;height:${size}px;border-radius:50%;background:radial-gradient(circle at 34% 30%, #7d7466, #43403a 60%, #2a2825);box-shadow:0 1px 0 rgba(255,255,255,.35), 0 1px 3px rgba(0,0,0,.45) inset`;
   }
 
-  hdrBtn(enabled) {
+  lens(lit, top) {
+    const r = top ? 'border-radius:2px 2px 0 0;' : 'border-radius:0 0 2px 2px;';
+    const base = 'flex:1;display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:1.4px;' + r;
+    return lit
+      ? base + 'background:linear-gradient(180deg,#2a2822,#1e1c17);color:#FFEFD0;text-shadow:0 0 3px rgba(255,239,208,.95), 0 0 7px rgba(255,214,150,.85), 0 0 13px rgba(255,196,110,.55)'
+      : base + 'background:linear-gradient(180deg,#2a2822,#1e1c17);color:#8f8a7c';
+  }
+
+  // superseded by lens() — kept out of the render path
+  hdrBtnUnused(enabled) {
     return 'width:62px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:2px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;' + (enabled
       ? 'cursor:pointer;background:linear-gradient(180deg,#f0e9d3,#d6cdb2);box-shadow:0 1px 0 rgba(255,255,255,.85) inset, 0 -2px 3px rgba(90,80,60,.25) inset, 0 2px 3px rgba(40,34,26,.35);color:#302c24'
       : 'cursor:default;background:linear-gradient(180deg,#a5a094,#8f8a7e);box-shadow:0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2);color:#6f6a5f');
@@ -483,7 +502,7 @@ class Component extends DCLogic {
     const isInit = s.bank === 'INIT';
     const current = isInit ? 'INIT'
       : s.bank === 'FACT' ? num(s.progIdx + 1) + ' ' + FACTORY[s.progIdx]
-      : num(17 + s.progIdx) + ' ' + (s.userBank[s.progIdx] || '');
+      : (s.userBank[s.progIdx] || '');
     const pick = (bank, i) => () => this.setState({ bank, progIdx: i, menuOpen: false, naming: false, dirty: false });
     return {
       bankLabel: s.naming ? 'NAME' : (isInit ? '—' : s.bank),
@@ -512,14 +531,14 @@ class Component extends DCLogic {
         style: this.menuRow(s.bank === 'FACT' && s.progIdx === i)
       })),
       userRows: s.userBank.map((n, i) => ({
-        label: num(17 + i) + ' ' + n, pick: pick('USER', i),
+        label: n, pick: pick('USER', i),
         style: this.menuRow(s.bank === 'USER' && s.progIdx === i)
       })),
-      hasUser: s.userBank.length > 0,
-      saveLabel: s.naming ? 'STORE' : 'SAVE',
-      saveStyle: this.hdrBtn(s.naming || s.dirty),
-      deleteLabel: s.naming ? 'CANCEL' : 'DELETE',
-      deleteStyle: this.hdrBtn(s.naming || s.bank === 'USER'),
+      noUser: s.userBank.length === 0,
+      winSave: this.lens(!s.naming && s.dirty, true),
+      winStore: this.lens(s.naming, false),
+      winDelete: this.lens(!s.naming && s.bank === 'USER', true),
+      winCancel: this.lens(s.naming, false),
       onSave: () => {
         if (s.naming) return this.commitName();
         if (!s.dirty) return;
@@ -603,7 +622,8 @@ class Component extends DCLogic {
         return P ? P[0] + ' ' + P[1] : null;
       })()),
 
-      btnFace: this.btn(),
+      kneeSoftFace: this.btn(s.knee === 'soft'),
+      kneeHardFace: this.btn(s.knee === 'hard'),
       kneeSoftLbl: this.btnLabel(s.knee === 'soft'),
       kneeHardLbl: this.btnLabel(s.knee === 'hard'),
       kneeSoftLed: this.led(s.knee === 'soft', 6),

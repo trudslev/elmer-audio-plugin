@@ -8,20 +8,44 @@ sibling casting under the shared [Neon Foundry](../BRAND.md) umbrella, and those
 purely as structural reference. Read `../BRAND.md` first for the cross-plugin design system, then
 this file.
 
-`design/README.md` is the authoritative GUI spec and `design/Elmer.dc.html` is the live prototype.
-`design/screenshots/panel.png` is the panel rendered at 2× and is the acceptance target — this
-casting ships one, so there is no need to drive the prototype in a browser. The bundle also carries
-`panel-menu-open.png`, `panel-naming.png`, `header-naming.png` and `header-dirty.png`, which are the
-states this suite has historically got wrong by eye; the three `header-*.png` are **3×** of a
-1076 × 112 block whose origin is canvas (22, 20), not 2× of the canvas.
+`design/GUI-SPEC.md` is the authoritative GUI spec and `design/Elmer.dc.html` is the live prototype.
+`design/screenshots/panel.png` is the acceptance target — this casting ships one, so there is no
+need to drive the prototype in a browser. The bundle also carries `panel-menu-open.png`,
+`panel-naming.png`, `header-naming.png` and `header-dirty.png`, which are the states this suite has
+historically got wrong by eye.
 
-**`panel.png` and `panel-menu-open.png` are stale on KNEE's label** — they still show it above the
-buttons, where the prose and `Elmer.dc.html` both put it below. The prototype and the prose win;
-this is raised with the designers. Where an artefact and the prose disagree, measure both before
-choosing, and record which won and why.
+**Every render is 2× of the CONTENT BOX, not of the canvas**, and getting that wrong puts every
+measurement out by a factor and an offset at once. The content box is the canvas less its inset —
+22 px left/right, 20 px top/bottom (GUI-SPEC §Canvas) — so it is 1076 × 736 at canvas origin
+(22, 20). Hence `panel*.png` at 2152 × 1472 and `header-*.png` at 2152 × 224, the latter being the
+same box cropped to the 112 px header block. To convert: `canvas = render / 2 + (22, 20)`.
 
-**Note that `design/BRAND.md` is a stale copy** — the pre-update revision, with no Legibility or
-Parameter-values section. The root `../BRAND.md` governs.
+That framing changed with the 2026-08-11 bundle and the old numbers are the trap — `panel.png` used
+to be **1×** of the full canvas and the `header-*.png` **3×** of the content block. Three different
+scales against two revisions, all plausible-looking, none stated in the spec. Measure the LCD's
+outer edge against the 403..764 it is known to span before trusting a reading off any of them.
+
+**GUI-SPEC contradicts itself on the Program buttons, and the newer half wins.** The 2026-08-11
+bundle added the 34 px header band, the annunciator/lens button treatment and the
+`program-buttons.png` sprite sheet, but left the previous revision's prose in place beneath them.
+So the same file says both:
+
+| | Stale half (§ SAVE / DELETE) | Current half (§ Header band, § Lens windows, § Assets) |
+|---|---|---|
+| Height | 62 × **30** px, "all four elements share the same 30 px height" | **34 px**, "up from 30, per the suite figure in BRAND.md" |
+| Face | "**cream** buttons", `#f0e9d3 → #d6cdb2` | annunciator body `#57503f → #211f19` — dark |
+| Disabled | a disabled face, text `#6f6a5f` | no disabled face; both legends simply go dark |
+
+**Build the current half.** It is the one that cites BRAND.md, carries measured contrast ratios, and
+agrees with the renders — and `#6f6a5f` on that cream is the 1.56:1 the suite audit flagged, on a
+face the two-legend ruling abolished. Raised with the designers; the stale prose is to be deleted,
+not reconciled.
+
+**KNEE's lamp inversion is fixed in this revision**, which unblocks a defect that needed artwork:
+the lit face is now *darker* than the unlit one (`#46402f → #322d21` against `#a9a496 → #8e8a7d`),
+so the selected legend reads **9.5:1 → 12.6:1** where it used to measure 2.28–3.17:1. Elmer's one
+lit indicator had been its least legible label. `KneeButtons.cpp` still paints the old single face
+for both states — that is the code half of the fix and it is not done yet.
 
 ## Commands
 
@@ -221,10 +245,11 @@ its neighbours' is 85.
 the panel named from the top. Its buttons start at y 399 rather than the prototype's literal 400, so
 that 63 px of buttons plus the 15 px label margin lands the label on 477 exactly — the prototype's
 own arithmetic puts it 1 px lower, and a shared baseline is the property that is visible. **The
-bundled renders still show the label above**; see the note at the top of this file.
+2026-08-11 renders show it below**, so artefact and prose finally agree; the disagreement that stood
+here for two revisions was resolved in the designers' favour of the prose, and the render caught up.
 
 **Live values take the LCD over, not a tooltip.** Grabbing a control replaces the program name with
-that parameter's name and value, reverting 1200 ms after release. This is `design/README.md`'s
+that parameter's name and value, reverting 1200 ms after release. This is `design/GUI-SPEC.md`'s
 explicit choice over BRAND.md's tooltip convention — it reuses a display already on the panel, a
 tooltip has no hardware equivalent, and it satisfies BRAND.md's stronger rule that dynamic text
 lives inside a screen. The takeover fires only on a **grab**: a `SliderAttachment` raises
@@ -280,7 +305,8 @@ passes while proving nothing.
   above 30 while everything else sat under 20, and it had survived several passes that looked
   straight at it. Expect the knob columns and the meter to read 18–28 legitimately — the render is
   captured mid-compression, so its needle and some pointers are elsewhere.
-- **Outstanding with the designers**: the two stale renders (KNEE's label), the 264 px dropdown cap,
+- **Outstanding with the designers**: GUI-SPEC's own Program-button section contradicts the rest of
+  the same file — see below — plus the 264 px dropdown cap,
   and SIDECHAIN HP's dead band — ~56° of travel does nothing, because the OFF zone ends at 0.10 and
   the frequency curve starts at 0.20. That last one is a recommendation, not a defect: the 40 Hz
   mark is baked into `scale-lg.png`, so moving the curve without re-cutting the ring would leave the

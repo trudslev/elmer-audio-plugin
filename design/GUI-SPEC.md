@@ -1,4 +1,6 @@
-# Handoff: Elmer — Bus / Glue Compressor (Neon Foundry, casting six)
+# GUI-SPEC — Elmer, Bus / Glue Compressor (Neon Foundry, casting six)
+
+**This file is the build contract. There is no second document — everything to build from is here.**
 
 ## Overview
 Elmer is a stereo-linked bus compressor plugin, the sixth and final plugin in the Neon Foundry suite.
@@ -131,9 +133,11 @@ Per BRAND.md, one accent colour per plugin, reserved for the single most importa
 | Timing knob cap | `#1B9E74` green (hi `#4FC79C`, lo `#0C6247`) | ATTACK, RELEASE |
 | Character/Output cap | `#3A6FD0` blue (hi `#6E9CE8`, lo `#1E4189`) | IRON, MAKEUP, MIX |
 | Knob skirt | `linear-gradient(#E6E1D8 → #C0BAB0 → #948E85 → #726C64)` | all knobs |
-| Lamp button face | `linear-gradient(180deg,#c3bcaa,#a8a294)` | KNEE buttons |
-| Cream button face | `linear-gradient(180deg,#f0e9d3,#d6cdb2)` | SAVE / DELETE, enabled |
-| Disabled button face | `linear-gradient(180deg,#a5a094,#8f8a7e)`, text `#6f6a5f` | DELETE, disabled |
+| Lamp face — unlit | `linear-gradient(180deg,#a9a496,#8e8a7d)` | unselected KNEE button |
+| Lamp face — lit | `linear-gradient(180deg,#46402f,#322d21)` | selected KNEE button — darker than unlit, by design |
+| Annunciator body | `linear-gradient(180deg,#57503f,#211f19)` | SAVE / DELETE cap + collar |
+| Lens window — unlit | `linear-gradient(180deg,#2a2822,#1e1c17)`, legend `#8f8a7c` | dark legend, **4.3–5.0:1** |
+| Lens window — lit | ground **unchanged**, legend `#FFEFD0` + warm glow | warm bulb, **13.1–15.1:1** |
 | Menu ground | `#16150f`, border `1px solid rgba(214,196,124,.30)` | program dropdown |
 | Meter cream | `#EFE7D2` warming to `#FFFCEF` at the lamp | meter face |
 
@@ -170,13 +174,48 @@ continuous black glass. Inside the glass, flush against it, three cells divided 
 | Name | **269 px** | program name, **centred**, 11 px horizontal padding → **247 px of text** |
 | Chevron | 28 px | the drawn open/close indicator |
 
+### Header band height — 34 px (suite-wide)
+
+LCD, SAVE, DELETE, IN and OUT all stand **34 px**, up from 30, per the suite figure in `BRAND.md`
+("that height is 34px in every casting"). Widths are unchanged — the display stays 361 px at
+x 403 → 764, the buttons 62 px, the meters 74 px, all gaps as before.
+
+Consequences, so nothing is measured against a stale number:
+
+| | Was | Now |
+|---|---|---|
+| Header row y | 61 → 91 | **59 → 93** — still (112 − h) / 2 + 20, centred on the 112 px header block |
+| Caption cap ink (PROGRAM / IN / OUT) | y 47 → 54 | **y 45 → 52** — the captions sit 5 px above the row, so they rise with it |
+| Dropdown top offset | 28 px | **32 px** = 34 − 2 × 3 px frame + 4 px, still flush to the glass's lower edge |
+| Dropdown opens | 91 → 515 | **93 → 517** — still uncapped to the panel bottom, all seventeen rows visible |
+
 **Character budget — 24 characters in the name cell.** IBM Plex Mono at **14 px with 1.7 px
 tracking** advances 10.1 px per character (8.4 px glyph + 1.7 px tracking); 247 px ÷ 10.1 = 24.5. The build **must cap user Program
-names at 19 characters** — the display prefixes a two-digit index and a space (`17 `, 3 chars) and
-appends a space and the dirty asterisk (2 chars) to give 24 total. A 20-character name would overrun the cell the
-moment it was edited. This clears the longest factory name (`03 MINNEAPOLIS SQUEEZE`, 22) and the longest
+names at 19 characters** — the worst case is a Factory Program, where the display prefixes a
+two-digit index and a space (`01 `, 3 chars) and appends a space and the dirty asterisk (2 chars)
+to give 24 total. A 20-character name would overrun the cell the moment it was edited.
+**User Programs now print without an index**, so a user name has 22 characters of room before the
+asterisk rather than 19 — the budget grew, and the cap therefore stays at 19 rather than following
+it up. `BRAND.md` allows a budget to grow and never a cap to shrink; raising the cap would also
+orphan nothing, but it is not required and 19 is what the naming field enforces today. This clears the longest factory name (`03 MINNEAPOLIS SQUEEZE`, 22) and the longest
 parameter readout (`SIDECHAIN HP 500 Hz`, 19). The number is not inferable from the layout — cap
 against it explicitly.
+
+**Confirmed unchanged by the 34 px pass.** The budget is set by cell *width* and type metrics, both
+untouched: name cell 269 px (247 px of content) ÷ 10.1 px per character = 24, cap 19. It has not
+fallen, which is what `BRAND.md` requires any header-height change to state.
+
+Two notes on the cap, since the update brief quoted 22:
+
+- **19 is Elmer's current cap, not 22.** 22 has never been implemented here, so holding at 19 is not
+  a contraction and orphans nothing — there is no saved name it could strand. (Nothing in the suite
+  has shipped in any case; see the roster note in `BRAND.md`.)
+- **22 does not fit this cell at all.** 22 + `NN ` (3) + ` *` (2) = 27 characters against a 24-character
+  budget — it would overrun by 61 px the moment a name were edited. Reaching 22 needs 273 px of
+  content, i.e. **26 px more display width**, which moves SAVE, DELETE, IN and OUT — outside a
+  header-height-only pass and against the locked geometry above. If the 22 matters, say so and it
+  becomes a width pass: the room has to come from the wordmark block, since the meters are already
+  hard against the 22 px right inset.
 
 *Why these three moves together:* the display was 364 × 38 px, which read as a heavy block against a
 panel of fine printed detail, yet only held 21 characters. Dropping to 30 px and 14 px type while
@@ -241,12 +280,16 @@ Contents, in this order:
    being numbered `00`.
 2. **FACTORY** — a 9 px / 2.6 px-tracked header in `#8a8163`, then the sixteen authored Programs
    numbered `01`–`16` (listed under *Factory bank* below).
-3. **USER** — same header treatment. **Saved Programs carry NO number** — the bank tag and the name
-   alone. They are sorted alphabetically and case-insensitively, so any number would change whenever
-   another Program was saved. (This said "numbered continuing from Factory (`17`, `18`…)"; that
-   described the model before Programs were identified by name rather than position.)
-   **The entire USER section, header and divider included, is absent when there are no user
-   Programs** — not an empty heading.
+3. **USER** — same header treatment, then the saved Programs **listed by name with no number at
+   all**. Factory Programs carry a computed `01`–`16` label; User Programs do not, because they
+   sort alphabetically and any number would change whenever another was saved (`BRAND.md`,
+   *A Program is identified by name, never by position*). The LCD prints a User Program's bare
+   name for the same reason.
+   **The USER section is always present, header and divider included.** When the bank is empty it
+   prints a non-interactive `— none saved —` row in `#7a7460` on the `#16150f` menu ground —
+   **3.9:1**, which clears the 3:1 floor a deliberately non-interactive row takes. An absent
+   section is ambiguous between "you have none saved" and "this plugin doesn't do that"; one row
+   answers it.
 
 **Naming flow.** SAVE never overwrites, so pressing it must ask for a name. The display itself
 becomes the field — it is the only screen on the panel, and a floating dialog has no hardware
@@ -262,9 +305,10 @@ equivalent:
 - The chevron cell is **hidden** while naming — the menu is unreachable mid-name.
 - Input is forced uppercase and hard-capped at **19 characters** (see the budget above) — what can
   be typed matches what can be displayed once the asterisk appears.
-- **Confirm and cancel reuse the two buttons already in the row**: SAVE relabels to **STORE**,
-  DELETE relabels to **CANCEL**, both enabled. `Enter` confirms, `Esc` cancels. No new controls
-  appear — the row's geometry does not move.
+- **Confirm and cancel are the second legend on each of the two buttons already in the row** — STORE
+  lights under SAVE, CANCEL under DELETE, and the two resting legends go dark. Nothing relabels; see
+  *Program buttons* below. `Enter` confirms, `Esc` cancels. No new controls appear — the row's
+  geometry does not move.
 - On confirm the Program is appended to the User bank, selected, and the bank cell reads `USER`.
   An empty name stores as `UNTITLED`.
 
@@ -391,12 +435,99 @@ corrections. Tick counts are chosen so a mark falls on every printed value: 11 m
 six-value scales, 9 for the five-value scales, 5 for RELEASE's detents. A detented switch shows no
 intermediate marks between its stops.
 
-### Lamp buttons (KNEE)
-74 × 28 px, radius 2 px, face `linear-gradient(180deg,#a9a496,#8e8a7d)` with
-`0 1px 0 rgba(255,255,255,.30) inset, 0 1px 2px rgba(40,34,26,.30)`.
-Contents: a 6 px LED dot then the legend, 7 px gap, centred.
+### Program buttons (SAVE / STORE, DELETE / CANCEL)
 
-**The face never changes.** Selection is shown two ways only:
+62 × 34 px, radius 3 px, width unchanged from the 30 px row. **Split-legend annunciator caps**: one
+switch body carrying two independently-lamped windows, stacked — the resting function on top, what
+the button becomes while a Program is being named beneath it. **Neither button ever relabels, and
+neither ever wears a disabled face.** Only the lamps change.
+
+Stacked rather than side by side because it costs no width: the button is already sized by its
+longest single word and `DELETE`/`CANCEL` are both six characters. Side by side would roughly double
+both buttons and the width would have to come from the LCD.
+
+**Construction**, outside in:
+
+| Part | Spec |
+|---|---|
+| Collar / body | `linear-gradient(180deg,#57503f,#211f19)`, `0 1px 0 rgba(255,255,255,.34), 0 2px 3px rgba(40,34,26,.42)`, 2 px padding so the lens sits proud |
+| Windows | two, `flex: 1` — 15 px each inside the 34 px cap. Radius `2px 2px 0 0` top, `0 0 2px 2px` bottom |
+| Rib | **none.** No divider, bezel, lens or lamp is drawn as its own element on these buttons — `BRAND.md` forbids it, and the two legends separate by their own leading plus the difference in kind between a luminous and a matte legend |
+| Legend type | IBM Plex Mono **10 px** / 1.4 px tracking, centred — the 10 px functional floor, not below it |
+
+**The two faces:**
+
+| State | Window | Legend | Contrast |
+|---|---|---|---|
+| **Unlit** | `linear-gradient(180deg,#2a2822,#1e1c17)` | `#8f8a7c` | **4.3–5.0:1** — clears the 3:1 state floor |
+| **Lit** | **identical to unlit** — `linear-gradient(180deg,#2a2822,#1e1c17)`, no ground or shadow change | `#FFEFD0` + `0 0 3px rgba(255,239,208,.95), 0 0 7px rgba(255,214,150,.85), 0 0 13px rgba(255,196,110,.55)` | **13.1–15.1:1** |
+
+**The lens body never changes — only the characters light.** The two windows render the same ground in
+both states; what differs is the legend and the halo the glowing characters throw onto the ground
+around them. An earlier revision warmed the whole lit window and it read as a filled rectangle
+lighting up rather than a bulb behind a legend — which is the failure `BRAND.md` names when it says
+the lamp lights the letters, not the button. The light bleed is therefore the character glow's own
+spill onto the continuous ground, reaching into the neighbouring legend's half. Lit is
+**warm white**, incandescent rather than any of Elmer's three function-group colours, and not the
+panel accent `#F3D021`, which stays reserved for the KNEE lamp.
+
+**Which legend is live:**
+
+| Condition | SAVE | STORE | DELETE | CANCEL |
+|---|---|---|---|---|
+| Factory or INIT, unmodified | dark | dark | dark | dark |
+| Factory or INIT, edited (`*` showing) | **lit** | dark | dark | dark |
+| User Program, unmodified | dark | dark | **lit** | dark |
+| User Program, edited | **lit** | dark | **lit** | dark |
+| Naming in progress | dark | **lit** | dark | **lit** |
+
+Both dark reads as "nothing to do here", never as a blank button — the legends stay printed and
+legible, which is exactly how a real one looks with the bulb out.
+
+**Behavioural rules the lamp table does not imply:**
+
+| Rule | Why |
+|---|---|
+| A press on a dark legend does nothing at all — no press animation, no collar movement | The lamp is the affordance. A dead button that still depresses reads as a bug |
+| While naming, the *same physical buttons* act as STORE and CANCEL — SAVE's body commits, DELETE's body cancels | One switch, two functions, which is the whole reason for the split legend |
+| **Escape out of naming leaves the Program edited** — `naming` and `nameDraft` clear, `dirty` stays `true`, so the `*` returns and SAVE re-lights | Nothing was stored. Clearing `dirty` here would silently discard the user's edit |
+| Committing a name (Enter, or a press on STORE) clears `dirty`, switches the bank to USER and selects the new Program | The edit is now stored under a name, so there is nothing left to save |
+| An empty or whitespace-only name commits as `UNTITLED` rather than refusing | A modal error in a 34 px header band has nowhere to go, and the Program can be renamed |
+| Entering naming closes the Program menu, so the two can never be open together | Two competing text targets in one 34 px cell |
+
+**Two divergences from the update brief, both following `BRAND.md`:**
+
+1. **No lamp beside the legend.** The brief asked for a small lamp next to each legend on the grounds
+   that Elmer's fascia is a light warm grey. `BRAND.md` rules that out explicitly — the buttons are
+   dark in every casting whatever the fascia, because a lens cap is a moulded part inserted into the
+   panel rather than painted panel, and "the lamp is *inside* the switch, behind the lens, which is
+   where it is on the real part." It also answers the fascia argument directly: a pale cap has
+   nowhere brighter to go. SAVE showing SAVE, STORE and an indicator beside each would be four
+   elements where the design has two. These caps also sit in the dark header band, not out on the
+   grey fascia, so the light-fascia premise does not apply here anyway.
+2. **This is not the small-LED convention** used for KNEE. That one marks whether a *control* is
+   relevant and sits beside a label; these illuminate the label itself. The KNEE lamp dot and its
+   `#F3D021` accent are unaffected by this pass.
+
+### Lamp buttons (KNEE)
+74 × 28 px, radius 2 px. Contents: a 6 px LED dot then the legend, 7 px gap, centred.
+
+**The face darkens when the button is lit.** A real illuminated legend lights the letters, not the
+whole button, and the cream legend has nowhere brighter to go — so the ground moves instead. Both
+faces, with the contrast of their own legend measured against each end of their gradient (WCAG
+relative luminance, so it is checkable rather than asserted):
+
+| State | Face | Legend | Contrast (top → bottom of gradient) |
+|---|---|---|---|
+| **Unlit** | `linear-gradient(180deg,#a9a496,#8e8a7d)`, `0 1px 0 rgba(255,255,255,.30) inset, 0 1px 2px rgba(40,34,26,.30)` | `#1d1c17` | **6.9:1 → 4.9:1** |
+| **Lit** | `linear-gradient(180deg,#46402f,#322d21)`, `0 1px 0 rgba(255,255,255,.14) inset, 0 0 10px rgba(243,208,33,.10) inset, 0 1px 2px rgba(40,34,26,.34)` | `#FFF6C9` | **9.5:1 → 12.6:1** |
+
+The lit face's worst case (9.5:1, at the light top of its gradient) clears the 7:1 floor with margin;
+the glow on the legend and the amber dot only add to it. Before this change the lit legend sat at
+2.3–3.2:1 on the unlit face — the least legible label on the panel, on its only lit indicator.
+The unlit face is unchanged. **Do not equalise the two faces**: the inversion is the indicator.
+
+Selection is otherwise shown two ways:
 - the LED lights — `radial-gradient(circle at 34% 30%, #fffdf0, #F3D021 46%, #8a7108)` with
   `0 0 9px #F3D021, 0 0 20px rgba(243,208,33,.42)`; unlit is
   `radial-gradient(circle at 34% 30%, #7d7466, #43403a 60%, #2a2825)` with an inset shadow.
@@ -446,7 +577,7 @@ floating tooltip, which has no hardware equivalent.
 - **SAVE always creates a new named Program and never overwrites**, even when a User program is
   loaded. There is no separate "New Program" button. Pressing it enters the naming flow described
   under *Header* above.
-- **DELETE only works on User programs** and is visibly disabled on Factory ones and on INIT.
+- **DELETE only works on User programs.** On a Factory Program or on INIT both its legends step back together; the button itself never shows a disabled face.
 - Programs are selected from the panel via the LCD's chevron and dropdown — the plugin does not rely
   on the host's own Program list.
 - Default state ships as `FACT` / `01 UNDER PRESSURE`.
@@ -530,6 +661,7 @@ All bitmaps in `assets/` are production-ready and were generated procedurally at
 | `knob-detect-128.png` | 96 × 12288 | Magenta cap. 128 frames, 96 px each, stacked vertically, −140°→+140° |
 | `knob-timing-128.png` | 96 × 12288 | Green cap, same geometry |
 | `knob-output-128.png` | 96 × 12288 | Blue cap, same geometry |
+| `program-buttons.png` | 62 × 204 | Program button sprite sheet. **Six 62 × 34 cells stacked**, in order: `save-dark`, `save-lit`, `store-lit`, `delete-dark`, `delete-lit`, `cancel-lit`. Frame *n* is at y = n × 34. Labelled reference: `screenshots/program-buttons.png` |
 | `meter-face.png` | 1000 × 402 | Cream face, printed GR scale, warm lamp, bezel with inner shadow |
 | `meter-needle.png` | 60 × 510 | Black tapered needle + counterweight; pivot at (30, 499) |
 | `scale-lg.png` | 200 × 200 | 11-mark tick ring |
@@ -563,7 +695,7 @@ read as 20 dB of gain reduction, which is not a representative state.
 
 ## Brand rules carried in from BRAND.md
 
-- The plugin panel **never displays the "Neon Foundry" name**. `BRAND.md` is bundled for reference.
+- The plugin panel **never displays the "Neon Foundry" name**. `BRAND.md` is deliberately *not* bundled — read it from the repo, since a bundled copy goes stale within hours.
 - "Programs", never "Presets".
 - One accent colour, reserved for one live indicator.
 - Hardware-spec-sheet voice: model line, function descriptor, version stamp — no software-plugin
@@ -581,73 +713,12 @@ read as 20 dB of gain reduction, which is not a representative state.
 | `Elmer.dc.html` | The panel design reference, interactive (drag knobs, click KNEE, SAVE/DELETE) |
 | `assets/*.png` | Production bitmaps — knob filmstrips, meter face + needle, tick rings |
 | `assets/icons/elmer-icon-1024.png`, `-256.png` | Shipping icon, JUCE sizes |
-| `BRAND.md` | Neon Foundry shared design system |
 | `screenshots/panel.png` | The panel as rendered, 2× (2240 × 1552) |
 | `screenshots/header.png` | The revised header alone, 3× |
 | `screenshots/panel-menu-open.png` | The panel with the Program dropdown open, 2× |
 | `screenshots/panel-naming.png` | The panel in naming mode (STORE / CANCEL), 2× |
 | `screenshots/header-naming.png` | The header alone in naming mode, 3× |
-| `screenshots/header-dirty.png` | The header with a dirty Program — asterisk shown, SAVE enabled, 3× |
+| `screenshots/header-dirty.png` | The header with a dirty Program — asterisk shown, SAVE lit, 3× |
+| `screenshots/program-buttons.png`, `assets/program-buttons.png` | The button pair together, all six lamp combinations, 3× |
 
 Open the HTML file directly in a browser; it needs no server.
-
----
-
-## Program model — identity, numbering and the INIT entry
-
-*Recorded 2026-08-11. This section is authoritative for the Program list's behaviour; where an earlier
-part of this document describes numbering or the factory bank differently, this governs.*
-
-**A Program is identified by name, never by position.** Factory Programs carry a permanent slug fixed
-when the Program is created and unchanged even if its display name is later revised; User Programs are
-identified by their filename. Positions appear only in the four `AudioProcessor` overrides JUCE
-requires them for, and nowhere else — not in saved state, not in the dropdown, not in the LCD.
-
-**The INIT entry.** A single row at the **top of the dropdown, above the FACTORY group and separated
-from it by a divider**. It is:
-
-- **unnumbered** — it sits outside both banks, so a number would place it in a running order it is
-  not part of;
-- **never the default on instantiation** — it is a starting point the user chooses, not the sound the
-  plugin makes when a host loads it;
-- shown with the bank tag reading an **em-dash**, not FACT and not USER, because it is in neither;
-- **DELETE disabled while it is selected**, as for a Factory Program — INIT is not a stored thing, so
-  there is nothing to delete.
-
-**Factory numbering starts at 01 on the first authored sound**, and the two-digit number is a **label
-computed when the panel paints**, from the Program's position in the factory bank. It is not stored
-and nothing is looked up by it.
-
-**User Programs carry no number at all** — the bank tag, then the name alone:
-
-```
-FACT  │  01 UNDER PRESSURE
-USER  │  BRIGHT ROOM
-  —   │  INIT
-```
-
-They are sorted **alphabetically and case-insensitively, on the displayed name** (the filename stem,
-without its extension). Any number would change whenever another Program was saved, which is why they
-have none. Comparing the filename *with* its extension sorts `AB C` before `AB`, since a space
-(0x20) precedes the dot (0x2E); comparing case-sensitively puts every lowercase name after every
-uppercase one.
-
-**Dirty marker.** An edited Program shows a trailing ` *` in the LCD, in the same type and colour as
-the name. The marker and SAVE's enabled state read the same flag, so they cannot disagree. No marker
-appears on an unresolved identifier — there is no baseline to differ from.
-
-**Unresolved identifier.** If a stored identifier no longer names anything — a Factory Program
-removed in a later version, or a deleted user file — the **parameter values still restore**; only the
-name is unknown. The display then shows the em-dash bank tag and the remembered name with a trailing
-`?` (`—  │  BRIGHT ROOM?`), SAVE enabled, DELETE disabled, no dirty marker. Deleting a Program from
-the panel is deliberately *not* this case: the intent is unambiguous, so it falls back to the default.
-
-**User-name cap: 22 characters.** 24 characters of cell (269px less 2 x 11px padding = 247px, at 10.1px per character) less 2 for the dirty marker.
-
-**This figure is per-casting and must not be collapsed into a shared one** — each panel's cell width,
-type size and tracking differ, and the caps range from 22 to 35 across the suite. The cap is the
-budget less whichever of the dirty marker (2) and the naming cursor (1) is larger.
-
-**Release rule.** Once a version ships, new Factory Programs may only be **appended** — never
-inserted, reordered or removed — because the host addresses the factory bank by position. See
-`../../BRAND.md`.

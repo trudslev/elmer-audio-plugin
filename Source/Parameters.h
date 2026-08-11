@@ -12,7 +12,7 @@
     one parameter irrelevant, so unlike Fifth Member there is no active-path filtering here and every
     Program stores all nine values. Do not port that machinery across.
 
-    The two logarithmic laws are transcribed from `design/README.md` rather than approximated with a
+    The two logarithmic laws are transcribed from `design/GUI-SPEC.md` rather than approximated with a
     juce::NormalisableRange skew, because BRAND.md makes the printed scale a correctness requirement:
     "the pointer sitting on a printed mark must report that value". `PrintedScale` below carries every
     mark the panel prints, and `Tests/PrintedScaleTests.cpp` asserts the mapping against it.
