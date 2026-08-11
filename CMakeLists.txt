@@ -70,6 +70,16 @@ juce_add_plugin(Elmer
     PRODUCT_NAME "${ELMER_PRODUCT_NAME}"
     COMPANY_NAME "${ELMER_COMPANY_NAME}"
     BUNDLE_ID "com.neonfoundry.elmer"
+    # **Without this the Standalone is silent and the meters look broken.** An app whose Info.plist
+    # carries no NSMicrophoneUsageDescription is never granted capture access on macOS - the OS does
+    # not prompt and does not error, the input stream simply delivers zeros. On an effect that reads
+    # as dead metering: IN sits at its floor and OUT follows, because there is nothing to process.
+    # The meters are wired correctly; they have nothing to show.
+    #
+    # Plugin formats are unaffected - the host owns the input there - so this only surfaces when
+    # someone opens the Standalone to listen.
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "ELMER needs audio input so the Standalone can compress what you play into it."
     PLUGIN_MANUFACTURER_CODE Nfdy
     PLUGIN_CODE Gl87
     FORMATS ${ELMER_FORMATS}
