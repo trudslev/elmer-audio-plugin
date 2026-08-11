@@ -25,6 +25,8 @@ public:
 
     void paint (juce::Graphics&) override;
     void mouseDown (const juce::MouseEvent&) override;
+    bool keyPressed (const juce::KeyPress&) override;
+    void focusLost (FocusChangeType) override;
 
     /** Takes the display over with a parameter's name and value. */
     void showParameter (const juce::String& paramId);
@@ -61,8 +63,42 @@ private:
     void showProgramMenu();
     void paintChevron (juce::Graphics&) const;
 
+    void enterNamingMode();
+    void commitNaming();
+    void cancelNaming();
+    bool saveEnabled() const;
+    bool deleteEnabled() const;
+
     juce::Component* menuParent = nullptr;
     bool menuOpen = false;
+
+    // Naming state. typedName is never written back to the Program until commit, and cancelling
+    // simply leaves the mode - which is what makes Cancel free: nothing to undo, and any knob the
+    // user tweaked before pressing SAVE is still exactly where they left it.
+    bool namingMode = false;
+    juce::String typedName;
+
+    /** The block cursor's own clock: 500 ms per phase, i.e. the suite's 1 s period at 50 % duty.
+
+        A dedicated Timer rather than the siblings' wall-clock read, because those castings already
+        repaint their header at 60 Hz for meters and Elmer's does not - it repaints on change. This
+        gets the same cadence without adding a 60 Hz repaint to an otherwise idle panel.
+
+        NOT the header's own Timer, which is a ONE-SHOT revert countdown that stops itself on the
+        first tick: sharing it would either kill the blink or keep resurrecting the parameter
+        takeover. */
+    struct CaretBlinker final : public juce::Timer
+    {
+        explicit CaretBlinker (ProgramHeader& o) : owner (o) {}
+        void timerCallback() override { visible = ! visible; owner.repaint(); }
+        void start() { visible = true;  startTimer (500); owner.repaint(); }
+        void stop()  { visible = false; stopTimer();      owner.repaint(); }
+
+        ProgramHeader& owner;
+        bool visible = false;
+    };
+
+    CaretBlinker caret { *this };
 
     juce::AudioProcessorValueTreeState& apvts;
     ProgramManager& programs;

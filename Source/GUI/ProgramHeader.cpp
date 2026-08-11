@@ -7,6 +7,7 @@ ProgramHeader::ProgramHeader (juce::AudioProcessorValueTreeState& s, ProgramMana
 {
     setBounds (0, 0, (int) Layout::canvasWidth, (int) Layout::canvasHeight);
     setInterceptsMouseClicks (true, false);
+    setWantsKeyboardFocus (true);       // the display becomes a text field during naming
 }
 
 juce::Rectangle<float> ProgramHeader::saveBounds() const
@@ -36,6 +37,16 @@ void ProgramHeader::mouseDown (const juce::MouseEvent& e)
 {
     const auto p = e.position;
 
+    if (namingMode)
+    {
+        // The two buttons already in the row do confirm and cancel - no new controls appear and the
+        // row's geometry does not move. The display is a field, not a menu trigger, so a click on
+        // the glass does nothing rather than opening the list over a half-typed name.
+        if (hitsButton (saveBounds(), p))        commitNaming();
+        else if (hitsButton (deleteBounds(), p)) cancelNaming();
+        return;
+    }
+
     // Clicking anywhere in the display opens the list - the name cell and the chevron cell alike,
     // per the spec. The chevron is an affordance marking the display as a selector, not a button of
     // its own, so treating it as a separate target would make the larger area feel dead.
@@ -45,15 +56,16 @@ void ProgramHeader::mouseDown (const juce::MouseEvent& e)
         return;
     }
 
-    if (hitsButton (saveBounds(), p))
+    if (hitsButton (saveBounds(), p) && saveEnabled())
     {
-        // SAVE always creates a new Program and never overwrites, so there is no "New" action.
-        programs.saveNewUserProgram (programs.getProgramName (programs.getCurrentProgram()));
-        repaint();
+        // SAVE never overwrites, so it must ask for a name rather than storing one silently. It
+        // used to store immediately under the CURRENT Program's name, which made pressing it twice
+        // produce two Programs indistinguishable in the list.
+        enterNamingMode();
         return;
     }
 
-    if (hitsButton (deleteBounds(), p) && ! programs.isFactory (programs.getCurrentProgram()))
+    if (hitsButton (deleteBounds(), p) && deleteEnabled())
     {
         programs.deleteUserProgram (programs.getCurrentProgram());
         repaint();
@@ -146,6 +158,95 @@ juce::String ProgramHeader::describeParameter (const juce::String& paramId) cons
     }
 
     return {};
+}
+
+bool ProgramHeader::saveEnabled() const
+{
+    // Always live while naming, as STORE. Otherwise gated on the Program being dirty: with nothing
+    // moved there is nothing to store, and the spec requires this to agree with the display's
+    // asterisk always - so both read ProgramManager::isModified rather than deciding separately.
+    return namingMode || programs.isModified();
+}
+
+bool ProgramHeader::deleteEnabled() const
+{
+    // Two states only. Enabled for a User Program, or as CANCEL while naming. Disabled for every
+    // Factory Program AND for INIT - INIT is not a stored thing, so there is nothing to delete.
+    const int index = programs.getCurrentProgram();
+    return namingMode || (! ProgramManager::isInit (index) && ! programs.isFactory (index));
+}
+
+void ProgramHeader::enterNamingMode()
+{
+    namingMode = true;
+    typedName.clear();
+    grabKeyboardFocus();
+    caret.start();
+    repaint();
+}
+
+void ProgramHeader::commitNaming()
+{
+    // Empty falls back to UNTITLED INSIDE the manager rather than here, so no future caller can
+    // write a nameless file.
+    //
+    // saveNewUserProgram selects the new Program itself and re-takes the clean snapshot; it is
+    // deliberately NOT followed by setCurrentProgram, which would asynchronously re-apply values
+    // that are already live and briefly hand the parameters back to the audio thread for nothing.
+    const auto name = typedName;
+
+    namingMode = false;
+    typedName.clear();
+    caret.stop();
+
+    programs.saveNewUserProgram (name);
+    repaint();
+}
+
+void ProgramHeader::cancelNaming()
+{
+    // A mode exit and nothing else. **It must never touch a parameter** - whatever the user had
+    // tweaked before pressing SAVE has to survive cancelling, and the displayed Program was never
+    // written to while naming, so leaving the mode is all the revert that is needed.
+    namingMode = false;
+    typedName.clear();
+    caret.stop();
+    repaint();
+}
+
+bool ProgramHeader::keyPressed (const juce::KeyPress& key)
+{
+    if (! namingMode)
+        return false;
+
+    if (key == juce::KeyPress::returnKey)  { commitNaming(); return true; }
+    if (key == juce::KeyPress::escapeKey)  { cancelNaming(); return true; }
+
+    if (key == juce::KeyPress::backspaceKey)
+    {
+        typedName = typedName.dropLastCharacters (1);
+        repaint();
+        return true;
+    }
+
+    const auto c = key.getTextCharacter();
+
+    // Forced uppercase, and hard-capped at 19 so what CAN be typed matches what can be displayed
+    // once the index and the dirty asterisk are added - see Layout::maxUserNameLength.
+    if (c >= 32 && c != 127 && typedName.length() < Layout::maxUserNameLength)
+    {
+        typedName += juce::String::charToString (c).toUpperCase();
+        repaint();
+        return true;
+    }
+
+    return true;    // swallow everything else while naming; the field owns the keyboard
+}
+
+void ProgramHeader::focusLost (FocusChangeType)
+{
+    if (namingMode)
+        cancelNaming();
 }
 
 void ProgramHeader::paintChevron (juce::Graphics& g) const
@@ -262,7 +363,12 @@ juce::String ProgramHeader::currentLcdText() const
             return described;
     }
 
-    return programs.getDisplayName (programs.getCurrentProgram());
+    const int index = programs.getCurrentProgram();
+
+    // The asterisk and SAVE's enablement read the SAME predicate, so the panel cannot show a lit
+    // SAVE over an unmarked name or the reverse. Budget: 3 ("01 ") + 19 (name) + 2 (" *") = 24, the
+    // lcdCharacterBudget the name cell is sized for - see Layout::maxUserNameLength.
+    return programs.getDisplayName (index) + (programs.isModified() ? " *" : "");
 }
 
 void ProgramHeader::drawLcdPanel (juce::Graphics& g, juce::Rectangle<float> frame,
@@ -324,17 +430,43 @@ void ProgramHeader::paint (juce::Graphics& g)
     // printing FACT or USER there would name it twice and name it wrongly.
     const bool onInit = ProgramManager::isInit (index);
 
-    Text::drawTracked (g, onInit ? Text::emDash() : (programs.isFactory (index) ? "FACT" : "USER"),
-                       lcdFont, Layout::lcdTextTracking, bankArea, juce::Justification::centred,
-                       onInit ? Colour::phosphor.withAlpha (0.42f) : Colour::phosphor, false);
+    const auto bankText = namingMode ? juce::String ("NAME")
+                                     : (onInit ? Text::emDash()
+                                               : juce::String (programs.isFactory (index) ? "FACT" : "USER"));
+
+    Text::drawTracked (g, bankText, lcdFont, Layout::lcdTextTracking, bankArea,
+                       juce::Justification::centred,
+                       (onInit && ! namingMode) ? Colour::phosphor.withAlpha (0.42f) : Colour::phosphor,
+                       false);
 
     g.setColour (Colour::lcdHairline);
     g.fillRect (bankArea.getRight(), glass.getY() + 1.0f, 1.0f, glass.getHeight() - 2.0f);
 
-    Text::drawTracked (g, currentLcdText(), lcdFont, Layout::lcdTextTracking, nameArea,
-                       juce::Justification::left, Colour::phosphor, false);
+    if (namingMode)
+    {
+        // CENTRED, not left-aligned like the program name. The field appears in place of a name that
+        // is itself centred in this cell, so left-aligning it would make the text visibly jump
+        // sideways at the moment SAVE is pressed - a flinch that reads as a bug.
+        //
+        // The cursor's cell is in the string on BOTH phases - a space when dark - so the centring is
+        // computed over a constant width. Appending the block only when lit, which is what the
+        // left-aligned castings do safely, would walk the whole name half a character sideways at
+        // every blink. A space is the right stand-in because this face is monospaced, so the two
+        // advance identically.
+        Text::drawTracked (g, typedName + (caret.visible ? Text::blockCursor() : juce::String (" ")),
+                           lcdFont, Layout::lcdTextTracking, nameArea,
+                           juce::Justification::centred, Colour::phosphor, false);
+    }
+    else
+    {
+        Text::drawTracked (g, currentLcdText(), lcdFont, Layout::lcdTextTracking, nameArea,
+                           juce::Justification::left, Colour::phosphor, false);
+    }
 
-    paintChevron (g);
+    // The chevron is hidden while naming: the display is a text field then, not a menu trigger, and
+    // a mark saying "there is a list here" over a half-typed name invites a click that is refused.
+    if (! namingMode)
+        paintChevron (g);
 
     // --- SAVE / DELETE -------------------------------------------------------------------------
     const auto drawButton = [&g] (juce::Rectangle<float> r, const juce::String& label, bool enabled)
@@ -351,8 +483,8 @@ void ProgramHeader::paint (juce::Graphics& g)
                            enabled ? Colour::creamText : Colour::creamOffText, false);
     };
 
-    drawButton (saveBounds(), "SAVE", true);
-    drawButton (deleteBounds(), "DELETE", ! programs.isFactory (index));
+    drawButton (saveBounds(), namingMode ? "STORE" : "SAVE", saveEnabled());
+    drawButton (deleteBounds(), namingMode ? "CANCEL" : "DELETE", deleteEnabled());
 
     // --- IN / OUT ------------------------------------------------------------------------------
     const auto level = [&g, this] (float x, float db)

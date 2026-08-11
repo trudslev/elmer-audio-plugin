@@ -161,6 +161,18 @@ namespace Text
         so a UTF-8 literal would render as stray glyphs. */
     inline juce::String emDash() { return juce::String::charToString ((juce::juce_wchar) 0x2014); }
 
+    /** The naming cursor is a **block**, U+2588, blinking at 1 s / 50 % duty - the house form in
+        every casting, not this panel's own invention. The spec asks for a native text caret; the
+        suite convention outranks it, and a thin bar would make Elmer the only casting whose naming
+        field looks like a web form rather than a piece of hardware.
+
+        Built from the codepoint: juce::String's const char* constructor decodes Latin-1, so a UTF-8
+        literal renders as three stray glyphs. */
+    inline juce::String blockCursor()
+    {
+        return juce::String::charToString ((juce::juce_wchar) 0x2588);
+    }
+
     inline juce::String middleDot()
     {
         // Built from the codepoint: juce::String's const char* constructor decodes Latin-1, not
@@ -302,6 +314,7 @@ namespace Layout
     inline constexpr float lcdTextSize = 16.0f;
     inline constexpr float lcdTextTracking = 2.5f;
     inline constexpr float lcdNamePadX = 14.0f;
+
 
     inline constexpr float saveX = 761.0f;
     inline constexpr float deleteX = 836.0f;
