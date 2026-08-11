@@ -214,7 +214,15 @@ carrying its own, so the two read as one instrument. Ground `#16150f`, border
 `1px solid rgba(214,196,124,.30)` on the left, right and bottom only — **no top border**, radius
 `0 0 3px 3px`, `padding: 4px 0`, drop shadow `0 14px 24px -6px rgba(0,0,0,.55)` (negative spread
 so nothing bleeds upward). The menu meets the display's glass directly: no gap, no rule, no shadow
-between them, `max-height: 264px` with vertical scroll, `z-index: 40`.
+between them, `z-index: 40`.
+
+**The list carries no height cap of its own.** Per the suite contract in the root `CLAUDE.md`, it
+hangs from the display's lower edge at the display's width and runs to the **panel's** bottom
+(`max-height: 665px` = 776 − 91 − 20 inset), scrolling only if a User bank ever exceeds that.
+INIT + divider + FACTORY header + 16 Programs is 424 px, so the menu opens **91 → 515** and all
+seventeen rows are visible without scrolling. An earlier 264 px figure in this document was a
+per-plugin number that contradicted the contract; it is withdrawn, and `panel-menu-open.png` has
+been re-exported against the uncapped list.
 
 Rows are **22 px tall**, `padding: 0 12px 0 10px`, IBM Plex Mono 12 px / 1.4 px tracking:
 
@@ -242,9 +250,12 @@ becomes the field — it is the only screen on the panel, and a floating dialog 
 equivalent:
 
 - The bank cell switches to **`NAME`**.
-- The name cell becomes an editable field in the same 14 px / 1.7 px phosphor type. The caret is the
-  native text caret at `caret-color: #e6dcae`, blinking at the platform rate; it is focused
-  automatically on entry, so the user types immediately.
+- The name cell becomes an editable field in the same 14 px / 1.7 px phosphor type. The cursor is a
+  **U+2588 block** in `#e6dcae` blinking at 1 s / 50 % duty — the suite convention, so the field
+  reads as hardware rather than as a web form. It is focused automatically on entry, so the user
+  types immediately. Because Elmer's field is **centred** where every sibling's is left-aligned, the
+  cursor's cell must occupy the string on both phases (a space when dark); appending the block only
+  when lit would walk the name half a character sideways at every blink.
 - The chevron cell is **hidden** while naming — the menu is unreachable mid-name.
 - Input is forced uppercase and hard-capped at **19 characters** (see the budget above) — what can
   be typed matches what can be displayed once the asterisk appears.
@@ -364,8 +375,9 @@ No unit is invented for consistency's sake, and none is omitted for the sake of 
 text.
 
 **KNEE's label sits below its buttons**, like every other control name on the panel, on the same
-baseline as SIDECHAIN HP — its column carries `padding-top: 38px` and the label `margin-top: 15px`,
-matching the knob columns' label offset.
+baseline as SIDECHAIN HP — its column carries `padding-top: 37px` and the label `margin-top: 15px`.
+The 37 rather than 38 is deliberate: at 38 the arithmetic (38 + 63 + 15) puts KNEE's label 1 px
+below the knob columns' 115, and the shared baseline is the property that is actually visible.
 
 **RATIO's column carries `padding-top: 12px`** so its label sits on THRESHOLD's line despite its
 smaller (100 px vs 112 px) tick ring. Control labels align across a section regardless of ring size.
@@ -467,6 +479,12 @@ drives it from a simulated programme signal; the real build takes the DSP's GR v
 | `ratioIdx` | int 0–4 | 2 (4:1) |
 | `knee` | enum soft/hard | soft |
 | `hp` | float 0–1 (OFF below 0.10) | 0.42 |
+
+> **Open item — SIDECHAIN HP dead band.** The OFF zone ends at 0.10 and the frequency curve starts
+> at 0.20, so ~56° of travel does nothing. Starting the curve at 0.10 recovers it, but BRAND.md
+> requires the printed scale and the mapping to agree, so the 40 Hz mark moves with the curve — and
+> that mark is baked into `scale-lg.png`. **Bundle this with the next re-cut of the tick rings**;
+> until then the dead band stays as specified.
 | `attack` | float 0–1 (log-mapped) | 0.34 |
 | `release` | int 0–4 (4 = AUTO) | 1 (0.3 s) |
 | `iron` | float 0–1 | 0.34 |

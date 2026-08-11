@@ -85,6 +85,26 @@ public:
         idealHeight = rowHeight;
     }
 
+    /** **19px, not JUCE's default.** LookAndFeel_V2 sizes a section header at the item height plus
+        half again - 33 against our 22 - which pushed everything below FACTORY 14px down the list and
+        put the whole bank out of step with the render. The spec's header is `padding: 3px 12px 4px`
+        around a 9px line: 3 + 12 + 4.
+
+        Overridden on the WithOptions form because that is the one V2 actually calls; the older
+        two-argument variant delegates to it. */
+    void getIdealPopupMenuSectionHeaderSizeWithOptions (const juce::String& text,
+                                                        int standardMenuItemHeight,
+                                                        int& idealWidth, int& idealHeight,
+                                                        const juce::PopupMenu::Options& options) override
+    {
+        juce::ignoreUnused (standardMenuItemHeight, options);
+
+        idealWidth = (int) std::ceil (ElmerTheme::Text::trackedWidth (
+                         text, ElmerTheme::Font::mono (headerTextSize), headerTracking))
+                     + padLeft + padRight;
+        idealHeight = headerHeight;
+    }
+
     void drawPopupMenuItem (juce::Graphics& g, const juce::Rectangle<int>& area,
                             bool isSeparator, bool isActive, bool isHighlighted,
                             bool isTicked, bool hasSubMenu, const juce::String& text,
@@ -168,6 +188,7 @@ private:
     static constexpr float markerWidth    = 2.0f;
     static constexpr float dividerInset   = 10.0f;
     static constexpr int   rowHeight       = 22;
+    static constexpr int   headerHeight     = 19;   // 3px top padding + a 9px line + 4px bottom
     static constexpr int   separatorHeight = 9;
     static constexpr int   verticalPadding = 4;
 

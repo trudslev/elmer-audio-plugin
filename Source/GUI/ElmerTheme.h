@@ -474,8 +474,13 @@ namespace Layout
     inline const std::array<KnobSpec, 8> knobs { {
         { "threshold",   "THRESHOLD",         { 120.0f, 253.0f }, 112.0f, 108.0f, 84.0f,
           Strip::detect, Ring::large11, 324.0f },
-        { "ratio",       "RATIO",             { 269.0f, 253.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::detect, Ring::small9,  318.0f },
+        // **RATIO sits 6px lower than THRESHOLD, and its LABEL does not.** Its column carries
+        // padding-top: 12px so that a 100px scale area ends level with THRESHOLD's 112px one:
+        // 197 + 12 + 100 = 309 against 197 + 112 = 309, and both labels land on 324. Control labels
+        // align across a section regardless of ring size, so the smaller ring is pushed down rather
+        // than the label pulled up. Measured in panel.png: cap centre 259, against THRESHOLD's 253.
+        { "ratio",       "RATIO",             { 269.0f, 259.0f }, 100.0f,  96.0f, 74.0f,
+          Strip::detect, Ring::small9,  324.0f },
         { "sidechainHp", "SIDECHAIN HP",      { 120.0f, 412.0f }, 100.0f,  96.0f, 74.0f,
           Strip::detect, Ring::large11, 477.0f },
         { "attack",      "ATTACK",            { 115.0f, 606.0f }, 100.0f,  96.0f, 74.0f,
