@@ -269,11 +269,17 @@ passes while proving nothing.
   Capture at exactly 1120 × 776 or the numbers lie: the standalone restores its last window size and
   macOS resamples the GUI to fit, so every edge differs slightly. Set the size explicitly, confirm
   it took, and guard every capture on the app being frontmost.
-- **Outstanding**: a mid-tone comparison against the reference render shows this build reading
-  ~10–15 levels darker across the right and lower panel. The cause is **not yet isolated** — the
-  capture pipeline used for the comparison is demonstrably not colour-faithful (the scribble tape is
-  drawn `#EFE9D6` and captures as `#F5EFD4`), so it may be measurement rather than rendering.
-  Re-measure from a same-display 2× capture before changing any colour constant.
+- **The "10–15 levels darker" finding was measurement, not rendering, and is closed.** Re-measured
+  on 2026-08-11 from a same-display 2× `screencapture -R`, sampling four fascia patches clear of any
+  control: the build differs from the render by **−1.1 to +2.4 levels per channel**. The original
+  figure came from the non-colour-faithful pipeline exactly as suspected. No colour constant was
+  changed, and none should be on the strength of a capture that cannot reproduce `#EFE9D6`.
+
+  The method that settles this class of question is a **whole-panel difference map on a 40px grid**,
+  not an eyeball or a global mean. It is what found the scribble strip: the footer was the only cell
+  above 30 while everything else sat under 20, and it had survived several passes that looked
+  straight at it. Expect the knob columns and the meter to read 18–28 legitimately — the render is
+  captured mid-compression, so its needle and some pointers are elsewhere.
 - **Outstanding with the designers**: the two stale renders (KNEE's label), the 264 px dropdown cap,
   and SIDECHAIN HP's dead band — ~56° of travel does nothing, because the OFF zone ends at 0.10 and
   the frequency curve starts at 0.20. That last one is a recommendation, not a defect: the 40 Hz
