@@ -38,7 +38,8 @@ namespace Colour
     inline const juce::Colour screwDark      { 0xFF5C574E };
 
     // --- ink -----------------------------------------------------------------
-    // One value for all functional text. Measured 7.9-8.9:1 against the fascia.
+    // One value for all functional text.
+    // contrast: 7.9-8.9:1 vs fascia [functional]
     inline const juce::Colour ink            { 0xFF0F0F0C };
     inline const juce::Colour wordmarkInk    { 0xFF24231F };
     inline const juce::Colour markerInk      { 0xFF2B2A26 };
