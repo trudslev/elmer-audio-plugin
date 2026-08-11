@@ -39,7 +39,7 @@ namespace Colour
 
     // --- ink -----------------------------------------------------------------
     // One value for all functional text.
-    // contrast: 7.9-8.9:1 vs fascia [functional]
+    // contrast: 7.57:1 vs fascia [functional]
     inline const juce::Colour ink            { 0xFF0F0F0C };
     inline const juce::Colour wordmarkInk    { 0xFF24231F };
     inline const juce::Colour markerInk      { 0xFF2B2A26 };
@@ -66,7 +66,9 @@ namespace Colour
     inline const juce::Colour creamText      { 0xFF302C24 };
     inline const juce::Colour creamOffTop    { 0xFFA5A094 };
     inline const juce::Colour creamOffBottom { 0xFF8F8A7E };
-    inline const juce::Colour creamOffText   { 0xFF6F6A5F };
+    // Darkened from #6F6A5F, which read 1.56:1 against its own cap - absent rather than dim.
+    // contrast: 3.19-4.22:1 vs creamOffTop,creamOffBottom [state]
+    inline const juce::Colour creamOffText   { 0xFF3F3C36 };
 
     inline const juce::Colour lampFaceTop    { 0xFFA9A496 };
     inline const juce::Colour lampFaceBottom { 0xFF8E8A7D };
