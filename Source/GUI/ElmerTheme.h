@@ -397,6 +397,17 @@ namespace Layout
     inline constexpr float scribbleSize = 21.0f;
     inline constexpr float scribbleRotationDegrees = -2.4f;
 
+    /** The tape's padding, from the prototype's `padding: 9px 30px 11px 32px` - **asymmetric on
+        both axes**, which is why these are four numbers rather than a reduced() call. Together with
+        the 0.5px letter-spacing below they are what sizes the tape: the strip was 29.5px narrower
+        than the render because it used 42px of total horizontal padding against the specified 62,
+        and drew the marker text with no tracking at all. */
+    inline constexpr float scribblePadLeft   = 32.0f;
+    inline constexpr float scribblePadRight  = 30.0f;
+    inline constexpr float scribblePadTop    = 9.0f;
+    inline constexpr float scribblePadBottom = 11.0f;
+    inline constexpr float scribbleTracking  = 0.5f;
+
     //==========================================================================
     /** Knobs are 128-frame vertical filmstrips. Frame = round(value01 * 127), source Y offset
         = -frame * frameSize. Rotation -140 to +140 is BAKED INTO the strip; nothing rotates at

@@ -363,9 +363,14 @@ void PanelBackground::paintFooter (juce::Graphics& g)
         const auto markerFont = Font::marker (Layout::scribbleSize);
         const juce::String text { "CH 24 " + juce::String::charToString ((juce::juce_wchar) 0x2014)
                                   + " MIX BUS / GLUE" };
-        const float textWidth = juce::GlyphArrangement::getStringWidth (markerFont, text);
-        const juce::Rectangle<float> tape { Layout::contentX + 6.0f, Layout::footerY - 4.0f,
-                                            textWidth + 42.0f, 38.0f };
+        // Tracked width, not the plain glyph width: the 0.5px letter-spacing is part of what the
+        // tape has to be wide enough for, so measuring without it undersizes the strip AND crowds
+        // the text inside it.
+        const float textWidth = Text::trackedWidth (text, markerFont, Layout::scribbleTracking);
+        const juce::Rectangle<float> tape { Layout::contentX + 6.0f, Layout::footerY - 10.0f,
+                                            textWidth + Layout::scribblePadLeft + Layout::scribblePadRight,
+                                            Layout::scribbleSize + Layout::scribblePadTop
+                                                + Layout::scribblePadBottom };
 
         juce::Graphics::ScopedSaveState state { g };
         g.addTransform (juce::AffineTransform::rotation (
@@ -397,9 +402,12 @@ void PanelBackground::paintFooter (juce::Graphics& g)
         g.setGradientFill (tapeFill);
         g.fillPath (torn);
 
-        g.setFont (markerFont);
-        g.setColour (Colour::markerInk);
-        g.drawText (text, tape.reduced (18.0f, 4.0f), juce::Justification::centredLeft, false);
+        Text::drawTracked (g, text, markerFont, Layout::scribbleTracking,
+                           tape.withTrimmedLeft (Layout::scribblePadLeft)
+                               .withTrimmedRight (Layout::scribblePadRight)
+                               .withTrimmedTop (Layout::scribblePadTop)
+                               .withTrimmedBottom (Layout::scribblePadBottom),
+                           juce::Justification::left, Colour::markerInk, false);
     }
 
     const auto footFont = Font::monoBold (Layout::footerTextSize);
