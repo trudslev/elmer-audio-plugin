@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nf/MenuMetrics.h>
+
 #include "ElmerTheme.h"
 
 /**
@@ -19,10 +21,11 @@
     character cell, so every row starts its text at the same x whether it is current or not - the
     bar occupies the 2px that the unselected rows spend on padding.
 */
-class ElmerMenuLookAndFeel final : public juce::LookAndFeel_V4
+class ElmerMenuLookAndFeel final : public nf::MenuMetricsLookAndFeel
 {
 public:
     ElmerMenuLookAndFeel()
+        : nf::MenuMetricsLookAndFeel (metrics())
     {
         // The few places JUCE paints without asking us first, most visibly the shadow's backdrop.
         setColour (juce::PopupMenu::backgroundColourId, ground);
@@ -31,13 +34,27 @@ public:
         setColour (juce::PopupMenu::highlightedTextColourId, rowInkBright);
     }
 
+protected:
+    /** **Tracked, not plain.** This panel draws its rows with letter-spacing, so measuring them as
+        a plain run would size every row too narrow for its own content. That is the reason text
+        measurement is the one hook nf::MenuMetricsLookAndFeel leaves to the casting. */
+    float measureMenuItemText (const juce::String& text) override
+    {
+        return ElmerTheme::Text::trackedWidth (text, getPopupMenuFont(), tracking);
+    }
+
+    /** The caption is a smaller face than the rows, so it is measured in its own. */
+    float measureSectionHeaderText (const juce::String& text) override
+    {
+        return ElmerTheme::Text::trackedWidth (text, ElmerTheme::Font::mono (headerTextSize),
+                                               headerTracking);
+    }
+
+public:
     juce::Font getPopupMenuFont() override
     {
         return ElmerTheme::Font::mono (itemTextSize);
     }
-
-    /** 4px above the first row and below the last, per the spec's `padding: 4px 0`. */
-    int getPopupMenuBorderSize() override { return verticalPadding; }
 
     void drawPopupMenuBackground (juce::Graphics& g, int width, int height) override
     {
@@ -64,46 +81,7 @@ public:
         g.strokePath (bottom, juce::PathStrokeType (1.0f));
     }
 
-    void getIdealPopupMenuItemSize (const juce::String& text, bool isSeparator,
-                                    int standardMenuItemHeight, int& idealWidth,
-                                    int& idealHeight) override
-    {
-        if (isSeparator)
-        {
-            idealWidth = 50;
-            idealHeight = separatorHeight;
-            return;
-        }
 
-        idealWidth = (int) std::ceil (ElmerTheme::Text::trackedWidth (text, getPopupMenuFont(), tracking))
-                     + padLeft + padRight;
-
-        // The row height is the spec's 22 and is NOT allowed to grow to the platform's standard
-        // item height: seventeen rows have to fit the panel without scrolling, and JUCE's standard
-        // on macOS is taller than 22.
-        juce::ignoreUnused (standardMenuItemHeight);
-        idealHeight = rowHeight;
-    }
-
-    /** **19px, not JUCE's default.** LookAndFeel_V2 sizes a section header at the item height plus
-        half again - 33 against our 22 - which pushed everything below FACTORY 14px down the list and
-        put the whole bank out of step with the render. The spec's header is `padding: 3px 12px 4px`
-        around a 9px line: 3 + 12 + 4.
-
-        Overridden on the WithOptions form because that is the one V2 actually calls; the older
-        two-argument variant delegates to it. */
-    void getIdealPopupMenuSectionHeaderSizeWithOptions (const juce::String& text,
-                                                        int standardMenuItemHeight,
-                                                        int& idealWidth, int& idealHeight,
-                                                        const juce::PopupMenu::Options& options) override
-    {
-        juce::ignoreUnused (standardMenuItemHeight, options);
-
-        idealWidth = (int) std::ceil (ElmerTheme::Text::trackedWidth (
-                         text, ElmerTheme::Font::mono (headerTextSize), headerTracking))
-                     + padLeft + padRight;
-        idealHeight = headerHeight;
-    }
 
     void drawPopupMenuItem (juce::Graphics& g, const juce::Rectangle<int>& area,
                             bool isSeparator, bool isActive, bool isHighlighted,
@@ -187,6 +165,31 @@ private:
     static constexpr float cornerRadius   = 3.0f;
     static constexpr float markerWidth    = 2.0f;
     static constexpr float dividerInset   = 10.0f;
+    /** **This panel's dropdown sizes, and Elmer is the casting that chose all of them.**
+
+        `sectionHeaderHeight` is **19, not JUCE's default**. `LookAndFeel_V2` sizes a section caption
+        at the item height plus half again - 33 against our 22 - which pushed everything below
+        FACTORY 14px down the list and put the whole bank out of step with the render. The spec's
+        header is `padding: 3px 12px 4px` around a 9px line: 3 + 12 + 4.
+
+        The four castings that took JUCE's default now state it explicitly too, so the suite's
+        disagreement is visible rather than implicit. This is the side with a measurement behind it.
+
+        The row height is 22 and never grows to the platform's standard item height: seventeen rows
+        have to fit the panel without scrolling, and macOS's standard is taller than 22. That rule
+        is nf::MenuMetricsLookAndFeel's now, and it started here. */
+    static nf::MenuMetrics metrics()
+    {
+        nf::MenuMetrics m;
+        m.rowHeight = rowHeight;
+        m.sectionHeaderHeight = headerHeight;
+        m.separatorHeight = separatorHeight;
+        m.borderSize = verticalPadding;      // 4px above the first row and below the last
+        m.leadingColumn = 0;                 // the current row is marked by a bar in its padding
+        m.horizontalPadding = padLeft + padRight;
+        return m;
+    }
+
     static constexpr int   rowHeight       = 22;
     static constexpr int   headerHeight     = 19;   // 3px top padding + a 9px line + 4px bottom
     static constexpr int   separatorHeight = 9;
