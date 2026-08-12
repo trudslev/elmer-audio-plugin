@@ -33,6 +33,8 @@ target_include_directories(ElmerTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../Sou
 # stubbing it is the point: a token the tests check has to be the token the panel draws with.
 target_link_libraries(ElmerTests PRIVATE
     ElmerBinaryData
+    # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
+    nf::core
     juce::juce_dsp
     juce::juce_audio_basics
     juce::juce_audio_processors

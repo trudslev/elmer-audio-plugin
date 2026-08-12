@@ -134,6 +134,20 @@ button and the model, `AsyncUpdater` for the audio-thread-safe apply, one FACT/U
 LCD. Reflect-84's two improvements are carried: name collisions use `getNonexistentSibling()`, and
 the schema version is read on restore, not merely written.
 
+**The bank on disk is `nf::UserProgramStore` now** — scanning, sort-by-stem, naming, the collision
+check, save and delete all come from `neon-foundry-core`, pinned at `v1.0.0` and declared *after*
+`FetchContent_MakeAvailable(JUCE)` because core refuses to fetch its own JUCE. What a Program
+*contains* stays here: all nine parameters and the schema attribute. Core owns files and names; this
+repo owns meaning.
+
+Two behaviours changed with it, both deliberate. The empty-name fallback is **`TAKE n`**, not
+`UNTITLED` — six castings had five different fallbacks, and consecutive empty saves now give
+`TAKE 3`, `TAKE 4` rather than leaning on `getNonexistentSibling` for `UNTITLED (2)`. And
+**upper-casing and the 22-character cap apply on every save path**, where they used to live in
+ProgramHeader's keystroke filter alone, so any programmatic save bypassed both. `ProgramManager`
+carries its own copy of the cap because it cannot include a GUI header; `DisplayBudgetTests` asserts
+the two are equal, which is the binding.
+
 **INIT is index −1, and that is load-bearing in three places.** It sits outside both banks: the menu
 prints it unnumbered above a divider, the bank cell shows an em-dash at 42 % phosphor rather than
 naming a bank it is not in, and DELETE is disabled on it as it is on a Factory Program — INIT is not
@@ -142,7 +156,10 @@ a stored thing, so there is nothing to delete. Two consequences follow that are 
 AsyncUpdater's "nothing pending" sentinel is **−2**, because −1 now means INIT.
 
 **The dirty flag has exactly one definition and two consumers.** `ProgramManager::isModified()`
-compares physical values against a snapshot taken at apply time. The display's asterisk and SAVE's
+compares against an `nf::ParameterSnapshot` taken at apply time — normalised values keyed by
+parameter ID, from `neon-foundry-core`, rather than the positional `std::vector<float>` of physical
+values it replaced. The spin lock that used to guard it is inside the snapshot now, so all six
+castings get it; four of them had that read and written across threads with nothing at all. The display's asterisk and SAVE's
 enablement both read it, rather than each deciding for itself — the spec requires the two to agree
 always, and the cheapest way to guarantee that is to give them nothing to disagree about. The
 snapshot is re-taken on apply, on save, and on session restore.

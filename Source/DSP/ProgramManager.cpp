@@ -1,5 +1,7 @@
 #include "ProgramManager.h"
 
+#include <nf/UserProgramDirectory.h>
+
 #include <cmath>
 #include <vector>
 
@@ -15,9 +17,14 @@ namespace
         ParamIDs::attack, ParamIDs::release, ParamIDs::iron, ParamIDs::makeup, ParamIDs::mix } };
 }
 
-ProgramManager::ProgramManager (juce::AudioProcessorValueTreeState& s) : apvts (s)
+ProgramManager::ProgramManager (juce::AudioProcessorValueTreeState& s,
+                                juce::File userDirectoryOverride)
+    : apvts (s),
+      store (nf::userProgramDirectory (NF_COMPANY_NAME, NF_PRODUCT_NAME, userDirectoryOverride),
+             fileExtension,
+             maxProgramNameLength)
 {
-    rescanUserPrograms();
+    store.refresh();
     applyProgram (factoryIdAt (defaultFactoryProgramIndex));
 
     // Construction applies the default synchronously - no host or automation is attached yet - so
@@ -31,115 +38,41 @@ ProgramManager::~ProgramManager()
     cancelPendingUpdate();
 }
 
-const juce::StringArray& ProgramManager::snapshotParamIds()
-{
-    // Everything a Program stores. Elmer has no momentary triggers, so unlike TapeRot - which must
-    // exclude STOP/FILTER/FAIL or holding one lights SAVE - this is simply the full set.
-    static const juce::StringArray ids {
-        ParamIDs::threshold, ParamIDs::ratio, ParamIDs::knee, ParamIDs::sidechainHp,
-        ParamIDs::attack, ParamIDs::release, ParamIDs::iron, ParamIDs::makeup, ParamIDs::mix };
-    return ids;
-}
-
 void ProgramManager::captureSnapshot()
 {
-    const auto& ids = snapshotParamIds();
-    std::vector<float> fresh;
-    fresh.reserve ((size_t) ids.size());
-
-    for (const auto& id : ids)
-        if (auto* v = apvts.getRawParameterValue (id))
-            fresh.push_back (v->load (std::memory_order_relaxed));
-        else
-            fresh.push_back (0.0f);
-
-    const juce::SpinLock::ScopedLockType lock (snapshotLock);
-    snapshot = std::move (fresh);
+    snapshot.capture (apvts.processor);
 }
 
 bool ProgramManager::isModified() const
 {
-    const auto& ids = snapshotParamIds();
-
-    const juce::SpinLock::ScopedLockType lock (snapshotLock);
-
-    if (snapshot.size() != (size_t) ids.size())
-        return false;                   // nothing captured yet - nothing to compare against
-
-    for (int i = 0; i < ids.size(); ++i)
-        if (auto* v = apvts.getRawParameterValue (ids[i]))
-        {
-            // Physical values, so the tolerance suits the widest range here (sidechain HP in Hz).
-            // Anything a user can hear moving is far larger than this.
-            if (std::abs (v->load (std::memory_order_relaxed) - snapshot[(size_t) i]) > 1.0e-3f)
-                return true;
-        }
-
-    return false;
+    // **Every parameter, with no exclusion list.** Elmer has no momentary triggers - unlike TapeRot,
+    // which must exclude STOP/FILTER/FAIL or holding one lights SAVE - and no mutually exclusive
+    // selectors, so the compared set is simply everything.
+    return snapshot.differsFrom (apvts.processor);
 }
 
-juce::File ProgramManager::getUserProgramDirectory()
+
+juce::File ProgramManager::getUserProgramDirectory() const
 {
-    // **Application data, not ~/Library/Audio/Presets.** That directory is Apple's location for the
-    // AU PRESET FORMAT - .aupreset files the AU system itself scans, reads and writes. Our user
-    // Programs are not those; they are application-owned data in our own format, so they belong
-    // where an application keeps its data.
-    //
-    // **macOS needs the "Application Support" segment added by hand, and only macOS.** JUCE's
-    // userApplicationDataDirectory is `~/Library` there - NOT `~/Library/Application Support` -
-    // while it is `%APPDATA%` on Windows and `~/.config` on Linux, both of which are already the
-    // right root. JUCE's own PropertiesFile appends the segment the same way, for the same reason.
-    //
-    // This was got wrong once in exactly the plausible direction: the note here used to claim JUCE
-    // resolved the segment for us, and that hard-coding it would be wrong on two platforms out of
-    // three. The first half was false, and the second half only argues for the `#if` - it is one
-    // platform's extra segment, not a shared literal path. Programs landed directly in
-    // `~/Library/<Company>/` for a while, which is not where application data goes on macOS and is
-    // not a folder anything else writes into.
-    //
-    // Company and product come from CMake rather than string literals - see the note in
-    // CMakeLists.txt for the drift that cost CHORUS-60 a directory.
-    //
-    // **There is deliberately no migration from ~/Library/Audio/Presets, and that is a decision
-    // rather than an omission.** One was written and then removed: nothing in this suite has
-    // shipped at a released version, so no installed build has ever written a Program to the old
-    // location for anyone but us, and our own were disposable. Migration code guarding a case that
-    // cannot occur is dead weight that still costs a directory probe on every rescan.
-    //
-    // If a version ever ships and the path changes AGAIN, that is when this becomes necessary.
-    auto dir = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory);
-
-   #if JUCE_MAC
-    dir = dir.getChildFile ("Application Support");
-   #endif
-
-    return dir
-               .getChildFile (NF_COMPANY_NAME)
-               .getChildFile (NF_PRODUCT_NAME)
-               .getChildFile ("Programs");
+    return store.getDirectory();
 }
 
-void ProgramManager::rescanUserPrograms()
+juce::File ProgramManager::getDefaultUserProgramDirectory()
 {
-    userFiles.clear();
-    auto dir = getUserProgramDirectory();
-
-    if (dir.isDirectory())
-        for (const auto& f : dir.findChildFiles (juce::File::findFiles, false,
-                                                 "*" + juce::String (fileExtension)))
-            userFiles.add (f);
-
-    // **The displayed name, case-insensitively.** userFiles.sort() used juce::File::operator<,
-    // which compares the FULL PATH via compareFilenames - and that ignores case on macOS/Windows
-    // but respects it on Linux, so this casting alone sorted differently by OS. It also compared
-    // the extension, which sorts "AB C" before "AB" (space 0x20 precedes dot 0x2E).
-    std::sort (userFiles.begin(), userFiles.end(),
-               [] (const juce::File& a, const juce::File& b)
-               {
-                   return a.getFileNameWithoutExtension()
-                           .compareIgnoreCase (b.getFileNameWithoutExtension()) < 0;
-               });
+    // The per-OS resolution, the "Application Support" segment macOS alone needs, and the reason
+    // ~/Library/Audio/Presets is the wrong answer are all in nf/UserProgramDirectory.h now. That
+    // reasoning was carried in six near-identical comment blocks, and the one time it was wrong it
+    // was wrong in all six at once.
+    //
+    // **There is deliberately no migration from the old location**, and that is a decision rather
+    // than an omission. One was written and then removed: nothing in this suite has shipped at a
+    // released version, so no installed build has ever written a Program to the old path for anyone
+    // but us, and our own were disposable. Migration code guarding a case that cannot occur is dead
+    // weight that still costs a directory probe on every rescan. If a version ever ships and the
+    // path changes AGAIN, that is when this becomes necessary.
+    return nf::userProgramDirectory (NF_COMPANY_NAME, NF_PRODUCT_NAME);
 }
+
 
 //==============================================================================
 // Identity. Nothing below addresses a Program by position except the deliberate crossings.
@@ -198,9 +131,8 @@ ProgramId ProgramManager::resolve (ProgramBank bank, const juce::String& id,
             return factoryIdAt (pos);
 
     if (bank == ProgramBank::user)
-        for (const auto& f : userFiles)
-            if (f.getFileNameWithoutExtension() == id)
-                return { ProgramBank::user, id, id };
+        if (store.fileFor (id) != juce::File())
+            return { ProgramBank::user, id, id };
 
     // **Degrade honestly.** The restored values are correct and stay put; only the name is unknown.
     return { ProgramBank::unresolved, id, displayName.isNotEmpty() ? displayName : id };
@@ -209,14 +141,14 @@ ProgramId ProgramManager::resolve (ProgramBank bank, const juce::String& id,
 std::vector<ProgramId> ProgramManager::listPrograms() const
 {
     std::vector<ProgramId> out;
-    out.reserve (1 + Elmer::factoryPrograms.size() + (size_t) userFiles.size());
+    out.reserve (1 + Elmer::factoryPrograms.size() + (size_t) store.getFiles().size());
 
     out.push_back (initId());
 
     for (size_t i = 0; i < Elmer::factoryPrograms.size(); ++i)
         out.push_back (factoryIdAt ((int) i));
 
-    for (const auto& f : userFiles)
+    for (const auto& f : store.getFiles())
     {
         const auto stem = f.getFileNameWithoutExtension();
         out.push_back ({ ProgramBank::user, stem, stem });
@@ -234,14 +166,7 @@ juce::String ProgramManager::displayLabelFor (const ProgramId& id) const
     return id.displayName;
 }
 
-juce::File ProgramManager::userProgramFile (const juce::String& stem) const
-{
-    for (const auto& f : userFiles)
-        if (f.getFileNameWithoutExtension() == stem)
-            return f;
 
-    return {};
-}
 
 void ProgramManager::requestProgramChange (const ProgramId& id)
 {
@@ -321,7 +246,7 @@ void ProgramManager::applyProgram (const ProgramId& id)
     }
     else if (id.bank == ProgramBank::user)
     {
-        const auto file = userProgramFile (id.id);
+        const auto file = store.fileFor (id.id);
 
         if (file == juce::File())
             return;
@@ -382,18 +307,9 @@ bool ProgramManager::applyUserFile (const juce::File& file)
 
 ProgramId ProgramManager::saveNewUserProgram (const juce::String& name)
 {
-    auto dir = getUserProgramDirectory();
-    dir.createDirectory();
-
-    // Trimmed BEFORE the emptiness test, so a name of nothing but spaces falls back rather than
-    // producing a file whose name is invisible in the menu.
-    const auto trimmed = name.trim();
-    const auto safe = juce::File::createLegalFileName (trimmed.isEmpty() ? "UNTITLED" : trimmed);
-
-    // A name collision creates a distinct file rather than silently overwriting - Reflect-84's fix,
-    // and the reason SAVE can promise never to overwrite.
-    auto file = dir.getChildFile (safe + fileExtension).getNonexistentSibling();
-
+    // **What a Program CONTAINS stays here** - all nine parameters, since Elmer has no mutually
+    // exclusive selectors to filter on. Core owns naming, the collision check and the write, and
+    // takes finished XML.
     juce::XmlElement xml { "ElmerProgram" };
     xml.setAttribute ("schema", stateSchemaVersion);
 
@@ -401,27 +317,29 @@ ProgramId ProgramManager::saveNewUserProgram (const juce::String& name)
         if (auto* p = dynamic_cast<juce::RangedAudioParameter*> (apvts.getParameter (id)))
             xml.setAttribute (id, (double) p->convertFrom0to1 (p->getValue()));
 
-    xml.writeTo (file);
-    rescanUserPrograms();
+    // **The empty-name fallback is `TAKE n` now, not `UNTITLED`.** The suite had five different
+    // ones across six castings; TAKE n is the one that is better rather than merely different,
+    // since consecutive empty saves give TAKE 3, TAKE 4 instead of leaning on getNonexistentSibling
+    // for "UNTITLED (2)". Upper-casing and the 22-character cap also apply on every path now - they
+    // lived in ProgramHeader's keystroke filter alone, so any programmatic save bypassed both.
+    const auto file = store.save (name, xml);
 
-    for (int i = 0; i < userFiles.size(); ++i)
-    {
-        if (userFiles[i] == file)
-        {
-            setCurrentId ({ ProgramBank::user, file.getFileNameWithoutExtension(),
-                            file.getFileNameWithoutExtension() });
+    if (file == juce::File())
+        return getCurrentProgramId();   // the write failed; stay on the Program already showing
 
-            // The snapshot is re-taken against what was just written, so SAVE goes dark and the
-            // asterisk clears the instant the Program exists. Without this the panel keeps claiming
-            // unsaved changes against the PREVIOUS Program's baseline, immediately after saving.
-            captureSnapshot();
+    // **The stem comes off the file core returned, not off the requested name.** A collision takes
+    // the next free sibling, so taking it from the request would point the panel at the first file
+    // while the values came from the second.
+    const auto stem = file.getFileNameWithoutExtension();
+    setCurrentId ({ ProgramBank::user, stem, stem });
 
-            if (onProgramChanged != nullptr)
-                onProgramChanged();
+    // The snapshot is re-taken against what was just written, so SAVE goes dark and the asterisk
+    // clears the instant the Program exists. Without this the panel keeps claiming unsaved changes
+    // against the PREVIOUS Program's baseline, immediately after saving.
+    captureSnapshot();
 
-            return getCurrentProgramId();
-        }
-    }
+    if (onProgramChanged != nullptr)
+        onProgramChanged();
 
     return getCurrentProgramId();
 }
@@ -433,13 +351,8 @@ void ProgramManager::deleteUserProgram (const ProgramId& id)
     if (id.bank != ProgramBank::user)
         return;
 
-    const auto file = userProgramFile (id.id);
-
-    if (file == juce::File())
+    if (! store.remove (id.id))
         return;
-
-    file.deleteFile();
-    rescanUserPrograms();
 
     // Deliberately NOT the unresolved state: deleting from the panel is unambiguous intent.
     applyProgram (factoryIdAt (defaultFactoryProgramIndex));

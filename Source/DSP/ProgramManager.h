@@ -4,6 +4,9 @@
 
 #include "FactoryPrograms.h"
 
+#include <nf/ParameterSnapshot.h>
+#include <nf/UserProgramStore.h>
+
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <functional>
 
@@ -23,7 +26,11 @@
 class ProgramManager final : private juce::AsyncUpdater
 {
 public:
-    explicit ProgramManager (juce::AudioProcessorValueTreeState&);
+    /** @param userDirectoryOverride  where User Programs live. Defaults to the real per-OS
+                                      location; a test passes a temporary directory so it never
+                                      writes into the user's own Programs folder. */
+    explicit ProgramManager (juce::AudioProcessorValueTreeState&,
+                             juce::File userDirectoryOverride = {});
     ~ProgramManager() override;
 
     /** The Factory bank's size - what the host is told, and it never changes. */
@@ -133,7 +140,21 @@ public:
     bool isModified() const;
     void deleteUserProgram (const ProgramId& id);
 
-    static juce::File getUserProgramDirectory();
+    /** Where this instance stores User Programs, and the real per-OS location regardless of it. */
+    juce::File getUserProgramDirectory() const;
+    static juce::File getDefaultUserProgramDirectory();
+
+    /** **The store's cap, and it MUST equal `Layout::maxUserNameLength`.**
+
+        22 = the 24-character cell less the dirty marker. The derivation is a display fact and lives
+        with the display, in ElmerTheme.h - this class cannot include a GUI header, so the two are
+        bound by `Tests/DisplayBudgetTests.cpp` asserting them equal rather than by an alias. A test
+        that fails on divergence is stronger than a comment that does not.
+
+        It is stated here at all because the cap used to be applied by the keystroke filter ALONE,
+        so any programmatic save bypassed it - and a name longer than the cell is one the panel
+        cannot show. */
+    static constexpr int maxProgramNameLength = 22;
 
 
     std::function<void()> onProgramChanged;
@@ -141,18 +162,18 @@ public:
 private:
     void handleAsyncUpdate() override;
     bool applyUserFile (const juce::File& file);
-    void rescanUserPrograms();
     void setParam (const char* id, float actualValue);
     void applyProgramValues (const Elmer::FactoryProgram& p);
     void applyProgram (const ProgramId& id);
     void setCurrentId (const ProgramId& id);
-    juce::File userProgramFile (const juce::String& stem) const;
     void captureSnapshot();
 
-    static const juce::StringArray& snapshotParamIds();
-
     juce::AudioProcessorValueTreeState& apvts;
-    juce::Array<juce::File> userFiles;
+
+    /** The User bank on disk. Scanning, sorting, naming, the collision check, save and delete are
+        core's; WHAT a Program contains - all nine parameters, since Elmer has no selectors to
+        filter on - stays here. */
+    nf::UserProgramStore store;
     mutable juce::SpinLock currentIdLock;
     ProgramId currentId;
 
@@ -161,10 +182,10 @@ private:
     bool hasPendingProgram = false;
     ProgramId pendingProgram;
 
-    // Guarded because setStateInformation can arrive on any thread while the GUI polls the flag on
-    // the message thread.
-    mutable juce::SpinLock snapshotLock;
-    std::vector<float> snapshot;
+    // The SpinLock that used to sit here is core's now: setStateInformation carries no thread
+    // guarantee and the GUI polls the flag on the message thread, and four of the six castings had
+    // that unguarded. See nf/ParameterSnapshot.h.
+    nf::ParameterSnapshot snapshot;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProgramManager)
 };

@@ -1,4 +1,5 @@
 #include "DSP/FactoryPrograms.h"
+#include "DSP/ProgramManager.h"
 #include "GUI/ElmerTheme.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -59,6 +60,12 @@ public:
 
         beginTest ("The cap is the budget less whichever of the marker and the cursor is larger");
         expectEquals (maxUserNameLength, lcdCharacterBudget - juce::jmax (dirtyMarker, cursorCell));
+
+        // **The store's copy must equal the display's, and this is the binding.** ProgramManager
+        // enforces the cap on every save path - not only on the keystrokes ProgramHeader filters -
+        // but it cannot include a GUI header to alias this constant, so the two are pinned here
+        // instead. A test that fails on divergence is stronger than a comment that does not.
+        expectEquals (ProgramManager::maxProgramNameLength, maxUserNameLength);
 
         beginTest ("The budget matches the cell the type is actually drawn into");
         // 269px of cell less 2 x 11px padding is 247px of text; 14px IBM Plex Mono at 1.7px
