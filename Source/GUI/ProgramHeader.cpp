@@ -114,7 +114,7 @@ void ProgramHeader::showParameter (const juce::String& paramId)
     // what made Attack's missing formatter invisible here while it was fully visible in every host
     // - the panel formatted the value itself and the automation lane did not. The formatters live
     // in Parameters.h now, so the two cannot disagree.
-    readout.show (nf::describeParameter (*param, readoutFormat()));
+    readout.show (nf::describeParameter (*param, ElmerTheme::Layout::readoutFormat()));
     repaint();
 }
 

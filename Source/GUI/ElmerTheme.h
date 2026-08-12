@@ -19,6 +19,8 @@
     top. There is deliberately no dressed-panel render in BinaryData: Gatecrasher used one as its
     background and every live control ended up sitting over a baked copy of itself.
 */
+#include <nf/ParameterReadout.h>
+
 namespace ElmerTheme
 {
 
@@ -687,6 +689,32 @@ namespace Layout
         stating it - and anything later reading the Slider's own rotary parameters would have got
         270 and been quietly wrong. KnobFilmstrip's constructor passes it to setRotaryParameters. */
     inline constexpr float knobSweepDegrees = 280.0f;
+
+    /** **How this panel spells the LCD parameter readout.**
+
+        A presentation decision, so it lives with the other presentation constants rather than in
+        ProgramHeader - and that placement is load-bearing for the test: ProgramHeader.h reaches the
+        processor, whose JucePlugin_* macros exist only in the plugin target, so a test reading the
+        format from there cannot link. The test must read the SHIPPING format rather than a copy, or
+        it asserts against itself. All six castings state it in the same place for that reason.
+    */
+    /** This casting's spelling of the readout: `NAME VALUE UNIT`, **no colon**.
+
+        That is the one legitimate divergence in the suite - `design/GUI-SPEC.md` asks for it - and
+        stating it here rather than hand-writing the join is what keeps it a choice instead of
+        drift. The value is left in the case its parameter authored: a capital S is a different unit
+        from a lowercase one, which is reasoning this casting's source had right first and which now
+        lives beside the flag in core.
+
+        The revert is core's 900 ms, where this panel used to carry 1200 - four values under three
+        constant names across six castings, with no spec justifying any of them. */
+    inline nf::ReadoutFormat readoutFormat()
+    {
+        nf::ReadoutFormat f;
+        f.separatorColon = false;
+        f.nameCharacterBudget = lcdCharacterBudget;
+        return f;
+    }
 }
 
 //==============================================================================
