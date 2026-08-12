@@ -660,8 +660,27 @@ namespace Layout
         it reuses a display already on the panel, and a tooltip has no hardware equivalent. */
     inline constexpr int lcdRevertMs = 1200;
 
-    /** 190px of vertical drag spans the full range, per the prototype. */
+    /** 190px of vertical drag spans the full range, and 760 while Shift is held.
+
+        **Both are suite figures, not this casting's.** Six castings had six drag feels - JUCE's
+        untouched 250 in two, plus 200, 180 and 190 - so the same hand got a different response
+        from each, which nothing about any casting's identity argues for. Elmer was already on the
+        plurality; the Shift fine mode is what it gained, ported from Reflect-84 because a player
+        who learns it on one casting expects it on the next. */
     inline constexpr int knobDragPixels = 190;
+    inline constexpr int knobFineDragPixels = 760;
+
+    /** **280 degrees, and Elmer is the only casting that is not 270.**
+
+        BRAND.md records this as explicit per-casting freedom rather than an unstated exception -
+        the figure is baked into the filmstrips at -140..+140 (see filmstripFrames), so it is a
+        property of the artwork and changing it means re-cutting three strips.
+
+        It is declared here because nothing was telling JUCE. With paint() fully overridden the
+        default 270 arc never rendered, so the divergence sat invisible in the artwork with no code
+        stating it - and anything later reading the Slider's own rotary parameters would have got
+        270 and been quietly wrong. KnobFilmstrip's constructor passes it to setRotaryParameters. */
+    inline constexpr float knobSweepDegrees = 280.0f;
 }
 
 //==============================================================================

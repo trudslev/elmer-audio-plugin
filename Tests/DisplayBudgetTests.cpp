@@ -6,8 +6,11 @@
 /**
     The PROGRAM display's character budget, asserted rather than trusted.
 
-    The cap on typed names is 19 and it is **not inferable from the layout** - it is 24 minus the
-    three characters the two-digit index and its space take, minus the two the dirty marker takes.
+    The cap on typed names is `Layout::maxUserNameLength` and it is **not inferable from the
+    layout** - it is the 24-character budget minus the two the dirty marker takes. (It said 19 here
+    for a cap of 22 until 2026-08-12: the assertions below were written against the constant, so
+    they passed throughout and only the prose lied. That is exactly why a green build preserves this
+    class of error - name the constant, do not restate its value.)
     Nothing in the drawing code would fail if the cap drifted: the text would simply run past the
     cell's right edge and be clipped, silently, and only for the longest names in the longest state.
 

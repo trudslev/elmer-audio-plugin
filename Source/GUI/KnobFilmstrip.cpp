@@ -30,6 +30,28 @@ KnobFilmstrip::KnobFilmstrip (Layout::Strip strip, float diameterPx)
     setMouseDragSensitivity (Layout::knobDragPixels);
     setVelocityBasedMode (false);
     setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
+
+    /*  **The sweep is stated, not inherited.** Elmer's filmstrips are cut at 280 degrees
+        (-140..+140), 10 wider than the suite's 270, and that is a deliberate per-casting freedom
+        BRAND.md now records rather than an accident. But nothing was telling JUCE: with paint()
+        fully overridden and RotaryVerticalDrag in use, the default arc never showed, so the
+        divergence sat invisible in the artwork with no code stating it. Anything that later reads
+        the Slider's own rotary parameters - a look-and-feel, an accessibility client, a JUCE
+        default paint path someone reinstates - would have got 270 and been quietly wrong. */
+    setRotaryParameters (juce::degreesToRadians (180.0f - Layout::knobSweepDegrees * 0.5f),
+                         juce::degreesToRadians (180.0f + Layout::knobSweepDegrees * 0.5f),
+                         true);
+}
+
+void KnobFilmstrip::mouseDown (const juce::MouseEvent& e)
+{
+    // Sensitivity has to be settled BEFORE Slider::mouseDown records its drag anchor: JUCE measures
+    // the drag from that anchor and scales by the current sensitivity, so changing it part-way
+    // through a drag rescales the distance already travelled and the value jumps.
+    setMouseDragSensitivity (e.mods.isShiftDown() ? Layout::knobFineDragPixels
+                                                  : Layout::knobDragPixels);
+
+    juce::Slider::mouseDown (e);
 }
 
 const juce::Image& KnobFilmstrip::stripImage() const

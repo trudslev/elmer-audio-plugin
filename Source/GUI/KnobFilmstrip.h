@@ -24,6 +24,11 @@ public:
 
     void paint (juce::Graphics&) override;
 
+    /** Shift gives a 4x fine drag. Suite-wide behaviour rather than this casting's: a player who
+        learns Shift on one casting expects it on the next, which makes it behaviour and not
+        appearance. */
+    void mouseDown (const juce::MouseEvent&) override;
+
     /** Centres the component on a point in design coordinates. */
     void setCentrePosition (juce::Point<float> centre);
 

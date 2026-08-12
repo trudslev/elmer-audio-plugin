@@ -253,9 +253,11 @@ bool ProgramHeader::keyPressed (const juce::KeyPress& key)
 
     const auto c = key.getTextCharacter();
 
-    // Forced uppercase, and hard-capped at 19 so what CAN be typed matches what can be displayed
-    // once the dirty asterisk is added - see Layout::maxUserNameLength. User names carry no index
-    // any more, which is where the three extra characters came from.
+    // Forced uppercase, and hard-capped at maxUserNameLength (22) so what CAN be typed matches what
+    // can be displayed once the dirty asterisk is added. User names carry no index any more, which
+    // is where the three extra characters came from. **The number is not repeated here** - it said
+    // 19 for a cap of 22 for long enough that the prose and the constant had to be read together to
+    // know which was true, and a green build preserves that indefinitely.
     if (c >= 32 && c != 127 && typedName.length() < Layout::maxUserNameLength)
     {
         typedName += juce::String::charToString (c).toUpperCase();
@@ -319,9 +321,6 @@ void ProgramHeader::showProgramMenu()
             menu.addSectionHeader ("FACTORY");
         }
 
-        // The USER section is absent entirely when empty - header and divider included - rather
-        // than showing an empty heading. This differs from Reflect-84, which keeps the header and
-        // prints a placeholder row.
         if (id.bank == ProgramBank::user && ! std::exchange (userHeaderDone, true))
         {
             menu.addSeparator();
@@ -329,6 +328,22 @@ void ProgramHeader::showProgramMenu()
         }
 
         menu.addItem ((int) i + 1, programs.displayLabelFor (id), true, id == current);
+    }
+
+    /*  **The USER section is always shown, with a placeholder when the bank is empty.**
+
+        Hiding it was this casting's own choice and it lost: an absent section is ambiguous between
+        "you have not saved anything yet" and "this plugin does not do that", and the player cannot
+        tell which without saving something to find out. A disabled row says which.
+
+        Reflect-84 had this first and it is the suite standard now. The row is added disabled, so
+        it is the one item in any casting's menu that takes drawPopupMenuItem's inactive path -
+        which is why that path had to clear the 3:1 state floor before this could ship. */
+    if (! userHeaderDone)
+    {
+        menu.addSeparator();
+        menu.addSectionHeader ("USER");
+        menu.addItem (-1, Text::emDash() + " none saved " + Text::emDash(), false, false);
     }
 
     // The list takes the display's OUTER width - frame edges included - so the two share a left and
