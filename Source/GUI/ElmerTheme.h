@@ -655,10 +655,16 @@ namespace Layout
     inline constexpr float meterDamping = 0.55f;
     inline constexpr int   animationHz = 60;
 
-    /** The LCD shows a parameter's name and value while it is being moved, then reverts to the
-        program name after this long. The design chose this over a floating tooltip deliberately -
-        it reuses a display already on the panel, and a tooltip has no hardware equivalent. */
-    inline constexpr int lcdRevertMs = 1200;
+    /** **The readout revert lives in core now - `nf::ReadoutFormat::revertMs`, 900 ms.**
+
+        It was 1200 here. The suite ran 800 / 900 / 1100 / 1200 under three different constant
+        names and two mechanisms, and no spec anywhere justified any of them; 900 is what three
+        castings already had. `ProgramHeader::readoutFormat()` is where this panel states its
+        readout spelling, and the delay comes with it rather than being a separate number here that
+        nothing binds to the others.
+
+        Left as a comment rather than deleted silently, because a reader looking for the old
+        constant should find out where it went rather than conclude the revert was removed. */
 
     /** 190px of vertical drag spans the full range, and 760 while Shift is held.
 

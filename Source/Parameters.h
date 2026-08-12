@@ -192,6 +192,16 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
 
     // Real units with the design's law as explicit conversions, so the value a host shows and the
     // value the DSP uses are the same number as the panel's print.
+    // **The formatter is not decoration - without it this parameter prints at SEVEN decimal
+    // places.** Its NormalisableRange is built from conversion lambdas and therefore carries no
+    // interval, and JUCE leaves numDecimalPlacesToDisplay at 7 for a zero interval, so a host's
+    // automation lane and any generic editor read "4.7381272 ms". The panel did not, because
+    // ProgramHeader used to format this by hand - which made the defect invisible here while it was
+    // fully visible in every host. Gatecrasher hit the same thing and fixed it; TapeRot shipped it;
+    // this casting hid it. nf::readoutDefects is what now fails a build over it.
+    //
+    // Decimals vary with magnitude because the range spans 0.1 to 30: two places below 1 ms, one
+    // below 10, none above. A fixed count is either useless at the bottom or noise at the top.
     layout.add (std::make_unique<AudioParameterFloat> (
         ParameterID { ParamIDs::attack, 1 }, "Attack",
         NormalisableRange<float> { 0.1f, 30.0f,
@@ -199,15 +209,40 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
             [] (float, float, float v) { return Law::attackPositionFromMs (v); },
             [] (float lo, float hi, float v) { return jlimit (lo, hi, v); } },
         Defaults::attackMs,
-        AudioParameterFloatAttributes().withLabel ("ms")));
+        AudioParameterFloatAttributes().withLabel ("ms")
+            .withStringFromValueFunction ([] (float v, int)
+            {
+                // **The >= 10 ms case is roundToInt, NOT String(v, 0).** juce::String(double, int)
+                // only sets a formatting flag when the decimal count is greater than zero; at
+                // exactly 0 it falls through to std::ostream's default, which is six significant
+                // digits with trailing zeros stripped - so String(16.0191f, 0) is "16.0191", not
+                // "16". Written the wrong way here first and caught by ReadoutConformanceTests
+                // within the minute, which is the entire argument for that test existing.
+                if (v < 1.0f)  return String (v, 2);
+                if (v < 10.0f) return String (v, 1);
+
+                return String (roundToInt (v));
+            })));
 
     layout.add (std::make_unique<AudioParameterChoice> (
         ParameterID { ParamIDs::release, 1 }, "Release", releaseNames, Defaults::release));
 
+    // **Whole percent, and NOT via String(v, 0).** juce::String(double, int) only sets a formatting
+    // flag when the decimal count is greater than zero; at exactly 0 it falls through to
+    // std::ostream's default, which is six significant digits with trailing zeros stripped - so
+    // "0 decimal places" renders 33.333332 as "33.3333" and only looks right while the value
+    // happens to be integral. roundToInt is what actually rounds. Gatecrasher's Parameters.h
+    // carries the same note beside the same lambda.
+    //
+    // Whole rather than one place because the printed ring is legended in whole percent, and the
+    // readout should read back what the scale says.
+    const auto wholePercent = [] (float v, int) { return String (roundToInt (v)); };
+
     layout.add (std::make_unique<AudioParameterFloat> (
         ParameterID { ParamIDs::iron, 1 }, "Iron",
         NormalisableRange<float> { 0.0f, 100.0f, 0.1f }, Defaults::iron,
-        AudioParameterFloatAttributes().withLabel ("%")));
+        AudioParameterFloatAttributes().withLabel ("%")
+            .withStringFromValueFunction (wholePercent)));
 
     layout.add (std::make_unique<AudioParameterFloat> (
         ParameterID { ParamIDs::makeup, 1 }, "Makeup",
@@ -217,7 +252,8 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     layout.add (std::make_unique<AudioParameterFloat> (
         ParameterID { ParamIDs::mix, 1 }, "Mix",
         NormalisableRange<float> { 0.0f, 100.0f, 0.1f }, Defaults::mix,
-        AudioParameterFloatAttributes().withLabel ("%")));
+        AudioParameterFloatAttributes().withLabel ("%")
+            .withStringFromValueFunction (wholePercent)));
 
     return layout;
 }

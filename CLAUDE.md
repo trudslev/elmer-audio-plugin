@@ -284,12 +284,31 @@ own arithmetic puts it 1 px lower, and a shared baseline is the property that is
 here for two revisions was resolved in the designers' favour of the prose, and the render caught up.
 
 **Live values take the LCD over, not a tooltip.** Grabbing a control replaces the program name with
-that parameter's name and value, reverting 1200 ms after release. This is `design/GUI-SPEC.md`'s
+that parameter's name and value, reverting **900 ms** after release — `nf::ReadoutFormat::revertMs`
+in `neon-foundry-core`, where it was 1200 here. The suite ran 800 / 900 / 1100 / 1200 under three
+constant names and two mechanisms, with no spec justifying any of them. This is `design/GUI-SPEC.md`'s
 explicit choice over BRAND.md's tooltip convention — it reuses a display already on the panel, a
 tooltip has no hardware equivalent, and it satisfies BRAND.md's stronger rule that dynamic text
 lives inside a screen. The takeover fires only on a **grab**: a `SliderAttachment` raises
 `onValueChange` when a Program is applied and when the host automates, and without guarding on the
 drag state the display latches onto whichever parameter was written last.
+
+**The readout string comes from `nf::describeParameter`, and the value formatters live in
+`Parameters.h`.** `ProgramHeader` used to hold a hand-written `if`-chain per parameter ID, which is
+what made ATTACK's missing formatter invisible: its `NormalisableRange` is built from conversion
+lambdas and therefore carries no interval, so JUCE printed it at **seven decimal places** in every
+host's automation lane while the panel showed a tidy `4.7 ms`. The same defect Gatecrasher hit and
+fixed, and TapeRot shipped — hidden here rather than absent.
+
+Elmer keeps `separatorColon = false`, which is `GUI-SPEC.md`'s own ask and the one legitimate
+divergence in the suite. The hard-coded `MAKEUP +` is gone; it printed `MAKEUP +0.0 dB` at zero.
+
+`ReadoutConformanceTests` sweeps every parameter across its range and fails the build on a value
+that would print badly. **It earned its place immediately**: the replacement ATTACK formatter was
+written with `String(v, 0)` for the ≥ 10 ms case, which does not round — `juce::String(double, int)`
+only sets a formatting flag above zero decimals and otherwise falls through to `std::ostream`'s
+default, so `String(16.0191f, 0)` is `"16.0191"`. The test caught it within the minute, against a
+comment two lines away warning about exactly that.
 
 Two more traps already paid for:
 

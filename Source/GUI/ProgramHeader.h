@@ -3,6 +3,8 @@
 #include "ElmerMenuLookAndFeel.h"
 #include "ElmerTheme.h"
 
+#include <nf/ParameterReadout.h>
+
 #include <vector>
 #include "../DSP/ProgramManager.h"
 
@@ -36,6 +38,24 @@ public:
     /** Starts the 1200 ms countdown back to the program name. */
     void releaseParameter();
 
+    /** This casting's spelling of the readout: `NAME VALUE UNIT`, **no colon**.
+
+        That is the one legitimate divergence in the suite - `design/GUI-SPEC.md` asks for it - and
+        stating it here rather than hand-writing the join is what keeps it a choice instead of
+        drift. The value is left in the case its parameter authored: a capital S is a different unit
+        from a lowercase one, which is reasoning this casting's source had right first and which now
+        lives beside the flag in core.
+
+        The revert is core's 900 ms, where this panel used to carry 1200 - four values under three
+        constant names across six castings, with no spec justifying any of them. */
+    static nf::ReadoutFormat readoutFormat()
+    {
+        nf::ReadoutFormat f;
+        f.separatorColon = false;
+        f.nameCharacterBudget = ElmerTheme::Layout::lcdCharacterBudget;
+        return f;
+    }
+
     /** The component the Program list lays out inside; its bounds fix the list's top edge and stop
         it outgrowing the panel. See ../../CLAUDE.md, "The Program dropdown". */
     void setMenuParent (juce::Component* parent) noexcept { menuParent = parent; }
@@ -58,7 +78,6 @@ public:
 private:
     void timerCallback() override;
     juce::String currentLcdText() const;
-    juce::String describeParameter (const juce::String& paramId) const;
     juce::Rectangle<float> saveBounds() const;
     juce::Rectangle<float> deleteBounds() const;
     juce::Rectangle<float> displayBounds() const;
@@ -114,7 +133,9 @@ private:
     juce::AudioProcessorValueTreeState& apvts;
     ProgramManager& programs;
 
-    juce::String editingParam;
+    /** The parameter takeover: what to show, and until when. The deadline is core's; the one-shot
+        Timer that notices it, the font, the cell and every pixel of the painting stay here. */
+    nf::ReadoutTimer readout { readoutFormat() };
     float inLevelDb = -99.9f;
     float outLevelDb = -99.9f;
     float grDb = 0.0f;

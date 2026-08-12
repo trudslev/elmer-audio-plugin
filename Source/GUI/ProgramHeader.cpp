@@ -95,20 +95,42 @@ void ProgramHeader::mouseDown (const juce::MouseEvent& e)
 
 void ProgramHeader::showParameter (const juce::String& paramId)
 {
+    // **The naming guard the other five castings had and this one did not.** The glass belongs to
+    // the name field until it commits or cancels; without this, a knob moved while a name is being
+    // typed sets the takeover under it. Paint order hid that rather than cancelling it, so the
+    // readout came back the moment naming ended if the revert had not yet fired.
+    if (namingMode)
+        return;
+
+    auto* param = apvts.getParameter (paramId);
+
+    if (param == nullptr)
+        return;
+
     stopTimer();
-    editingParam = paramId;
+
+    // **Straight through nf::describeParameter**, which is straight through the parameter's own
+    // getText and getLabel. This used to be a hand-written if-chain per parameter ID, and that is
+    // what made Attack's missing formatter invisible here while it was fully visible in every host
+    // - the panel formatted the value itself and the automation lane did not. The formatters live
+    // in Parameters.h now, so the two cannot disagree.
+    readout.show (nf::describeParameter (*param, readoutFormat()));
     repaint();
 }
 
 void ProgramHeader::releaseParameter()
 {
-    startTimer (Layout::lcdRevertMs);
+    // A one-shot Timer rather than polling, which is this casting's own choice and stays. The
+    // DEADLINE is core's - readout.revertMs() is the suite's 900 ms, single-sourced, where this
+    // panel used to carry its own 1200.
+    readout.release (juce::Time::getMillisecondCounter());
+    startTimer (readout.revertMs());
 }
 
 void ProgramHeader::timerCallback()
 {
     stopTimer();
-    editingParam = {};
+    readout.suppress();
     repaint();
 }
 
@@ -131,56 +153,6 @@ void ProgramHeader::setGainReductionDb (float db)
     repaint();
 }
 
-juce::String ProgramHeader::describeParameter (const juce::String& paramId) const
-{
-    auto* p = apvts.getParameter (paramId);
-
-    if (p == nullptr)
-        return {};
-
-    auto* ranged = dynamic_cast<juce::RangedAudioParameter*> (p);
-    const float value = ranged != nullptr ? ranged->convertFrom0to1 (p->getValue()) : 0.0f;
-
-    if (paramId == ParamIDs::threshold) return "THRESHOLD " + juce::String (value, 1) + " dB";
-    if (paramId == ParamIDs::makeup)    return "MAKEUP +" + juce::String (value, 1) + " dB";
-    if (paramId == ParamIDs::iron)      return "IRON " + juce::String (juce::roundToInt (value)) + " %";
-    if (paramId == ParamIDs::mix)       return "MIX " + juce::String (juce::roundToInt (value)) + " %";
-
-    if (paramId == ParamIDs::attack)
-    {
-        const int places = value < 1.0f ? 2 : (value < 10.0f ? 1 : 0);
-        return "ATTACK " + juce::String (value, places) + " ms";
-    }
-
-    if (paramId == ParamIDs::sidechainHp)
-    {
-        if (Elmer::Law::hpIsOff (value))
-            return "SIDECHAIN HP OFF";
-
-        const float hz = Elmer::Law::hpFrequencyHz (value);
-        const int shown = hz < 100.0f ? juce::roundToInt (hz)
-                                      : juce::roundToInt (hz / 5.0f) * 5;
-        return "SIDECHAIN HP " + juce::String (shown) + " Hz";
-    }
-
-    if (auto* choice = dynamic_cast<juce::AudioParameterChoice*> (p))
-    {
-        const juce::String name = paramId == ParamIDs::ratio ? "RATIO"
-                                : paramId == ParamIDs::knee  ? "KNEE" : "RELEASE";
-        // **The value is NOT upper-cased.** The names above are already uppercase literals, so the
-        // transform only ever reached the value - and Release's choices carry a unit, so "0.1 s"
-        // rendered as "RELEASE 0.1 S". A capital S is a different unit from a lowercase one.
-        //
-        // Ratio's strings are digits and colons, so the transform was invisible there; Knee's now
-        // read as authored ("Soft"), which is the point. If the display should say SOFT, author the
-        // choice that way in Parameters.h so the host's automation lane agrees - do not re-case it
-        // here, or the two disagree again by exactly this route.
-        return name + " " + choice->getCurrentChoiceName();
-    }
-
-    return {};
-}
-
 bool ProgramHeader::saveEnabled() const
 {
     // Always live while naming, as STORE. Otherwise gated on the Program being dirty: with nothing
@@ -200,6 +172,11 @@ bool ProgramHeader::deleteEnabled() const
 
 void ProgramHeader::enterNamingMode()
 {
+    // Cancel the takeover rather than relying on paint order to hide it. Hidden, it returned the
+    // moment naming ended; cancelled, it is gone.
+    stopTimer();
+    readout.suppress();
+
     namingMode = true;
     typedName.clear();
     grabKeyboardFocus();
@@ -402,13 +379,9 @@ void ProgramHeader::showProgramMenu()
 
 juce::String ProgramHeader::currentLcdText() const
 {
-    if (editingParam.isNotEmpty())
-    {
-        const auto described = describeParameter (editingParam);
-
-        if (described.isNotEmpty())
-            return described;
-    }
+    if (const auto takeover = readout.textAt (juce::Time::getMillisecondCounter());
+        takeover.isNotEmpty())
+        return takeover;
 
     const auto id = programs.getCurrentProgramId();
 
