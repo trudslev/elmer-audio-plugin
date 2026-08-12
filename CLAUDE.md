@@ -25,21 +25,18 @@ to be **1×** of the full canvas and the `header-*.png` **3×** of the content b
 scales against two revisions, all plausible-looking, none stated in the spec. Measure the LCD's
 outer edge against the 403..764 it is known to span before trusting a reading off any of them.
 
-**GUI-SPEC contradicts itself on the Program buttons, and the newer half wins.** The 2026-08-11
-bundle added the 34 px header band, the annunciator/lens button treatment and the
-`program-buttons.png` sprite sheet, but left the previous revision's prose in place beneath them.
-So the same file says both:
+**GUI-SPEC's self-contradiction is resolved.** The 2026-08-11 bundle added the 34 px header band,
+the annunciator/lens treatment and the `program-buttons.png` sprite sheet but left the previous
+revision's prose beneath them, so the same file specified both 30 px cream buttons with a disabled
+face and 34 px dark ones without. The 2026-08-12 re-cut deletes the stale half; the current half
+survived intact and grew. Nothing in the build changed — it was written against the current half
+from the start, on the grounds that it cited BRAND.md, carried measured ratios, and agreed with the
+renders.
 
-| | Stale half (§ SAVE / DELETE) | Current half (§ Header band, § Lens windows, § Assets) |
-|---|---|---|
-| Height | 62 × **30** px, "all four elements share the same 30 px height" | **34 px**, "up from 30, per the suite figure in BRAND.md" |
-| Face | "**cream** buttons", `#f0e9d3 → #d6cdb2` | annunciator body `#57503f → #211f19` — dark |
-| Disabled | a disabled face, text `#6f6a5f` | no disabled face; both legends simply go dark |
-
-**Build the current half.** It is the one that cites BRAND.md, carries measured contrast ratios, and
-agrees with the renders — and `#6f6a5f` on that cream is the 1.56:1 the suite audit flagged, on a
-face the two-legend ruling abolished. Raised with the designers; the stale prose is to be deleted,
-not reconciled.
+Worth keeping as a reading habit rather than a closed incident: **a spec revision that adds a
+section is the moment to check what the old one said**, because prose does not get deleted by being
+superseded. The disabled face this one described measured 1.56:1 and had already been abolished by
+a suite-wide ruling, and it would still have been the first thing a fresh reader implemented.
 
 **KNEE's lamp inversion is fixed**, artwork and code both. The lit face is now *darker* than the
 unlit one (`#46402f → #322d21` against `#a9a496 → #8e8a7d`), so the selected legend reads

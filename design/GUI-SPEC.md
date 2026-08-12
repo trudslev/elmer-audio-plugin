@@ -163,7 +163,7 @@ plate, gaffer scrawl).
 
 Beneath it, 8 px down: `BUS COMPRESSOR`, then `MODEL GL-87 · STEREO`.
 
-**Program display (centre, flexible width, 30 px tall, `box-sizing: border-box`).** A 3 px metal frame
+**Program display (centre, flexible width, 34 px tall, `box-sizing: border-box`).** A 3 px metal frame
 `linear-gradient(180deg,#26241f,#3a372f)` with `0 2px 5px rgba(35,30,22,.55) inset` around one
 continuous black glass. Inside the glass, flush against it, three cells divided by
 `1px solid rgba(214,196,124,.22)` hairlines:
@@ -219,7 +219,9 @@ Two notes on the cap, since the update brief quoted 22:
 
 *Why these three moves together:* the display was 364 × 38 px, which read as a heavy block against a
 panel of fine printed detail, yet only held 21 characters. Dropping to 30 px and 14 px type while
-widening the cell to 269 px buys three characters and loses the weight.
+widening the cell to 269 px buys three characters and loses the weight. (The band later came back up
+to **34 px** suite-wide — see *Header band height* — which changed neither the type nor the cell
+width, so the character budget is unaffected.)
 
 The program name is **centred** in its cell, not left-aligned — names run 11 to 22 characters and
 centring keeps the display balanced rather than leaving a ragged gap before the chevron. The naming
@@ -312,27 +314,12 @@ equivalent:
 - On confirm the Program is appended to the User bank, selected, and the bank cell reads `USER`.
   An empty name stores as `UNTITLED`.
 
-**SAVE / DELETE (62 × 30 px cream buttons, 7 px gaps).**
+**SAVE / DELETE** — see *Program buttons* under **Controls**. They are dark split-legend
+annunciator caps at the shared band height; there is no cream face and no disabled face anywhere in
+this row.
 
-**SAVE is disabled until the Program is dirty.** Loading a Program (or INIT) clears the dirty flag;
-moving any knob, switch or KNEE button sets it. With the loaded Program unmodified there is nothing
-to store, so SAVE renders in the same disabled treatment as DELETE below. It re-enables on the first
-parameter change, and clears again once the new Program is stored. While naming it is always
-enabled, as STORE.
-
-DELETE has exactly two states:
-
-| DELETE state | When | Treatment |
-|---|---|---|
-| Enabled | a **User** Program is current, or naming is in progress (as CANCEL) | `linear-gradient(180deg,#f0e9d3,#d6cdb2)`, text `#302c24`, `cursor: pointer`, raised bevel |
-| Disabled | any **Factory** Program, and **INIT** | `linear-gradient(180deg,#a5a094,#8f8a7e)`, text `#6f6a5f`, `cursor: default`, flat — `0 1px 0 rgba(255,255,255,.22) inset, 0 1px 2px rgba(40,34,26,.2)` |
-
-It stays in place and keeps its footprint when disabled; it never hides.
-
-**IN / OUT (two 74 px columns, 9 px gap).** Legend above, **30 px** LCD readout below, 14 px
-phosphor type. All four elements of the row — display, SAVE, DELETE, IN/OUT — share the same 30 px
-height deliberately, so they read as one band; the display was not allowed to become the odd one out
-when it came down from 38 px.
+**IN / OUT (two 74 px columns, 9 px gap).** Legend above, LCD readout below at the shared band
+height, 14 px phosphor type.
 
 **Header alignment.** The row is **vertically centred against the full 112 px header block**
 (`align-items: center`), not against the wordmark plate alone. The left column runs plate →
@@ -708,17 +695,22 @@ read as 20 dB of gain reduction, which is not a representative state.
 
 ## Files in this bundle
 
+**All renders are 2× of the content box, 1076 × 736 at canvas origin (22, 20)** — the canvas less
+its 22 px / 20 px inset. Panels land at 2152 × 1472, headers at 2152 × 224. Earlier revisions shot
+the full canvas at 1× and the header block at 3×; those framings are superseded, and a coordinate
+read off one of them is wrong by a factor *and* an offset at once.
+
 | File | What it is |
 |---|---|
 | `Elmer.dc.html` | The panel design reference, interactive (drag knobs, click KNEE, SAVE/DELETE) |
 | `assets/*.png` | Production bitmaps — knob filmstrips, meter face + needle, tick rings |
 | `assets/icons/elmer-icon-1024.png`, `-256.png` | Shipping icon, JUCE sizes |
-| `screenshots/panel.png` | The panel as rendered, 2× (2240 × 1552) |
-| `screenshots/header.png` | The revised header alone, 3× |
-| `screenshots/panel-menu-open.png` | The panel with the Program dropdown open, 2× |
-| `screenshots/panel-naming.png` | The panel in naming mode (STORE / CANCEL), 2× |
-| `screenshots/header-naming.png` | The header alone in naming mode, 3× |
-| `screenshots/header-dirty.png` | The header with a dirty Program — asterisk shown, SAVE lit, 3× |
-| `screenshots/program-buttons.png`, `assets/program-buttons.png` | The button pair together, all six lamp combinations, 3× |
+| `screenshots/panel.png` | The panel as rendered |
+| `screenshots/header.png` | The header alone, clean Program |
+| `screenshots/panel-menu-open.png` | The panel with the Program dropdown open |
+| `screenshots/panel-naming.png` | The panel in naming mode (STORE / CANCEL) |
+| `screenshots/header-naming.png` | The header alone in naming mode |
+| `screenshots/header-dirty.png` | The header with a dirty Program — asterisk shown, SAVE lit |
+| `screenshots/program-buttons.png`, `assets/program-buttons.png` | The button pair together, all six lamp combinations, 2× (sprite sheet, not the content box) |
 
 Open the HTML file directly in a browser; it needs no server.
