@@ -1,6 +1,10 @@
 #include "Parameters.h"
 
+#include <nf/PrintedScale.h>
+
 #include <juce_audio_processors/juce_audio_processors.h>
+
+#include <vector>
 
 /**
     BRAND.md makes this a correctness requirement, not a nicety: "Printed scales and actual
@@ -11,7 +15,51 @@
     That failure mode is specifically what this suite catches. A plain NormalisableRange skew fitted
     to the endpoints passes at 0 and 1 and is wrong everywhere between, which is exactly the bug the
     rule exists to prevent - so every intermediate mark is asserted, not just the ends.
+
+    **Five of the six rings are checked by `nf::printedScaleDefects` now, and one deliberately is
+    not.** Core's check takes the parameter's own `NormalisableRange` as the authority, which is the
+    whole point of it: a test comparing stored angles with stored angles asserts that somebody
+    transcribed a spec consistently and says nothing about whether the ring matches the control.
+
+    That works here for THRESHOLD, IRON, MAKEUP and MIX, whose ranges are plain linear - and, less
+    obviously, for **ATTACK, whose range is built from the explicit conversion lambdas in
+    `Elmer::Law`**. Because those lambdas ARE the range's convertFrom0to1/convertTo0to1, the range is
+    authoritative about the law and core's check applies unchanged. Worth stating because the
+    opposite is easy to assume: "the taper lives in a lambda" sounds like the taper is outside the
+    parameter, and here it is inside it.
+
+    **SIDECHAIN HP is the one that genuinely sits outside**, and it takes Reflect-84's treatment for
+    the same structural reason that casting's whole panel does. Its parameter is a bare
+    `NormalisableRange<float>{0, 1}` - it has to be, so the OFF zone can occupy real travel - and the
+    Hz taper lives in `Law::hpFrequencyHz`. Its marks print 40..500 against a 0-1 range, so core's
+    range check would report every one of them as a value the control cannot reach. What is asserted
+    instead is the stronger thing: the numeral printed at a fraction must be what the control reads
+    there. `nf::printedScaleDefects` still runs over it for the checks that hold whatever the taper
+    is - marks in order, no two sharing a tick, none outside the sweep.
+
+    `Elmer::PrintedScale::Mark` stores `{position01, printedValue}`, which is the inverse of
+    `nf::PrintedMark`'s `{value, angleDegrees}`; `toPrintedMarks` below is the whole conversion.
 */
+namespace
+{
+    /** `{position01, printedValue}` -> `{value, angleDegrees}`.
+
+        The tick's angle comes from its stored rotation fraction through the same
+        `nf::sweepAngleDegrees` the pointer uses, so the two cannot be computed differently here and
+        in the panel. */
+    template <typename MarkArray>
+    std::vector<nf::PrintedMark> toPrintedMarks (const MarkArray& marks)
+    {
+        std::vector<nf::PrintedMark> out;
+        out.reserve (marks.size());
+
+        for (const auto& m : marks)
+            out.push_back ({ m.printedValue, nf::sweepAngleDegrees (m.position01) });
+
+        return out;
+    }
+}
+
 class PrintedScaleTests final : public juce::UnitTest
 {
 public:
@@ -56,6 +104,57 @@ public:
             return p->convertFrom0to1 (position01);
         };
 
+        const auto checkRing = [this, &dummy] (const char* id, const auto& marks,
+                                               float toleranceDegrees, const juce::String& ring)
+        {
+            auto* p = dynamic_cast<juce::RangedAudioParameter*> (dummy.apvts.getParameter (id));
+            expect (p != nullptr, ring + ": no such parameter");
+
+            if (p == nullptr)
+                return;
+
+            for (const auto& defect : nf::printedScaleDefects (p->getNormalisableRange(),
+                                                               toPrintedMarks (marks),
+                                                               270.0f, toleranceDegrees))
+                expect (false, ring + ": " + defect);
+        };
+
+        beginTest ("Every ring agrees with its own parameter's range");
+        {
+            // 0.5 degrees is core's default and these four are exact to floating point, so the
+            // tolerance is doing nothing but absorbing the spec's rounded figures.
+            checkRing (ParamIDs::threshold, Elmer::PrintedScale::threshold, 0.5f, "THRESHOLD");
+            checkRing (ParamIDs::iron,      Elmer::PrintedScale::iron,      0.5f, "IRON");
+            checkRing (ParamIDs::makeup,    Elmer::PrintedScale::makeupDb,  0.5f, "MAKEUP");
+            checkRing (ParamIDs::mix,       Elmer::PrintedScale::mix,       0.5f, "MIX");
+
+            // **2.1 degrees on ATTACK, and the figure is measured rather than chosen.** The printed
+            // sequence is the rounded form of the law's exact series, so each numeral sits slightly
+            // off the tick its own value would compute. Solving f = ln(ms/0.1)/ln(300) for every
+            // printed mark and taking the largest |position - f| x 270:
+            //
+            //     0.1 ->  0.0000 deg      3   -> +0.9975 deg
+            //     0.3 -> +1.9950 deg      10  -> -1.9950 deg
+            //     1   -> -0.9975 deg      30  ->  0.0000 deg
+            //
+            // 1.9950 is the worst case, so 2.1 clears it with margin and nothing else. A taper
+            // change large enough to matter moves marks by far more than a tenth of a degree - the
+            // skew-fitted approximation asserted below misses by whole degrees.
+            //
+            // **What this check does NOT see on ATTACK, established by causing it rather than by
+            // reading core.** `printedScaleDefects` reads `convertTo0to1` and nothing else, so on a
+            // range whose two directions are independent lambdas it guards the ring against the
+            // INVERSE only. Changing `attackMsFromPosition` alone - 300 -> 250 - leaves
+            // `attackPositionFromMs` saying what it always said, and this test passes.
+            //
+            // That gap is closed by "ATTACK round-trips through its own conversion" below, which is
+            // the assertion that the two lambdas are actually inverses. The pair is complete: core's
+            // check ties the ring to the inverse, the round-trip ties the inverse to the forward
+            // law. Verified both ways - changing both lambdas fails here with "the ring and the
+            // taper disagree", changing one fails the round-trip and nine factory Programs with it.
+            checkRing (ParamIDs::attack, Elmer::PrintedScale::attackMs, 2.1f, "ATTACK");
+        }
+
         beginTest ("THRESHOLD - linear, every printed mark exact");
         for (const auto& m : Elmer::PrintedScale::threshold)
             expectWithinAbsoluteError (valueAt (ParamIDs::threshold, m.position01), m.printedValue, 0.001f,
@@ -86,6 +185,24 @@ public:
             expectWithinAbsoluteError (hz, m.printedValue, m.printedValue * 0.02f,
                           "sidechain HP at " + juce::String (m.position01)
                               + " reads " + juce::String (hz, 1) + " Hz");
+        }
+
+        beginTest ("SIDECHAIN HP - the structural checks, which hold whatever the taper is");
+        {
+            // Reflect-84's treatment, and for the same structural reason: this parameter is a plain
+            // 0-1 range with the taper in Law::hpFrequencyHz, so its marks print 40..500 against a
+            // 0..1 range and core's range check would call every one of them unreachable. Feed it
+            // the POSITIONS against the identity range instead - it then asserts only what does not
+            // depend on the taper: the marks ascend, no two share a tick, none is drawn outside the
+            // sweep. The numeral-versus-law check above is what covers the taper itself.
+            const juce::NormalisableRange<float> identity { 0.0f, 1.0f };
+            std::vector<nf::PrintedMark> positions;
+
+            for (const auto& m : Elmer::PrintedScale::sidechainHp)
+                positions.push_back ({ m.position01, nf::sweepAngleDegrees (m.position01) });
+
+            for (const auto& defect : nf::printedScaleDefects (identity, positions))
+                expect (false, "SIDECHAIN HP: " + defect);
         }
 
         beginTest ("ATTACK - log, every printed mark within 5% of its rounded print");

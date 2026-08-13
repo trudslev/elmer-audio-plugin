@@ -126,6 +126,14 @@ documented tolerance: ATTACK's printed `0.1/0.3/1/3/10/30` is the conventionally
 exact series `0.1/0.313/0.979/3.06/9.58/30`, and SIDECHAIN HP's 0.6 mark is exactly 141.4 Hz under a
 printed "140". Both are how real panels are marked.
 
+**Both divergences are choices rather than constraints now.** While the rings were baked into the
+plate, correcting them meant re-cutting artwork to print `0.313` and `141.4`, which no panel does —
+so the tolerances recorded a limit. With ticks and numerals drawn from rotation fractions the mark
+values are editable, and ATTACK's range is built from conversion lambdas so `convertTo0to1` is
+authoritative on it. Keeping the rounded prints is still right, because that is how the controls are
+meant to read; the point is that a later reader should not carry either figure forward as a defect
+nobody can reach.
+
 ### Programs
 
 Gatecrasher's architecture reused directly: Factory/User banks, one `.elmerprogram` XML per User

@@ -105,7 +105,20 @@ namespace Law
     under a printed "10" - about 4 %. The printed sequence 0.1/0.3/1/3/10/30 is the conventionally
     rounded form of the exact geometric series 0.1/0.313/0.979/3.06/9.58/30, which is how real
     hardware is marked. The law is the design's and is kept; the test allows 5 % on this control and
-    demands exactness on the rest. */
+    demands exactness on the rest.
+
+    **That 4 % is a choice now, not a constraint, and this comment used to imply otherwise.** It was
+    unfixable while the ring was baked into the plate: correcting it meant re-cutting artwork to
+    print 0.313 and 9.58, which no panel does. Now that ticks and numerals are drawn from rotation
+    fractions, the mark values are editable - and `convertTo0to1` is authoritative here, because this
+    range is built from the conversion lambdas above rather than from a fitted skew. So the printed
+    numerals could be moved onto the law exactly, at the cost of a panel that reads 0.313 instead of
+    0.3.
+
+    Keeping the rounded print is still the right call - it is how the control is meant to read, and a
+    5 % tolerance tight enough to fail a skew-fitted approximation still guards the thing that
+    matters. But it is a legibility decision, and a later reader should not carry the 4 % forward as
+    a permanent defect nobody can reach. */
 namespace PrintedScale
 {
     struct Mark { float position01; float printedValue; };
