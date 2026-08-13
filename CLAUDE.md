@@ -331,6 +331,34 @@ lists**. `TestMain.cpp` creates a `ScopedJuceInitialiser_GUI`: without a Message
 `AsyncUpdater::triggerAsyncUpdate()` silently clears its own pending flag and every Program test
 passes while proving nothing.
 
+### The Program list's group caption
+
+**Sized from its own type plus padding, never derived from the row height.** The construction is
+`nf::captionHeight (font, topPadding, bottomPadding)` — 3px above and 4px below, the suite's adopted
+default — and it comes out **19px** here, from IBM Plex Mono at 9px.
+
+**The construction is the rule, not the number.** Writing 19 as a literal would break silently at
+the first change of font, size or font construction, which is a change nobody would think to check a
+caption against. It is also how this caption came to inherit JUCE's `rowHeight + rowHeight / 2` in
+the first place — a caption half again *taller* than a row, which is a menu convention rather than a
+panel one.
+
+**This casting is where the rule came from.** It was the only one that had overridden JUCE's
+inherited `rowHeight + rowHeight / 2`, and its own comment recorded that the default "pushed
+everything below FACTORY 14px down the list". The other four took the inherited value by omission.
+
+### Case belongs at the source
+
+`nf::ReadoutFormat::ValueCase` is deleted from core (2026-08-13). **A panel label reads in caps
+because it is authored in caps in `Parameters.h`**, not because the readout upper-cased it on the
+way out — the panel and the host's automation lane read the same parameter, so any re-casing in
+between makes one of them lie about the other. Every parameter name here is authored in caps for
+that reason, and `Tests/ReadoutConformanceTests.cpp` asserts it off `getName()`.
+
+The rule is in `../BRAND.md` beside the unit rule; the suite-wide record is in the root
+`../CLAUDE.md`. **The choice strings are deliberately NOT all caps** — this casting prints its
+values as authored, and the rule is that case is decided at the source, not that everything is caps.
+
 ## Status
 
 - **DSP**: complete, no stubs. Detector constants, the knee width, Iron's drive curve and the AUTO
