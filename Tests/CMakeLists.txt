@@ -3,6 +3,7 @@ juce_add_console_app(ElmerTests PRODUCT_NAME "ElmerTests")
 # A new DSP .cpp goes in BOTH this list and target_sources(Elmer ...) in the parent CMakeLists,
 # or it silently drops out of test coverage.
 target_sources(ElmerTests PRIVATE
+    RealtimeSafetyTests.cpp
     TestMain.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
@@ -58,6 +59,9 @@ target_include_directories(ElmerTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../Sou
 # includes BinaryData.h for the embedded faces. Linking the real generated header rather than
 # stubbing it is the point: a token the tests check has to be the token the panel draws with.
 target_link_libraries(ElmerTests PRIVATE
+    # The bug sweep's measurement drivers. TEST target only — never the plugin, which must not
+    # carry an operator new override. See nf/testing/ProcessorHarness.h.
+    nf::testing
     ElmerBinaryData
     # ProgramManager.cpp is compiled into both targets and calls into core, so both link it.
     nf::core
