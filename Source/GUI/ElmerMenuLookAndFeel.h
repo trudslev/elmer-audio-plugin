@@ -143,7 +143,13 @@ public:
     void drawPopupMenuSectionHeader (juce::Graphics& g, const juce::Rectangle<int>& area,
                                      const juce::String& sectionName) override
     {
-        ElmerTheme::Text::drawTracked (g, sectionName.toUpperCase(),
+        // **Drawn as authored, never re-cased.** The caption is authored FACTORY/USER at the
+        // addSectionHeader call in ProgramHeader.cpp, per BRAND.md's rule that case belongs at
+        // the source. It held a .toUpperCase() here until 2026-08-13. Nothing else reads these
+        // two strings today, which is a fact about today rather than a property of the code:
+        // the moment a caption comes from data, the site that re-cases it is the site that
+        // gets it wrong. Re-arguing the exception each time costs more than the rule.
+        ElmerTheme::Text::drawTracked (g, sectionName,
                                        ElmerTheme::Font::mono (headerTextSize), headerTracking,
                                        area.toFloat().withTrimmedLeft ((float) padLeft),
                                        juce::Justification::left, headerInk, false);
