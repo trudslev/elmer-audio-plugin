@@ -165,19 +165,19 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     AudioProcessorValueTreeState::ParameterLayout layout;
 
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::threshold, 1 }, "Threshold",
+        ParameterID { ParamIDs::threshold, 1 }, "THRESHOLD",
         NormalisableRange<float> { -40.0f, 10.0f, 0.1f }, Defaults::threshold,
         AudioParameterFloatAttributes().withLabel ("dB")));
 
     layout.add (std::make_unique<AudioParameterChoice> (
-        ParameterID { ParamIDs::ratio, 1 }, "Ratio", ratioNames, Defaults::ratio));
+        ParameterID { ParamIDs::ratio, 1 }, "RATIO", ratioNames, Defaults::ratio));
 
     layout.add (std::make_unique<AudioParameterChoice> (
-        ParameterID { ParamIDs::knee, 1 }, "Knee", kneeNames, Defaults::knee));
+        ParameterID { ParamIDs::knee, 1 }, "KNEE", kneeNames, Defaults::knee));
 
     // Stores the knob position; renders as OFF or a frequency. See Law::hpFrequencyHz.
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::sidechainHp, 1 }, "Sidechain HP",
+        ParameterID { ParamIDs::sidechainHp, 1 }, "SIDECHAIN HP",
         NormalisableRange<float> { 0.0f, 1.0f }, Defaults::sidechainHp,
         AudioParameterFloatAttributes()
             .withStringFromValueFunction ([] (float v, int)
@@ -203,7 +203,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     // Decimals vary with magnitude because the range spans 0.1 to 30: two places below 1 ms, one
     // below 10, none above. A fixed count is either useless at the bottom or noise at the top.
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::attack, 1 }, "Attack",
+        ParameterID { ParamIDs::attack, 1 }, "ATTACK",
         NormalisableRange<float> { 0.1f, 30.0f,
             [] (float, float, float t) { return Law::attackMsFromPosition (t); },
             [] (float, float, float v) { return Law::attackPositionFromMs (v); },
@@ -225,7 +225,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
             })));
 
     layout.add (std::make_unique<AudioParameterChoice> (
-        ParameterID { ParamIDs::release, 1 }, "Release", releaseNames, Defaults::release));
+        ParameterID { ParamIDs::release, 1 }, "RELEASE", releaseNames, Defaults::release));
 
     // **Whole percent, and NOT via String(v, 0).** juce::String(double, int) only sets a formatting
     // flag when the decimal count is greater than zero; at exactly 0 it falls through to
@@ -239,18 +239,18 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout
     const auto wholePercent = [] (float v, int) { return String (roundToInt (v)); };
 
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::iron, 1 }, "Iron",
+        ParameterID { ParamIDs::iron, 1 }, "IRON",
         NormalisableRange<float> { 0.0f, 100.0f, 0.1f }, Defaults::iron,
         AudioParameterFloatAttributes().withLabel ("%")
             .withStringFromValueFunction (wholePercent)));
 
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::makeup, 1 }, "Makeup",
+        ParameterID { ParamIDs::makeup, 1 }, "MAKEUP",
         NormalisableRange<float> { 0.0f, 20.0f, 0.1f }, Defaults::makeup,
         AudioParameterFloatAttributes().withLabel ("dB")));
 
     layout.add (std::make_unique<AudioParameterFloat> (
-        ParameterID { ParamIDs::mix, 1 }, "Mix",
+        ParameterID { ParamIDs::mix, 1 }, "MIX",
         NormalisableRange<float> { 0.0f, 100.0f, 0.1f }, Defaults::mix,
         AudioParameterFloatAttributes().withLabel ("%")
             .withStringFromValueFunction (wholePercent)));
