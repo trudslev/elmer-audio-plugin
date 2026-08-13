@@ -4,6 +4,7 @@ juce_add_console_app(ElmerTests PRODUCT_NAME "ElmerTests")
 # or it silently drops out of test coverage.
 target_sources(ElmerTests PRIVATE
     RealtimeSafetyTests.cpp
+    NumericalRobustnessTests.cpp
     TestMain.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
