@@ -43,18 +43,14 @@ ElmerEditorContent::ElmerEditorContent (ElmerAudioProcessor& p)
         // SliderAttachment fires onValueChange when a Program is applied and when the host
         // automates, and without this the LCD latches onto whichever parameter was written last
         // and never shows the program name at all.
-        // The same guard disarms the processor's stale-replay flag, because this is the only place
+        // The same guard disarms the processor's stale-replay gate, because this is the only place
         // that knows a change came from a PERSON. It deliberately does not fire for automation: a
         // host may write automation on session load before replaying its remembered program index,
-        // and disarming there would let that replay land on the restored state.
-        knob->onValueChange = [this, paramId, raw]
-        {
-            if (raw->isMouseButtonDown())
-            {
-                processorRef.noteUserEdit();
-                header.showParameter (paramId);
-            }
-        };
+        // and disarming there would let that replay land on the restored state. One call rather than
+        // two adjacent ones, so the disarm cannot be written without the hand-off — see
+        // nf/UserEditGate.h.
+        nf::connectUserEdit (*raw, processorRef.userEdits,
+                             [this, paramId] { header.showParameter (paramId); });
 
         addAndMakeVisible (*knob);
         attachments.push_back (

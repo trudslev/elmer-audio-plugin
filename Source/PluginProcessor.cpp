@@ -200,7 +200,7 @@ void ElmerAudioProcessor::setStateInformation (const void* data, int sizeInBytes
     programs.setCurrentProgramWithoutApplying (restored);
 
     // **Armed AFTER replaceState**, or the restore's own writes would disarm it.
-    justRestoredState.store (true, std::memory_order_relaxed);
+    userEdits.armRestore();
 }
 
 void ElmerAudioProcessor::setCurrentProgram (int index)
@@ -209,7 +209,7 @@ void ElmerAudioProcessor::setCurrentProgram (int index)
         return;
 
     // The stale-replay guard, disarmed by this call whether or not it is honoured.
-    if (justRestoredState.exchange (false, std::memory_order_relaxed) && index == getCurrentProgram())
+    if (userEdits.consumeRestore() && index == getCurrentProgram())
         return;
 
     programs.requestProgramChange (ProgramManager::factoryIdAt (index));

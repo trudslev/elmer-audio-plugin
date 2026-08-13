@@ -8,6 +8,7 @@
 #include "DSP/SidechainFilter.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <nf/UserEditGate.h>
 #include <atomic>
 
 /**
@@ -67,18 +68,22 @@ public:
         Implementing it would be a back door into the Factory bank. */
     void changeProgramName (int, const juce::String&) override {}
 
-    /** Clears the stale-replay guard. Called from the editor when a change is USER-originated. */
-    void noteUserEdit() noexcept { justRestoredState.store (false, std::memory_order_relaxed); }
-
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
 
-    juce::AudioProcessorValueTreeState apvts;
     /** **Guards a host replaying a stale program index over a just-restored session.** Armed by
-        setStateInformation, disarmed by the first setCurrentProgram (ignored only when it matches
-        what getCurrentProgram reports) or the first USER-originated edit. Automation must not
-        disarm it: a host may write automation on load before replaying. */
-    std::atomic<bool> justRestoredState { false };
+        setStateInformation, consumed by the next setCurrentProgram (which ignores it only when the
+        index matches what getCurrentProgram already reports — the shape of a replay), disarmed by
+        the first USER-originated edit. **Automation must not disarm it**: a host may write
+        automation on load before replaying, and that would reopen the hole.
+
+        Public because the editor hands it to `nf::connectUserEdit` for every control, which is the
+        point of it living in core: Reflect-84 once shipped this guard with zero call sites for its
+        disarm, and coupling the disarm to the LCD hand-off is what makes that omission
+        inexpressible. See nf/UserEditGate.h. */
+    nf::UserEditGate userEdits;
+
+    juce::AudioProcessorValueTreeState apvts;
 
     ProgramManager programs { apvts };
 

@@ -186,8 +186,8 @@ void ProgramHeader::enterNamingMode()
 
 void ProgramHeader::commitNaming()
 {
-    // Empty falls back to UNTITLED INSIDE the manager rather than here, so no future caller can
-    // write a nameless file.
+    // Empty falls back to TAKE n INSIDE nf::UserProgramStore rather than here, so no future caller
+    // can write a nameless file. It was UNTITLED before the suite ruling.
     //
     // saveNewUserProgram selects the new Program itself and re-takes the clean snapshot; it is
     // deliberately NOT followed by setCurrentProgram, which would asynchronously re-apply values
