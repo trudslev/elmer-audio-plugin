@@ -5,6 +5,7 @@ juce_add_console_app(ElmerTests PRODUCT_NAME "ElmerTests")
 target_sources(ElmerTests PRIVATE
     RealtimeSafetyTests.cpp
     NumericalRobustnessTests.cpp
+    InvarianceTests.cpp
     TestMain.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
