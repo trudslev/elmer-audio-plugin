@@ -6,6 +6,7 @@ target_sources(ElmerTests PRIVATE
     RealtimeSafetyTests.cpp
     NumericalRobustnessTests.cpp
     InvarianceTests.cpp
+    AutomationLatencyTests.cpp
     TestMain.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
