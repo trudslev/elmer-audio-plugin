@@ -1,6 +1,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include <nf/BlockChunking.h>
+
 #include <cmath>
 
 ElmerAudioProcessor::ElmerAudioProcessor()
@@ -77,12 +79,24 @@ void ElmerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     outputStage.setMakeupDb (makeupParam->load());
     outputStage.setMix (mixParam->load() * 0.01f);
 
-    auto* left  = buffer.getWritePointer (0);
-    auto* right = numChannels > 1 ? buffer.getWritePointer (1) : nullptr;
-
     float peakGr = 0.0f;
 
-    for (int i = 0; i < numSamples; ++i)
+    // **The over-delivery policy, and Elmer is the casting where it removes nothing.** The other
+    // five grow a scratch buffer when a host sends more samples than it declared; this one holds
+    // its dry sample in a local inside the per-sample loop and has no scratch buffer to grow. It
+    // still calls the wrapper, because the policy is the deliverable rather than five ports of a
+    // fix — and because that makes this the ONE casting where a before/after separates the two
+    // effects the others conflate. Everywhere else the allocation goes AND the loop arrives; here
+    // only the loop arrives, so anything that moves is the wrapper itself.
+    //
+    // ScopedNoDenormals and the unused-channel clear stay outside it deliberately: the guard is
+    // scoped, so once per call is both correct and cheaper than once per span.
+    nf::processInChunks (buffer, getBlockSize(), [&] (juce::AudioBuffer<float>& span)
+    {
+    auto* left  = span.getWritePointer (0);
+    auto* right = numChannels > 1 ? span.getWritePointer (1) : nullptr;
+
+    for (int i = 0; i < span.getNumSamples(); ++i)
     {
         const float dryL = left[i];
         const float dryR = right != nullptr ? right[i] : dryL;
@@ -107,6 +121,7 @@ void ElmerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         inSmoothed  += (std::abs (dryL) - inSmoothed) * meterCoeff;
         outSmoothed += (std::abs (left[i]) - outSmoothed) * meterCoeff;
     }
+    });
 
     const auto toDb = [] (float linear)
     {
