@@ -103,9 +103,11 @@ public:
                 a *prepare* check by construction, and *prepare once → render → `reset()` → render*
                 could not be expressed at all. A host asks it on every transport locate.
 
-                **This casting has NO generator, which is why its row can be asserted while four
-                others wait on a ruling.** The open question — whether a `reset()` owes a rewound
-                generator or only a cleared tail — cannot arise here, so what this arm measures is the
+                **This casting has NO generator, which is why its row asserts the opposite of the
+                other four.** RULED: a `reset()` owes a cleared tail, not a rewound generator — so the
+                four castings that have one assert that their streams CONTINUE across reset, and this
+                one, having none, asserts sample-exactness. Both halves of the ruling are pinned, which
+                is what makes it an invariant rather than a convention. What this arm measures is the
                 unambiguous half: does `reset()` return the processor to the same state at all.
 
                 **And this is the casting that most needs it driven.** Elmer's energy-after-reset row
