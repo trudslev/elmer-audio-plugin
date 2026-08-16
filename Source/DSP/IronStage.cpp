@@ -3,12 +3,31 @@
 #include <algorithm>
 #include <cmath>
 
-float IronStage::processSample (float x) const noexcept
+void IronStage::prepare (double sampleRate, float initialAmount01) noexcept
 {
-    if (amount <= 0.0f)
-        return x;
+    amount.reset (sampleRate, smoothingSeconds);
 
-    const float a = std::clamp (amount, 0.0f, 1.0f);
+    // The value comes from the CALLER, never from getTargetValue(): `reset (rate, seconds)` is
+    // `setCurrentAndTargetValue (this->target)` internally, so reading the target back and writing
+    // it in is exactly what that call already did. See OutputStage::prepare for the full note.
+    amount.setCurrentAndTargetValue (std::clamp (initialAmount01, 0.0f, 1.0f));
+}
+
+/*  Empty for the same reason OutputStage::reset is - a reset owes a cleared tail, and a drive
+    setting is not one. See that function for the ruling. */
+void IronStage::reset() noexcept
+{
+}
+
+float IronStage::processSample (float x) noexcept
+{
+    // **Advanced every sample, including the transparent path.** An early return above this would
+    // leave the smoother parked, so turning IRON down to zero and back up would jump rather than
+    // glide - the sample count consumed has to be the same whichever branch the audio takes.
+    const float a = std::clamp (amount.getNextValue(), 0.0f, 1.0f);
+
+    if (a <= 0.0f)
+        return x;
 
     // Drive rises with the control; the divide keeps small-signal gain at unity for any drive.
     const float drive = 1.0f + a * 4.0f;

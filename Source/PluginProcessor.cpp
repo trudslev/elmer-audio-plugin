@@ -27,7 +27,20 @@ void ElmerAudioProcessor::prepareToPlay (double sampleRate, int)
 {
     sidechainFilter.prepare (sampleRate);
     detector.prepare (sampleRate);
-    ironStage.reset();
+
+    /*  **The three smoothed controls are prepared with their CURRENT parameter values.**
+
+        `SmoothedValue::reset (rate, seconds)` sets the ramp length and snaps the value to whatever
+        target it last held, which is zero on a constructed object - so a stage prepared without
+        being told where its control sits glides up from nowhere across the first block of an
+        instance's first playback. That is the "unguarded reset" shape this suite has found eleven
+        times in three castings, and passing the values in is what makes it unexpressible here
+        rather than something a later edit has to remember.
+
+        Read off the live parameters rather than from a default: a session restore writes the APVTS
+        before the host prepares, so these are the values the first block should already be at. */
+    ironStage.prepare (sampleRate, ironParam->load() * 0.01f);
+    outputStage.prepare (sampleRate, makeupParam->load(), mixParam->load() * 0.01f);
 
     gainReductionDb.store (0.0f, std::memory_order_relaxed);
     inputLevelDb.store (-100.0f, std::memory_order_relaxed);
@@ -54,6 +67,7 @@ void ElmerAudioProcessor::reset()
     sidechainFilter.reset();
     detector.reset();
     ironStage.reset();
+    outputStage.reset();
 }
 
 bool ElmerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const

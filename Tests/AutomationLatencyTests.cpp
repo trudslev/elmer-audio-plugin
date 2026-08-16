@@ -219,6 +219,51 @@ public:
                             "the static control showed boundary excess with nothing swept, so this "
                             "instrument does not isolate smoothing and no row below means anything");
 
+            /*  **The positive control, and it became load-bearing the moment the three defects were
+                fixed.** Until stage 2 this metric was validated by MAKEUP, IRON and MIX coming back
+                at x25.74, x10.65 and x3.17 — the instrument was proved by the defects it found. All
+                nine rows are clean now, and nine clean rows from a metric that can only ever report
+                clean look exactly the same.
+
+                So a synthetic staircase is measured through the same ratio: a gain held flat across
+                each block and stepped at every boundary, which is precisely what an unsmoothed
+                per-sample gain does. It has to come back well above the x3.0 bar or the bar is not
+                measuring what it claims. Built here rather than by un-smoothing a stage, because a
+                control that requires editing the code under test is not available at run time. */
+            {
+                constexpr int n = 48 * blockSize;
+                double worstBoundary = 0.0, worstInterior = 0.0;
+                float previous = 0.0f;
+
+                for (int i = 0; i < n; ++i)
+                {
+                    const float tone = 0.5f * (float) std::sin (2.0 * juce::MathConstants<double>::pi
+                                                                * 200.0 * i / fs);
+                    // Flat within a block, stepped at the boundary: the staircase itself.
+                    const float gain = ((i / blockSize) % 2) == 0 ? 0.15f : 0.85f;
+                    const float y = tone * gain;
+
+                    if (i > 0)
+                    {
+                        const double step = std::abs ((double) y - (double) previous);
+                        ((i % blockSize) == 0 ? worstBoundary : worstInterior)
+                            = juce::jmax ((i % blockSize) == 0 ? worstBoundary : worstInterior, step);
+                    }
+
+                    previous = y;
+                }
+
+                const double syntheticRatio = worstInterior > 0.0 ? worstBoundary / worstInterior : 0.0;
+                logMessage ("  synthetic staircase (must zipper) -> ratio x"
+                                + juce::String (syntheticRatio, 2));
+
+                expectGreaterThan (syntheticRatio, 3.0,
+                                   "**THE ZIPPER METRIC CANNOT REPORT ZIPPERING.** A gain held flat "
+                                   "across each block and stepped at every boundary — the exact shape "
+                                   "of an unsmoothed per-sample gain — did not exceed the bar, so the "
+                                   "nine clean rows below are an instrument that only reports clean");
+            }
+
             struct Row { const char* id; const char* label; };
             const Row rows[] = {
                 { ParamIDs::makeup,      "MAKEUP" },      { ParamIDs::threshold,   "THRESHOLD" },
