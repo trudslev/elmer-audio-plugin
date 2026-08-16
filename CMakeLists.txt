@@ -115,8 +115,8 @@ juce_add_plugin(Elmer
     # the largest exact size of 16/32/64/128/256/512/1024 that fits, so both must be EXACTLY square
     # at a valid size. Both are generated at CONFIGURE time and the PNGs are not configure
     # dependencies - after changing the artwork, re-run cmake -B build or the old icon ships.
-    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icons/elmer-icon-1024.png"
-    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/assets/icons/elmer-icon-256.png"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/design/icons/elmer-icon-1024.png"
+    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/design/icons/elmer-icon-256.png"
     ${ELMER_EXTRA_ARGS})
 
 target_sources(Elmer PRIVATE
