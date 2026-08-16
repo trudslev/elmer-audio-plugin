@@ -25,8 +25,12 @@ public:
     float processSample (float x) noexcept;
 
 private:
+    /** A value no cutoff can take, so `prepare` can invalidate the cache — see its comment. The
+        parameter's range starts at 40 Hz and anything <= 0 means OFF. */
+    static constexpr float noCachedCutoff = -1.0f;
+
     juce::dsp::IIR::Filter<float> filter;
     double fs = 44100.0;
-    float cutoff = 0.0f;
+    float cutoff = noCachedCutoff;
     bool bypassed = true;
 };

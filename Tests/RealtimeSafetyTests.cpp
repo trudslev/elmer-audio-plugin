@@ -1,4 +1,6 @@
 #include "../Source/PluginProcessor.h"
+#include "../Source/Parameters.h"
+#include "../Source/DSP/SidechainFilter.h"
 
 #include <nf/testing/ProcessorHarness.h>
 
@@ -50,14 +52,23 @@
     suite's recorded duplication shape exactly: a fix lands where the bug was noticed and nothing
     carries it sideways.
 
-    ### Why this test pins the defect instead of asserting it away
+    ### FIXED 2026-08-16, stage 2 — and the pin was written to be inverted
 
-    The sweep fixes nothing; the deliverable is a classified report. But a permanently failing suite
-    is not a report, it is a broken build. So the steady figure is **pinned at what it currently is**,
-    which fails if it gets worse and does not pretend it is right.
+    `setCutoffHz` short-circuits on an unchanged cutoff, so a parked session allocates **nothing**
+    per block where it allocated 32 bytes on every one. The steady figures are asserted clean now,
+    which is exactly what this section used to instruct: *"When it is fixed, this becomes
+    `expect (s.clean(), ...)`"*. Saying so in advance is what made it a one-line edit rather than a
+    judgement about whether the old number still meant anything.
 
-    **When it is fixed, this becomes `expect (s.clean(), ...)`** — the assertion the other five
-    castings already carry. Gatecrasher's guard is three lines and is the obvious port.
+    **What is left, stated rather than left to be rediscovered as a clean row.** A cutoff that
+    actually moves still builds coefficients through `makeHighPass`, which allocates. Removing that
+    too means hand-rolling the five biquad coefficients the way TapeRot does, to buy an allocation
+    that occurs only while a human is turning the knob. The test below measures both arms, so the
+    remaining cost is a figure rather than an omission.
+
+    **And `prepare` invalidates the cache before re-applying**, because coefficients depend on the
+    sample rate as well as the cutoff — a short-circuit that swallowed a rate change would leave the
+    detector filtering at the wrong corner, silently. That has its own arm.
 */
 class RealtimeSafetyTests final : public juce::UnitTest
 {
@@ -77,12 +88,14 @@ public:
             logMessage ("  512/512 cold   -> " + c.describe());
             logMessage ("  512/512 steady -> " + s.describe());
 
-            // **PINNED, NOT PASSED.** One 32-byte allocation per block from SidechainFilter.cpp:22 —
-            // see this file's header. The target is zero and the port is Gatecrasher's guard.
-            expectEquals (s.allocations, 8,
-                          "the per-block allocation count moved. If it went DOWN, the sidechain "
-                          "coefficient defect is fixed and this should become expect(s.clean()). If "
-                          "it went UP, something new allocates on the audio thread.");
+            // **This was PINNED AT 8 and is now asserted clean**, which is the change this file's
+            // own header instructed: "When it is fixed, this becomes expect (s.clean(), ...)".
+            // Written down in advance is what made it a one-line edit rather than a judgement call.
+            expect (s.cleanOfAllocations(),
+                    "processBlock allocated on the audio thread in steady state. The sidechain "
+                    "coefficient rebuild was 32 bytes every block, signal-independent, and is fixed "
+                    "by recomputing only on a change — a count above zero here is either that "
+                    "regressing or something new: " + s.describe());
         }
 
         beginTest ("processBlock allocation — host over-delivers, cold and steady");
@@ -104,47 +117,137 @@ public:
             // That is worth recording for the over-delivery ruling: it is an existence proof that
             // the whole-block dry copy is not required. Whether five castings should restructure
             // that way is a real question and not one this sweep answers.
-            expectEquals (s.allocations, 8, "over-delivery changed the allocation count");
+            expect (s.cleanOfAllocations(),
+                    "over-delivery allocated on the audio thread in steady state: " + s.describe());
         }
 
-        beginTest ("The sidechain allocation is unconditional, not signal- or change-dependent");
+        beginTest ("The sidechain allocates only when its cutoff MOVES, not on every block");
         {
-            // The isolating measurement behind the finding. Counts are captured into plain ints and
-            // the sentinel scope CLOSED before any logging: the first version of this logged inside
-            // the armed scope and counted logMessage's own juce::String work, reporting 4 per block
-            // where the real figure is 1 — the same error as arming a probe around render().
-            ElmerAudioProcessor p;
-            p.setRateAndBufferSizeDetails (48000.0, 512);
-            p.prepareToPlay (48000.0, 512);
+            /*  **This assertion inverted when the defect was fixed, and that is the fourth time in a
+                week.** It read `expectEquals (counts[i], 1)` — the isolating measurement behind the
+                finding, correct as a measurement and written as a permanent expectation of a defect.
+                `SidechainFilter::setCutoffHz` short-circuits on an unchanged cutoff now, so an
+                unmoved knob allocates nothing and the old form asserts the presence of the bug.
 
-            juce::AudioBuffer<float> buffer (2, 512);
-            juce::MidiBuffer midi;
+                **The counts are captured into plain ints and the sentinel scope CLOSED before any
+                logging**, kept from the original: the first version logged inside the armed scope
+                and counted `logMessage`'s own `juce::String` work, reporting 4 per block where the
+                real figure was 1.
 
-            for (int ch = 0; ch < 2; ++ch)
-                for (int i = 0; i < 512; ++i)
-                    buffer.setSample (ch, i, 0.5f);
+                ## The moving arm is the control, and it is real behaviour rather than a fault
 
-            for (int i = 0; i < 4; ++i) { midi.clear(); p.processBlock (buffer, midi); }
+                A knob that actually moves must build new coefficients, and `makeHighPass` returns a
+                refcounted object, so it allocates. That is the probe's positive direction — without
+                it, five zeros are indistinguishable from a sentinel that hooks nothing.
 
-            std::array<int, 5> counts {};
+                **It is also the honest statement of what is left.** Recompute-on-change removes the
+                allocation from every block of a parked session, which is the defect; it does not
+                remove it from a block during a drag. Eliminating that too means computing the five
+                biquad coefficients by hand rather than through JUCE, which duplicates a formula to
+                buy an allocation that only occurs while a human is turning something. Recorded as a
+                stated limit rather than left for someone to rediscover as a clean row. */
+            const auto countsOver = [] (bool moveTheCutoff)
+            {
+                ElmerAudioProcessor p;
+                p.setRateAndBufferSizeDetails (48000.0, 512);
+                p.prepareToPlay (48000.0, 512);
+
+                auto* cutoff = p.apvts.getParameter (ParamIDs::sidechainHp);
+
+                juce::AudioBuffer<float> buffer (2, 512);
+                juce::MidiBuffer midi;
+
+                for (int ch = 0; ch < 2; ++ch)
+                    for (int i = 0; i < 512; ++i)
+                        buffer.setSample (ch, i, 0.5f);
+
+                if (cutoff != nullptr)
+                    cutoff->setValueNotifyingHost (0.5f);
+
+                for (int i = 0; i < 4; ++i) { midi.clear(); p.processBlock (buffer, midi); }
+
+                std::array<int, 5> counts {};
+
+                for (int i = 0; i < 5; ++i)
+                {
+                    if (moveTheCutoff && cutoff != nullptr)
+                        cutoff->setValueNotifyingHost (0.5f + 0.02f * (float) i);
+
+                    const nf::testing::AllocationSentinel s;
+                    p.processBlock (buffer, midi);
+                    counts[(size_t) i] = s.count();
+                }
+
+                return counts;
+            };
+
+            const auto parked = countsOver (false);
+            const auto moving = countsOver (true);
 
             for (int i = 0; i < 5; ++i)
-            {
-                const nf::testing::AllocationSentinel s;
-                p.processBlock (buffer, midi);
-                counts[(size_t) i] = s.count();
-            }
+                logMessage ("  block " + juce::String (i)
+                                + " -> parked " + juce::String (parked[(size_t) i])
+                                + ", moving " + juce::String (moving[(size_t) i]));
 
             for (int i = 0; i < 5; ++i)
-            {
-                logMessage ("  block " + juce::String (i) + " -> " + juce::String (counts[(size_t) i])
-                                + " allocation(s)");
+                expectEquals (parked[(size_t) i], 0,
+                              "the sidechain still allocates on a block where its cutoff did not "
+                              "move. That was 32 bytes every block, signal-independent, on the audio "
+                              "thread — and it fired unconditionally rather than under a rare branch");
 
-                // Identical every block is the point: a converging count would be a warm-up
-                // artefact, and a signal-dependent one would be a different defect.
-                expectEquals (counts[(size_t) i], 1,
-                              "the per-block sidechain coefficient allocation changed shape");
-            }
+            int movingTotal = 0;
+            for (int c : moving) movingTotal += c;
+
+            expect (movingTotal > 0,
+                    "**THE PROBE CANNOT SEE THIS ALLOCATION.** A moving cutoff must build new "
+                    "coefficients through makeHighPass, which returns a refcounted object and "
+                    "therefore allocates — so five zeros in the parked arm are a sentinel that hooks "
+                    "nothing rather than a processor that does not allocate");
+        }
+
+        beginTest ("A re-prepare at the same cutoff still rebuilds — the cache is invalidated");
+        {
+            /*  **The trap the short-circuit opened, closed by measurement rather than by reading.**
+                Coefficients depend on the sample rate as well as on the cutoff, so `prepare` at a
+                new rate with the knob untouched would hit the unchanged-value early return and keep
+                a filter whose corner is wrong by the ratio of the two rates — silently, on the
+                detector path, where it changes what the compressor reacts to rather than what you
+                hear. `prepare` invalidates the cache first; this is what says so.
+
+                Measured through the filter's own response rather than by inspecting a pointer: the
+                same cutoff at two sample rates must attenuate a fixed-Hz tone by the same amount. */
+            const auto attenuationAt = [] (double sampleRate)
+            {
+                SidechainFilter f;
+                f.prepare (sampleRate);
+                f.setCutoffHz (200.0f);
+
+                const int n = (int) sampleRate;      // one second, so the tone is well settled
+                double peak = 0.0;
+
+                for (int i = 0; i < n; ++i)
+                {
+                    const float x = std::sin (juce::MathConstants<float>::twoPi * 100.0f
+                                              * (float) i / (float) sampleRate);
+                    const float y = f.processSample (x);
+
+                    if (i > n / 2)
+                        peak = juce::jmax (peak, (double) std::abs (y));
+                }
+
+                return peak;
+            };
+
+            const auto at44 = attenuationAt (44100.0);
+            const auto at96 = attenuationAt (96000.0);
+
+            logMessage ("  100 Hz through a 200 Hz corner: 44.1k -> " + juce::String (at44, 6)
+                            + ", 96k -> " + juce::String (at96, 6));
+
+            expectWithinAbsoluteError (at96, at44, 0.02,
+                                       "the same corner attenuates differently at two sample rates, "
+                                       "so prepare did not rebuild coefficients — the short-circuit "
+                                       "in setCutoffHz is swallowing a rate change");
         }
     }
 };
