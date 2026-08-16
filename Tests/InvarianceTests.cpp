@@ -96,6 +96,57 @@ public:
                         "produced different output: " + r.describe());
         }
 
+        beginTest ("Reproducible across reset() ALONE — the structurally-absent case, ASSERTED");
+        {
+            /*  **A path nothing in this suite could reach until `nf::testing::renderBlocks` existed.**
+                `render` calls `prepareToPlay` on every invocation, so every premise check anywhere is
+                a *prepare* check by construction, and *prepare once → render → `reset()` → render*
+                could not be expressed at all. A host asks it on every transport locate.
+
+                **This casting has NO generator, which is why its row can be asserted while four
+                others wait on a ruling.** The open question — whether a `reset()` owes a rewound
+                generator or only a cleared tail — cannot arise here, so what this arm measures is the
+                unambiguous half: does `reset()` return the processor to the same state at all.
+
+                **And this is the casting that most needs it driven.** Elmer's energy-after-reset row
+                came back 0.000 both before and after stage 1c, and both times it proved nothing — a
+                compressor at defaults has no state to leave behind, so the row was clean for a
+                coincidence rather than a property. **Naming the line that makes a clean row correct
+                is the check this suite runs**, and at defaults there is none. With the detector
+                driven there is: the envelope follower, the sidechain filter and the makeup smoother
+                all have state, and `reset()` has to return every one of them. */
+            ElmerAudioProcessor processor;
+
+            const auto setP = [&processor] (const juce::String& id, float value)
+            {
+                if (auto* p = dynamic_cast<juce::RangedAudioParameter*> (processor.apvts.getParameter (id)))
+                    p->setValueNotifyingHost (p->getNormalisableRange().convertTo0to1 (value));
+            };
+
+            setP (ParamIDs::threshold, -40.0f);   // hard into gain reduction, so the detector moves
+            setP (ParamIDs::ratio, 10.0f);
+            setP (ParamIDs::attack, 1.0f);
+            setP (ParamIDs::release, 300.0f);
+            setP (ParamIDs::iron, 80.0f);
+            setP (ParamIDs::mix, 100.0f);
+
+            nf::testing::RenderSpec spec;
+            spec.blockSize = 512;
+            spec.numBlocks = 16;
+
+            const auto r = nf::testing::reproducibleAcrossReset (processor, spec);
+            logMessage ("  " + r.describe());
+
+            expect (r.premiseHeld(),
+                    "this processor is not reproducible across prepare, so its reset row means "
+                    "nothing: " + r.acrossPrepare.describe());
+
+            expect (r.acrossReset.sampleExact,
+                    "reset() did not return this processor to the same state, with the detector "
+                    "driven — and this casting has no generator, so the open seeding ruling cannot "
+                    "explain it. Something else survives reset: " + r.acrossReset.describe());
+        }
+
         beginTest ("Offline against real-time");
         {
             ElmerAudioProcessor processor;
