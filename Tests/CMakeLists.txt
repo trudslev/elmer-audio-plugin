@@ -34,6 +34,7 @@ target_sources(ElmerTests PRIVATE
     ../Source/GUI/ProgramHeader.cpp
     ../Source/GUI/PanelBackground.cpp
     ../Source/GUI/KnobFilmstrip.cpp
+    RotaryArcTests.cpp
     ../Source/GUI/KneeButtons.cpp
     ../Source/GUI/GainReductionMeter.cpp)
 
