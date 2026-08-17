@@ -114,8 +114,8 @@ The casting's signature display and its only analogue movement.
 | Figure | Value |
 |---|---|
 | Well | 396 × 159 at (60, 176), radius 4, `0 4px 12px rgba(35,30,22,.45)`, `0 1px 0 rgba(255,255,255,.34)` |
-| Face | `assets/elmer/meter-face.png` — **delivered 1000 × 402**, drawn at 396 × 159.2 (**2.525×**) |
-| Needle | `assets/elmer/meter-needle.png` — **delivered 60 × 510**, drawn at 23.8 × 202.3 (**2.522×**), pivot at (198, 198) — **0.5 × face width below the top edge**. The element's `top: −197.6px` is a placement offset, not the image height |
+| Face | `assets/elmer/meter-face.png` — **delivered 1188 × 478**, drawn at 396 × 159.2 (**3×**, redrawn in the second bundle) |
+| Needle | `assets/elmer/meter-needle.png` — **delivered 71 × 607**, drawn at 23.8 × 202.3 (**3×**, redrawn in the second bundle), pivot at (198, 198) — **0.5 × face width below the top edge**. The element's `top: −197.6px` is a placement offset, not the image height |
 | Travel | **+63° at 0 dB to −63° at 20 dB**, `needleDeg = 63 − (gr / 20) × 126` |
 | Glass | `linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, transparent 40%)` |
 | Caption | `GAIN REDUCTION METER`, IBM Plex Mono 500 11 / 14 / .14 em, `#0e0d08` |
