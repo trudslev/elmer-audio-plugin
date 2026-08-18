@@ -73,7 +73,31 @@ those faces and the only symptom was text centred inside a box nobody drew. It s
 the material had to be painted from those rects.
 
 **So when this casting moves: alias every band figure in one edit, then re-measure against the table
-above.** A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
+above.**
+
+> **THE ALIAS AND THE CANVAS CANNOT BE SEPARATE COMMITS — checked 2026-08-18, before starting.**
+> The instruction above is right about *one edit* and understates why. The shared band puts the LCD
+> at **357..998** and the meter wells out to **1302**; this canvas is **1120** wide. So aliasing the
+> band before the canvas move does not merely look wrong, it places SAVE, DELETE and both meters
+> past the right edge of the panel — and the reverse order leaves a 1340-wide panel with its header
+> cluster bunched into the left two-thirds.
+>
+> The two are one change. §1's figures for this casting's move, read from the delivered spec so the
+> next session does not re-derive them:
+>
+> | | |
+> |---|---|
+> | Canvas | **1340 × 660** — call 1 brought +220, and this is the only casting whose HEIGHT drops (776 → 660) |
+> | Header block | 16, 16, 1308 × 104 — shared part |
+> | Body origin | y **120** |
+> | Divider, detector | x 500, y 136 → 380 |
+> | Divider, horizontal | y 386, x 16 → 1324 |
+> | Divider, lower | x 700, y 396 → 644 |
+>
+> **The height drop is what makes this casting different from the other five**, and the constants
+> most likely to be missed are the ones derived from the old bottom rather than from the top: the
+> `screwCentres` at y 765, `contentBottom` 756, and anything measured from `canvasHeight`. Chorus-60's
+> equivalent move left its body regions 44 px out for two commits and nothing failed. A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
 measurement. And note that **a literal which happens to agree with core is indistinguishable from an
 alias by reading** — Reflect-84 held four such literals, one of them 2 px off §4's shared descriptor
 anchor, in the casting whose editor had been declared conformant.
