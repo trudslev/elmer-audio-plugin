@@ -83,8 +83,24 @@ em size and rendered width are not the same quantity. Check it against a render 
 the panel currently looks right at 53, which is exactly the condition under which a spec figure gets
 transcribed over a correct one.
 
-**Everything else is a straight adoption, and `captionSize` 9.5 has no row in §6 at all** — find
-what it draws before assuming it is covered.
+**Both flagged figures resolved, and neither the way the table suggested.**
+
+**`captionSize` 9.5 draws PROGRAM / IN / OUT** — the header band's captions. It has no row in §6
+because §6 says in its own opening that the block, the band, the LCD cell, the Program buttons and
+the meter wells **are the shared part and are not restated here**. So it is not a gap in the spec and
+not something that should not be on the panel: it is governed by `shared/HEADER-PART.md` §2's caption
+row, and must be checked against THAT rather than against §6. A size with no row is a third thing —
+covered by a different document.
+
+**The wordmark figures are not comparable, which is why the render test could not be run.** §6 and
+the prototype both give `Archivo 700, font-stretch 125 %, 31 px`. The build embeds
+`ArchivoBlack-Regular.ttf` — a static face at weight 900 with no width axis, which cannot reproduce
+that construction at all. So 53 and 31 are two different typefaces' em sizes and neither converts to
+the other; adopting 31 against Black would make the wordmark narrower *and* heavier than the design,
+from a table that only appears to disagree by a number. Raised as `design-asks/elmer-wordmark-face.md`
+and left at 53 meanwhile.
+
+**Everything else on the table is a straight adoption.**
 
 ---
 
