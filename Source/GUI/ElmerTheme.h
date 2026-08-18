@@ -735,28 +735,89 @@ namespace Layout
         `design/screenshots/panel.png` - all eight land on the measured cap centres. The knob and
         its scale area are concentric, so this one point positions the filmstrip, the tick ring and
         every legend. */
+    /*  **§3'S EIGHT KNOBS. TWO DIAMETER CLASSES AND ONLY TWO — Ø76 and Ø56.**
+
+        Row centres are **243 · 383 · 418 · 546** and cell centres **83 / 226** left, **1107 / 1241**
+        right. Everything below follows from those except two entries, and BOTH of those look like
+        transcription slips to anyone checking the pitch arithmetic later. That is not hypothetical:
+        Chorus-60's row had three of five knobs stay put while MIX and OUTPUT TRIM moved, and the two
+        that moved read as slips precisely because the three that did not made the row look uniform.
+        So each exception carries its reason at the entry rather than in a table somewhere.
+
+        **EXCEPTION 1 — RATIO's cell is 226, NOT the nominal 217.** Row 1 carries two Ø76 knobs, and
+        at the nominal 134 pitch their NUMERAL RINGS collide: THRESHOLD's widest numeral reaches 148
+        and RATIO's would start at 150. At 226 they clear by 11. The knobs themselves never touch at
+        either figure — Ø76 at 134 apart has 58 px of air — so checking the CAPS would confirm 217
+        and be wrong. What collides is the printed scale, which is wider than the control.
+
+        **EXCEPTION 2 — MAKEUP is centred at 1174, not on a cell centre.** §3's rule is that a knob
+        alone in its row is placed BY ITS CLASS: Ø76 centres on the column, Ø56 sits on a cell
+        centre. Centring is only safe for the larger class, because a lone Ø56 parked between the two
+        cell centres reads as a **third diameter**, intermediate between the classes flanking it —
+        the diameters were never a third value, position was doing it.
+
+        MAKEUP's row also sits closer to the row above than the cell arithmetic allows, and it works
+        ONLY because it is centred: its numeral band (480–491) and top ticks (494) overlap the
+        vertical band of IRON and MIX's legends (bottom 496) — but not their INK, because those sit
+        on 1107 and 1241 while MAKEUP's top numeral sits at 1174, in the 41 px gap between them.
+        **Moved onto a cell centre at this height its numerals would land on the legend above it.**
+        So the centring and the row height hold each other up; neither is safe to change alone. */
+    inline constexpr float knobLarge = 76.0f, knobSmall = 56.0f;
+    inline constexpr float rowOne = 243.0f, rowSidechain = 383.0f;
+    inline constexpr float rowIronMix = 418.0f, rowMakeup = 546.0f;
+    inline constexpr float cellLeftA = 83.0f, cellLeftB = 226.0f;
+    inline constexpr float cellRightA = 1107.0f, cellRightB = 1241.0f;
+    inline constexpr float makeupCentre = 1174.0f;
+
     inline const std::array<KnobSpec, 8> knobs { {
-        { "threshold",   "THRESHOLD",         { 120.0f, 253.0f }, 112.0f, 108.0f, 84.0f,
-          Strip::detect, Ring::large11, 324.0f },
-        // **RATIO sits 6px lower than THRESHOLD, and its LABEL does not.** Its column carries
-        // padding-top: 12px so that a 100px scale area ends level with THRESHOLD's 112px one:
-        // 197 + 12 + 100 = 309 against 197 + 112 = 309, and both labels land on 324. Control labels
-        // align across a section regardless of ring size, so the smaller ring is pushed down rather
-        // than the label pulled up. Measured in panel.png: cap centre 259, against THRESHOLD's 253.
-        { "ratio",       "RATIO",             { 269.0f, 259.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::detect, Ring::small9,  324.0f },
-        { "sidechainHp", "SIDECHAIN HP",      { 120.0f, 412.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::detect, Ring::large11, 477.0f },
-        { "attack",      "ATTACK",            { 115.0f, 606.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::timing, Ring::large11, 671.0f },
-        { "release",     "RELEASE",           { 269.0f, 606.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::timing, Ring::five,    671.0f },
-        { "iron",        "IRON",              { 560.0f, 606.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::output, Ring::small9,  671.0f },
-        { "makeup",      "MAKEUP",            { 851.0f, 606.0f }, 100.0f,  96.0f, 74.0f,
-          Strip::output, Ring::small9,  671.0f },
-        { "mix",         "MIX",               { 1005.0f, 606.0f }, 100.0f, 96.0f, 74.0f,
-          Strip::output, Ring::small9,  671.0f } } };
+        { "threshold",   "THRESHOLD",    { cellLeftA,  rowOne },       112.0f, 108.0f, knobLarge,
+          Strip::detect, Ring::large11, 0.0f },
+        // 226, not 217 — see EXCEPTION 1 above. The numeral rings collide at the nominal pitch;
+        // the caps do not, so a check on the caps confirms the wrong figure.
+        { "ratio",       "RATIO",        { cellLeftB,  rowOne },       112.0f, 108.0f, knobLarge,
+          Strip::detect, Ring::large11, 0.0f },
+        { "sidechainHp", "SIDECHAIN HP", { 163.0f,     rowSidechain }, 100.0f,  96.0f, knobSmall,
+          Strip::detect, Ring::large11, 0.0f },
+        { "attack",      "ATTACK",       { cellRightA, rowOne },       100.0f,  96.0f, knobSmall,
+          Strip::timing, Ring::large11, 0.0f },
+        { "release",     "RELEASE",      { cellRightB, rowOne },       112.0f, 108.0f, knobLarge,
+          Strip::timing, Ring::large11, 0.0f },
+        { "iron",        "IRON",         { cellRightA, rowIronMix },   100.0f,  96.0f, knobSmall,
+          Strip::output, Ring::large11, 0.0f },
+        { "mix",         "MIX",          { cellRightB, rowIronMix },   100.0f,  96.0f, knobSmall,
+          Strip::output, Ring::large11, 0.0f },
+        // 1174 — centred on the column, NOT on a cell centre. See EXCEPTION 2 above: it is the
+        // only knob alone in its row, it is Ø76, and its row height depends on the centring.
+        { "makeup",      "MAKEUP",       { makeupCentre, rowMakeup },  112.0f, 108.0f, knobLarge,
+          Strip::output, Ring::large11, 0.0f },
+    } };
+
+    /*  §3.1's registration. **Unit and legend are positioned off a Ø76 box for EVERY class**, so the
+        offset is `(76 − d) / 2 = 38 − r` — which is zero on the large class and 10 on the small one.
+        Pivots register on the row's Y and both legend lines in a band land on one baseline.
+
+        This panel was drawn before that was understood: it held the label baseline and missed the
+        pivot by exactly 10 px in both bands, because its Ø56 cells were bottom-aligned. That is why
+        the labels were right and the centres were not — a defect that inspecting the labels would
+        have declared clean. */
+    constexpr float knobRegistrationBox = 76.0f;
+    constexpr float knobRegistrationOffset (float diameter)
+    {
+        return (knobRegistrationBox - diameter) * 0.5f;
+    }
+
+    constexpr float knobUnitTopFor (float diameter)
+    {
+        return diameter + 12.0f + knobRegistrationOffset (diameter);
+    }
+    constexpr float knobLegendTopFor (float diameter)
+    {
+        return diameter + 25.0f + knobRegistrationOffset (diameter);
+    }
+
+    /*  §3.1's sweep — **280°, start −140°**, which is per-casting freedom rather than the suite's
+        270. It is why this casting's mark angles cannot be copied from another's table. */
+    constexpr float knobSweepStartDeg = -140.0f, knobSweepSpanDeg = 280.0f;
 
     /** **Units live in the ARC GAP, not on the control name.** They sit on the bottom legend row,
         between the minimum and maximum numerals, in the same 10px legend type at 0.6px tracking -
