@@ -49,6 +49,45 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## THE TYPE PASS — swept by shape, and three of four are measured clean
+
+Swept 2026-08-18 against the four shapes Chorus-60's pass produced. **Three came back clean and
+that is a result, not an omission** — a casting that was checked and a casting that was never
+reached are both absent from a findings list and are not the same claim.
+
+| Shape | Here |
+|---|---|
+| A raw JUCE height where a CSS px belongs | **structurally absent.** `Font::of` builds through `withPointHeight`, so there is no ratio converter to bypass. The only `withHeight` hits are the comment explaining the trap and a `Rectangle::withHeight` |
+| `drawText` so tracking silently never applies | **clean.** Both hits are inside the per-glyph tracked-text routines themselves |
+| An ASCII hyphen for U+2212 | **clean.** No non-ASCII bytes in any string literal |
+| **A size predating the spec** | **the live one, and it is most of the scale** |
+
+### Shape 2, measured against §6's table
+
+Not three sites — the type scale largely predates this round:
+
+| §6 role | §6 | build | |
+|---|---|---|---|
+| Readouts | **17** | `lcdTextSize` 14.0, `levelTextSize` 14.0 | both short |
+| Footer | **10** | `footerTextSize` 11.5 | over |
+| Knob legends | **12** | `controlLabelSize` 11.5 | short |
+| Model number | **11** | `modelLineSize` 10.5 | short |
+| Meter label + caption | **11** | `meterSpecSize` 11.5 | over |
+| Button lamps | **11** | `buttonTextSize` 10.0, `lampLegendSize` 9.5 | both short |
+| Wordmark | **31** | `wordmarkSize` 53.0 | see below |
+| Group headings · knob units · knob numerals · scribble | 12 · 10 · 11 · 28.5 | 12.0 · 10.0 · 11.0 · 28.5 | agree |
+
+**`wordmarkSize` is the one NOT to change on this table alone.** 53 against a stated 31 is not a
+drift-sized gap, and §6 gives the wordmark as *Archivo 700 at width 125 %* — a stretched face, whose
+em size and rendered width are not the same quantity. Check it against a render before touching it;
+the panel currently looks right at 53, which is exactly the condition under which a spec figure gets
+transcribed over a correct one.
+
+**Everything else is a straight adoption, and `captionSize` 9.5 has no row in §6 at all** — find
+what it draws before assuming it is covered.
+
+---
+
 ## RUN `check_contrast` AFTER THE TYPE PASS, AGAINST THIS CASTING'S OWN GROUNDS
 
 **Not before, and not against §6's published table.** Two things moved this round that every
