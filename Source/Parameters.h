@@ -121,21 +121,72 @@ namespace Law
     a permanent defect nobody can reach. */
 namespace PrintedScale
 {
+    /*  **WHICH DATUM IS PRIMARY DIFFERS PER RING, AND EVERY TABLE BELOW SAYS SO.**
+
+        A `Mark` carries a fraction AND a value for the same tick, so the suite's rule — *a mark's
+        angle must come from what drives the pointer* — reads as an instruction to derive the
+        fraction from the value and delete it. That is what Chorus-60's RATE turned out to need: its
+        published fractions regenerated from `convertTo0to1` to six decimals, so they were derived
+        output that had been transcribed.
+
+        **Measured across Elmer's rings on 2026-08-18, that conversion is right on some and wrong on
+        others**, and nothing in the shape of these tables shows which. Six identical-looking
+        `{position01, printedValue}` pairs, three different answers:
+
+          THRESHOLD     residual 0.000000000   fraction DERIVED   — asserted redundant
+          SIDECHAIN HP  residual 0.800000012   fraction PRIMARY   — parameter stores position
+          ATTACK        residual 0.007388830   fraction PRIMARY   — printed values are rounded
+          IRON          residual 0.000000000   neither — linear, evenly marked
+          MAKEUP        residual 0.000000000   neither
+          MIX           residual 0.000000000   neither
+
+        So each table carries its own verdict. Without them the next reader sees one shape and
+        reaches for one conversion, which would be defensible, uniform, and wrong on two rings.
+        `Tests/PrintedScaleTests.cpp` measures the residuals and asserts the one that is redundant. */
     struct Mark { float position01; float printedValue; };
 
+    /** **VALUE is primary; the fraction is DERIVED and redundant.** `convertTo0to1(printedValue)`
+        regenerates every fraction here exactly — residual 0.000000000 — so this ring is Chorus-60's
+        RATE case and the two cannot disagree while that holds. Asserted, because an edit that made
+        them diverge would leave the ring pointing where the parameter does not. */
     inline constexpr std::array<Mark, 6> threshold { {
         { 0.0f, -40.0f }, { 0.2f, -30.0f }, { 0.4f, -20.0f },
         { 0.6f, -10.0f }, { 0.8f, 0.0f },   { 1.0f, 10.0f } } };
 
-    /** Hz. The first mark is OFF and is checked separately - it has no numeric value. */
+    /*  Hz. The first mark is OFF and is checked separately - it has no numeric value.
+
+        **FRACTION is primary here, and the printed value is the derived one — the exact inverse of
+        every other ring.** This parameter stores the knob POSITION rather than a frequency, because
+        the control has a dead zone: its first tenth is OFF and its next clamps to 40 Hz, so a
+        frequency-valued parameter could not represent where the pointer actually is.
+
+        So `convertTo0to1(140.0f)` asks a 0–1 parameter to place a Hz value and gets a clamp — the
+        measured residual is **0.800000012**, which is not drift but the conversion being
+        meaningless. Do not derive these angles from the Hz figures. */
     inline constexpr std::array<Mark, 5> sidechainHp { {
         { 0.2f, 40.0f }, { 0.4f, 75.0f }, { 0.6f, 140.0f },
         { 0.8f, 265.0f }, { 1.0f, 500.0f } } };
 
+    /*  **FRACTION is primary, and deriving from the value would be WRONG rather than merely
+        redundant.** The panel prints 0.1 / 0.3 / 1 / 3 / 10 / 30 against an exact series of
+        0.1 / 0.313 / 0.979 / 3.06 / 9.58 / 30 — the conventionally rounded form, which is how real
+        panels are marked and which the paragraph above this namespace argues for keeping.
+
+        The residual is **0.007388830**, and it IS that rounding. Deriving each angle from the
+        printed value would move the tick to where the rounded value sits — about 2° of a 280°
+        sweep — so the numeral would be exact and the tick would be wrong. The fraction is where the
+        mark belongs; the printed value is what it is legible to call it. */
     inline constexpr std::array<Mark, 6> attackMs { {
         { 0.0f, 0.1f }, { 0.2f, 0.3f }, { 0.4f, 1.0f },
         { 0.6f, 3.0f }, { 0.8f, 10.0f }, { 1.0f, 30.0f } } };
 
+    /** IRON / MAKEUP / MIX are linear and evenly marked, so **value and fraction agree and neither
+        is meaningfully primary** — all three measure a residual of **0.000000000**.
+
+        Measured, not reasoned. The first draft of this comment asserted the zero from the shape of
+        the range, which is the same move as any other figure written from what was expected: the
+        arithmetic was sound and it was still a number with no run behind it. The probe covers all
+        six rings now rather than the three that looked interesting. */
     inline constexpr std::array<Mark, 5> iron { {
         { 0.0f, 0.0f }, { 0.25f, 25.0f }, { 0.5f, 50.0f }, { 0.75f, 75.0f }, { 1.0f, 100.0f } } };
 

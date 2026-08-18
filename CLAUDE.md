@@ -63,6 +63,7 @@ value for the same mark — so the obvious reading is that the same conversion a
 | THRESHOLD | **0.000000000** | the fraction IS derived output — redundant, and now asserted so |
 | SIDECHAIN HP | **0.800000012** | structurally cannot convert |
 | ATTACK | **0.007388830** | could, and it would be **wrong** |
+| IRON · MAKEUP · MIX | **0.000000000** | linear and evenly marked — neither datum primary |
 
 **SIDECHAIN HP's parameter stores the knob POSITION, not a frequency**, because the control has a
 dead zone — its first tenth is OFF, its next clamps to 40 Hz — so a frequency-valued parameter could
@@ -74,6 +75,9 @@ derived one** — the exact inverse of every other ring.
 0.1 / 0.3 / 1 / 3 / 10 / 30 against an exact 0.1 / 0.313 / 0.979 / 3.06 / 9.58 / 30, which is how
 real panels are marked. Deriving the angle from the *printed* value moves each tick to where the
 rounded value sits — 0.0074 of sweep, about 2°. The numeral would be exact and the tick wrong.
+
+**Every ring's table states its own verdict in `Parameters.h`**, because six identical-looking
+`{position01, printedValue}` pairs show nothing about which of them can be converted.
 
 **So do not convert this casting's rings wholesale.** The rule holds — the angle must come from what
 drives the pointer — and on two of these three rings the stored fraction *is* what drives it. This

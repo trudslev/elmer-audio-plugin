@@ -217,6 +217,9 @@ public:
                                                "ring may point where the parameter does not");
             residualFor (ParamIDs::sidechainHp, Elmer::PrintedScale::sidechainHp, "SIDECHAIN HP");
             residualFor (ParamIDs::attack,      Elmer::PrintedScale::attackMs,    "ATTACK");
+            residualFor (ParamIDs::iron,        Elmer::PrintedScale::iron,        "IRON");
+            residualFor (ParamIDs::makeup,      Elmer::PrintedScale::makeupDb,    "MAKEUP");
+            residualFor (ParamIDs::mix,         Elmer::PrintedScale::mix,         "MIX");
         }
 
         beginTest ("THRESHOLD - linear, every printed mark exact");
