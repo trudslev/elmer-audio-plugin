@@ -251,7 +251,10 @@ void PanelBackground::paintHeaderChrome (juce::Graphics& g)
                        juce::Justification::left, Colour::ink);
 
     // --- captions ----------------------------------------------------------------------------
-    const auto caption = Font::mono (Layout::captionSize);
+    /*  **Barlow Condensed, not mono — the face was wrong as well as the size.** `HEADER-PART.md`
+        §7 gives these captions as Barlow Condensed 600; this drew them in IBM Plex Mono, which is
+        this casting's DISPLAY face. A caption sits on the block, not inside the glass. */
+    const auto caption = Font::label (Layout::captionSize);
 
     Text::drawTracked (g, "PROGRAM", caption, Layout::captionTracking,
                        { Layout::programX, Layout::captionY, 200.0f, 12.0f },

@@ -48,7 +48,7 @@ namespace Colour
     inline const juce::Colour markerInk      { 0xFF2B2A26 };
     /** §6's meter sub-caption — flavour, not functional, and the only ink on this panel BRAND.md
         lets sit below the 7:1 bar.
-        // contrast: 5.78:1 vs fascia [flavour] */
+        // contrast: 5.59:1 vs fascia [flavour] */
     inline const juce::Colour inkFlavour     { 0xFF2D2B24 };
 
     // --- panels --------------------------------------------------------------
@@ -90,11 +90,11 @@ namespace Colour
     inline const juce::Colour windowTop      { 0xFF2A2822 };
     inline const juce::Colour windowBottom   { 0xFF1E1C17 };
 
-    // contrast: 4.30-5.00:1 vs windowTop,windowBottom [state]
+    // contrast: 4.28-4.94:1 vs windowTop,windowBottom [state]
     inline const juce::Colour legendUnlit    { 0xFF8F8A7C };
     /** Warm white - incandescent, not any of Elmer's three function-group colours, and NOT the
         panel accent #F3D021, which stays reserved for the KNEE lamp.
-        // contrast: 13.10-15.10:1 vs windowTop,windowBottom [functional] */
+        // contrast: 12.99-15.00:1 vs windowTop,windowBottom [functional] */
     inline const juce::Colour legendLit      { 0xFFFFEFD0 };
 
     // --- KNEE lamp -----------------------------------------------------------
@@ -108,7 +108,17 @@ namespace Colour
         2026-08-11 handoff delivered. */
     inline const juce::Colour lampFaceTop    { 0xFFA9A496 };
     inline const juce::Colour lampFaceBottom { 0xFF8E8A7D };
-    // contrast: 6.90-4.90:1 vs lampFaceTop,lampFaceBottom [functional]
+    /*  **BELOW THE FUNCTIONAL FLOOR AT 4.94, AND THE STATED RANGE WAS WRITTEN BACKWARDS** (6.90-4.90,
+        high end first). Measured 4.94-6.86 against a 7.0 bar.
+
+        **Not fixed by reclassifying it.** An unlit lamp legend is arguably `[state]` rather than
+        `[functional]` — that is how the suite classifies Chorus-60's `legendUnlit`, at a 3.0 floor —
+        and switching the class here would waive the floor and turn the row green without changing a
+        pixel. `check_contrast`'s own comment names that as how a tool stops being trusted.
+
+        So it stays `[functional]` and stays red until it is ruled on: either the class is wrong, or
+        the unlit legend needs lifting off `#8E8A7D`. Raised rather than resolved.
+        // contrast: 4.94-6.86:1 vs lampFaceTop,lampFaceBottom [functional] */
     inline const juce::Colour lampLegendOff  { 0xFF1D1C17 };
     inline const juce::Colour lampFaceLitTop    { 0xFF46402F };
     inline const juce::Colour lampFaceLitBottom { 0xFF322D21 };
@@ -342,10 +352,18 @@ namespace Layout
 
     inline constexpr float taglineSize = 14.0f;
     inline constexpr float taglineTracking = 3.6f;
-    inline constexpr float modelLineSize = 10.5f;
+    inline constexpr float modelLineSize = 11.0f;
     inline constexpr float modelLineTracking = 2.2f;
 
-    inline constexpr float captionSize = 9.5f;      // PROGRAM / IN / OUT
+    /*  **10, AND IT IS THE SHARED PART'S FIGURE RATHER THAN §6's.** It draws PROGRAM / IN / OUT, and
+    §6 has no row for it because §6's own opening says the block, the band and the meter wells are
+    the shared part and are not restated there. `HEADER-PART.md` §7 gives it: **10 px / line box 13,
+    Barlow Condensed 600**, IN and OUT at .28 em centred on their wells, PROGRAM at .24 em
+    left-aligned to the LCD.
+
+    A size with no row in its casting's own spec is a third thing — neither a gap nor something that
+    should not be on the panel, but governed by a different document. It was 9.5. */
+    inline constexpr float captionSize = 10.0f;      // PROGRAM / IN / OUT
     inline constexpr float captionTracking = 3.0f;
 
     /** The caption row, measured off the reference render rather than derived: cap ink lands at
@@ -471,7 +489,7 @@ namespace Layout
     /** 14px IBM Plex Mono at 1.7px tracking advances 10.1px per character. That figure is what the
         24-character budget is computed from, so changing either without re-deriving the cap silently
         breaks the guarantee that what can be typed can be shown. */
-    inline constexpr float lcdTextSize = 14.0f;
+    inline constexpr float lcdTextSize = 17.0f;
     inline constexpr float lcdTextTracking = 1.7f;
     inline constexpr float lcdNamePadX = 11.0f;
 
@@ -486,7 +504,7 @@ namespace Layout
     /** 10px is BRAND.md's floor for functional text and **both** legends are functional, so
         neither is set smaller than the other to make the pair fit. Tracking came in from 2.0 to
         1.4 because two stacked legends at 2.0 crowd DELETE/CANCEL against the 62px cap. */
-    inline constexpr float buttonTextSize = 10.0f;
+    inline constexpr float buttonTextSize = 11.0f;
     inline constexpr float buttonTracking = 1.4f;
 
     /** The cap's 2px padding, then two windows of 15px each: 2 + 15 + 15 + 2 = 34. The windows
@@ -507,7 +525,7 @@ namespace Layout
         1238..1310.5 where the part gives 1164..1228 and 1238..1302 — the second overrunning the
         band's own right edge at 1302. */
     inline constexpr float levelBoxW = meterWellW;
-    inline constexpr float levelTextSize = 14.0f;
+    inline constexpr float levelTextSize = 17.0f;
 
     // --- divider --------------------------------------------------------------
     /*  **§2's BODY IS THREE COLUMNS — and this replaces the FOUR-SECTION table of one day earlier.**
@@ -582,7 +600,7 @@ namespace Layout
     inline constexpr float sectionPadX = 16.0f;
     inline constexpr float sectionHeaderSize = 11.5f;
     inline constexpr float sectionHeaderTracking = 3.4f;
-    inline constexpr float controlLabelSize = 11.5f;
+    inline constexpr float controlLabelSize = 12.0f;
     inline constexpr float controlLabelTracking = 2.4f;
     /** A control label sits 15px below its knob area. */
     inline constexpr float controlLabelGap = 15.0f;
@@ -608,7 +626,7 @@ namespace Layout
     inline constexpr float meterH = 254.0f;
     inline constexpr float meterY = 199.0f;
     inline constexpr float meterRadius = 4.0f;
-    inline constexpr float meterSpecSize = 11.5f;
+    inline constexpr float meterSpecSize = 11.0f;
     inline constexpr float meterSpecTracking = 1.8f;
     inline constexpr float meterSpecGap = 9.0f;
 
@@ -635,7 +653,7 @@ namespace Layout
     inline constexpr float footerLeftX = 26.0f;
     inline constexpr float footerRightX = 914.0f;
     inline constexpr float footerLineBox = 13.0f;
-    inline constexpr float footerTextSize = 11.5f;
+    inline constexpr float footerTextSize = 10.0f;
     inline constexpr float footerTracking = 1.8f;
     /*  **28.5, scaled 1.5x from the original 19 px this round — and this read 21.**
 
@@ -1058,7 +1076,7 @@ namespace Layout
     inline constexpr float lampGap = 7.0f;
     inline constexpr float lampLedDiameter = 6.0f;
     inline constexpr float lampContentGap = 7.0f;
-    inline constexpr float lampLegendSize = 9.5f;
+    inline constexpr float lampLegendSize = 11.0f;
     inline constexpr float lampLegendTracking = 1.6f;
 
     // --- meter mapping --------------------------------------------------------
