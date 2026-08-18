@@ -819,6 +819,142 @@ namespace Layout
         270. It is why this casting's mark angles cannot be copied from another's table. */
     constexpr float knobSweepStartDeg = -140.0f, knobSweepSpanDeg = 280.0f;
 
+    /*  §3.1's CODE-DRAWN CONSTRUCTION. The 128-frame filmstrips retire with it — bundle 3's opening
+        makes the meter face and needle the ONLY bitmaps on this panel.
+
+        **What the filmstrips bought and what they cost.** Their comment argued that baking the
+        rotation kept the specular travelling across a coloured cap, and that a code-drawn gradient
+        flattens it. That was true of a gradient rotating WITH the knob. §3.1 fixes the specular to
+        the panel — `circle at 34% 24%` on the cap, the skirt's conic from a constant 200° — so
+        nothing about the highlight depends on the value, and the argument for baking 128 frames per
+        control goes with it. It is also what makes a static-layer cache possible at all. */
+    inline const std::array<std::pair<float, juce::Colour>, 7> knobSkirtStops { {
+        { 0.00f, juce::Colour (0xFFE8E3DA) }, { 0.18f, juce::Colour (0xFFB6AFA5) },
+        { 0.34f, juce::Colour (0xFFEFEAE1) }, { 0.52f, juce::Colour (0xFFA8A199) },
+        { 0.70f, juce::Colour (0xFFE6E1D8) }, { 0.86f, juce::Colour (0xFFB0A9A0) },
+        { 1.00f, juce::Colour (0xFFE8E3DA) } } };
+    constexpr float knobSkirtFromDeg = 200.0f;
+
+    /** §2's function-group coding: highlight, base and shade per group. Colour is organisation, not
+        information — every legend reads without it. */
+    struct CapStops { juce::Colour hi, base, lo; };
+    inline const CapStops capDetect { juce::Colour (0xFFEE5C9C), juce::Colour (0xFFD5257A),
+                                      juce::Colour (0xFF8E1152) };
+    inline const CapStops capTiming { juce::Colour (0xFF4FC79C), juce::Colour (0xFF17825F),
+                                      juce::Colour (0xFF0C6247) };
+    inline const CapStops capOutput { juce::Colour (0xFF6E9CE8), juce::Colour (0xFF3A6FD0),
+                                      juce::Colour (0xFF1E4189) };
+
+    inline const CapStops& capStopsFor (Strip strip)
+    {
+        switch (strip)
+        {
+            case Strip::timing: return capTiming;
+            case Strip::output: return capOutput;
+            case Strip::detect:
+            default:            return capDetect;
+        }
+    }
+
+    constexpr float knobCapInset = 6.0f;
+    constexpr float knobCapHighlightX = 0.34f, knobCapHighlightY = 0.24f, knobCapMidStop = 0.52f;
+
+    /** §3.1: `3 x (r - 7)`, `#f6f1e6`, corner radius 1.5. */
+    constexpr float knobPointerWidth = 3.0f, knobPointerInset = 7.0f, knobPointerRadius = 1.5f;
+    inline const juce::Colour knobPointerInk { 0xFFF6F1E6 };
+
+    /** §3.1: O d + 12, a 1.4 px ring over 0.7778 turn — which is the 280 degree sweep as a
+        fraction, so the arc and the pointer cannot disagree about the span. */
+    constexpr float knobArcRadiusGap = 6.0f, knobArcThickness = 1.4f;
+    inline const juce::Colour knobArcInk { 0x4D16150F };   // rgba(22,21,15,.30)
+
+    /*  §3.1's ticks. **Both are measured from the CENTRE and they share an INNER end, not an outer
+        one** — a numbered tick runs to r + 14 and a plain one to r + 10, inked 9 and 5 from their
+        outer ends. That is the opposite construction to Chorus-60's rings, where both grew outward
+        from one inner radius, and it is why the two castings' tick tables cannot be copied. */
+    constexpr float knobNumberedTickLength = 14.0f, knobNumberedTickInk = 9.0f;
+    constexpr float knobNumberedTickWidth = 2.0f;
+    constexpr float knobPlainTickLength = 10.0f, knobPlainTickInk = 5.0f;
+    constexpr float knobPlainTickWidth = 1.5f;
+    inline const juce::Colour knobTickInk { 0xFF16150F };   // 7.47:1 on fascia
+
+    constexpr float knobNumeralCssPx = 11.0f, knobNumeralLineBox = 11.0f;
+
+    /*  **THE STATIC LAYER — everything that does not move with the value.** Drawn at the
+        component's own origin so the cached image is position-independent. */
+    inline void paintKnobStatic (juce::Graphics& g, juce::Rectangle<float> area, Strip strip)
+    {
+        const auto centre = area.getCentre();
+        const float r = juce::jmin (area.getWidth(), area.getHeight()) * 0.5f;
+
+        /*  The machined skirt. JUCE has no conic gradient, so it is swept as thin wedges — 360 of
+            them, one per degree, which is well under a pixel of arc at these diameters. Sweeping it
+            is what a conic IS; approximating it with a linear or radial fill would lose the turned
+            banding entirely, which is the one thing this skirt is for. */
+        {
+            juce::Graphics::ScopedSaveState saved (g);
+            juce::Path clip;
+            clip.addEllipse (centre.x - r, centre.y - r, r * 2.0f, r * 2.0f);
+            g.reduceClipRegion (clip);
+
+            for (int i = 0; i < 360; ++i)
+            {
+                const float t = (float) i / 360.0f;
+
+                juce::Colour c = knobSkirtStops.back().second;
+                for (size_t k = 1; k < knobSkirtStops.size(); ++k)
+                    if (t <= knobSkirtStops[k].first)
+                    {
+                        const auto& a = knobSkirtStops[k - 1];
+                        const auto& b = knobSkirtStops[k];
+                        const float f = (t - a.first) / juce::jmax (1.0e-6f, b.first - a.first);
+                        c = a.second.interpolatedWith (b.second, f);
+                        break;
+                    }
+
+                juce::Path wedge;
+                wedge.startNewSubPath (centre);
+                const float a0 = juce::degreesToRadians (knobSkirtFromDeg + t * 360.0f);
+                wedge.addArc (centre.x - r, centre.y - r, r * 2.0f, r * 2.0f, a0,
+                              a0 + juce::degreesToRadians (1.2f));
+                wedge.closeSubPath();
+
+                g.setColour (c);
+                g.fillPath (wedge);
+            }
+        }
+
+        const auto cap = area.reduced (knobCapInset);
+        const auto& stops = capStopsFor (strip);
+
+        juce::ColourGradient capFill { stops.hi,
+                                       cap.getX() + cap.getWidth() * knobCapHighlightX,
+                                       cap.getY() + cap.getHeight() * knobCapHighlightY,
+                                       stops.lo, cap.getRight(), cap.getBottom(), true };
+        capFill.addColour (knobCapMidStop, stops.base);
+        g.setGradientFill (capFill);
+        g.fillEllipse (cap);
+    }
+
+    /** §3.1's pointer. **The only part that moves with the value**, and therefore the only part
+        outside the cache. */
+    inline void paintKnobPointer (juce::Graphics& g, juce::Point<float> centre, float diameter,
+                                  float value01)
+    {
+        const float r = diameter * 0.5f;
+        const float length = r - knobPointerInset;
+        const float angle = knobSweepStartDeg
+                          + juce::jlimit (0.0f, 1.0f, value01) * knobSweepSpanDeg;
+
+        juce::Path pointer;
+        pointer.addRoundedRectangle (-knobPointerWidth * 0.5f, -length,
+                                      knobPointerWidth, length, knobPointerRadius);
+
+        g.setColour (knobPointerInk);
+        g.fillPath (pointer, juce::AffineTransform::rotation (juce::degreesToRadians (angle))
+                                 .translated (centre.x, centre.y));
+    }
+
     /** **Units live in the ARC GAP, not on the control name.** They sit on the bottom legend row,
         between the minimum and maximum numerals, in the same 10px legend type at 0.6px tracking -
         so a unit reads as part of the printed scale it qualifies rather than as part of the

@@ -32,7 +32,20 @@ public:
     /** Centres the component on a point in design coordinates. */
     void setCentrePosition (juce::Point<float> centre);
 
+    /** **Test seam: how many times the static layer has been rebuilt.** A cache that silently
+        rebuilds every frame is indistinguishable from one that works by looking at the panel —
+        both draw the right knob, and the difference is only in what a drag costs. */
+    int staticLayerBuildCount() const noexcept { return staticLayerBuilds; }
+
 private:
+    juce::Image staticLayer;
+    int staticLayerBuilds = 0;
+
+    /*  **RETIRED with the filmstrips and kept only until the last reader goes.** `paint` is fully
+        code-drawn now, so nothing calls this; the two 128-frame sheets it reaches are dead weight in
+        BinaryData. Removing the declaration, the definition, `cachedStrip` and the sheets themselves
+        is one mechanical commit and is deliberately not folded into the drawing change — the same
+        reason `KnobFilmstripComponent` kept its name in Chorus-60 for a round. */
     const juce::Image& stripImage() const;
 
     ElmerTheme::Layout::Strip whichStrip;

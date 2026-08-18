@@ -83,19 +83,42 @@ void KnobFilmstrip::setCentrePosition (juce::Point<float> centre)
 
 void KnobFilmstrip::paint (juce::Graphics& g)
 {
-    const auto& strip = stripImage();
+    /*  **CODE-DRAWN AND CACHED — §3.1 retires the 128-frame filmstrips.**
 
-    if (! strip.isValid())
-        return;
+        **The cache is keyed on the DEVICE SCALE, not the component size.** A Retina display and a
+        scaled editor both change how many physical pixels the knob covers while its logical bounds
+        stay put, so a cache keyed on `getWidth()` serves a layer drawn for the wrong resolution and
+        looks merely soft — which is the failure mode that survives review.
 
-    const double proportion = valueToProportionOfLength (getValue());
-    const int frame = juce::jlimit (0, Layout::filmstripFrames - 1,
-                                    juce::roundToInt (proportion * (Layout::filmstripFrames - 1)));
+        **`setBufferedToImage` on the whole component is the trap this avoids.** It compiles,
+        profiles identically, and re-renders on every repaint — and a knob repaints on every frame
+        of a drag, so it is a cache that caches nothing while looking like one. `staticLayerBuilds`
+        exists so a test can tell the two apart, and `KnobRenderTests` asserts it in BOTH
+        directions: a counter that never increments passes a one-directional arm exactly as a
+        working cache does. */
+    const auto bounds = getLocalBounds().toFloat();
 
-    const int frameSize = Layout::filmstripFrameSize;
+    const float deviceScale = g.getInternalContext().getPhysicalPixelScaleFactor();
+    const int wantedW = juce::roundToInt (bounds.getWidth() * deviceScale);
+    const int wantedH = juce::roundToInt (bounds.getHeight() * deviceScale);
 
-    g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-    g.drawImage (strip,
-                 0, 0, getWidth(), getHeight(),                 // destination
-                 0, frame * frameSize, frameSize, frameSize);   // source frame
+    if (staticLayer.isNull() || staticLayer.getWidth() != wantedW
+        || staticLayer.getHeight() != wantedH)
+    {
+        staticLayer = juce::Image (juce::Image::ARGB, juce::jmax (1, wantedW),
+                                    juce::jmax (1, wantedH), true);
+        ++staticLayerBuilds;
+
+        juce::Graphics ig { staticLayer };
+        ig.addTransform (juce::AffineTransform::scale (deviceScale));
+        ElmerTheme::Layout::paintKnobStatic (ig, bounds.withZeroOrigin(), whichStrip);
+    }
+
+    g.drawImageTransformed (staticLayer, juce::AffineTransform::scale (1.0f / deviceScale));
+
+    /*  The pointer, live. Its proportion comes from the Slider's own `valueToProportionOfLength`,
+        which carries the parameter's taper — so it lands on the printed marks, which are placed
+        from that same law. */
+    ElmerTheme::Layout::paintKnobPointer (g, bounds.getCentre(), diameter,
+                                          (float) valueToProportionOfLength (getValue()));
 }
