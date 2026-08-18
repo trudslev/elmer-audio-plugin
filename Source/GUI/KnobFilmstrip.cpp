@@ -4,23 +4,6 @@ using namespace ElmerTheme;
 
 namespace
 {
-    const juce::Image& cachedStrip (ElmerTheme::Layout::Strip s)
-    {
-        static const juce::Image detect = juce::ImageCache::getFromMemory (
-            BinaryData::knobdetect128_png, BinaryData::knobdetect128_pngSize);
-        static const juce::Image timing = juce::ImageCache::getFromMemory (
-            BinaryData::knobtiming128_png, BinaryData::knobtiming128_pngSize);
-        static const juce::Image output = juce::ImageCache::getFromMemory (
-            BinaryData::knoboutput128_png, BinaryData::knoboutput128_pngSize);
-
-        switch (s)
-        {
-            case ElmerTheme::Layout::Strip::timing: return timing;
-            case ElmerTheme::Layout::Strip::output: return output;
-            case ElmerTheme::Layout::Strip::detect:
-            default:                                return detect;
-        }
-    }
 }
 
 KnobFilmstrip::KnobFilmstrip (Layout::Strip strip, float diameterPx)
@@ -45,14 +28,11 @@ KnobFilmstrip::KnobFilmstrip (Layout::Strip strip, float diameterPx)
         is symmetric about 6 o'clock: the same SPAN, pointing the opposite way. That is why it
         survived, and why a test asserting the span would have passed it.
 
-        **Nothing on the panel showed it**, which is the other half. `paint()` is fully overridden and
-        draws a baked filmstrip frame chosen by `valueToProportionOfLength`, so the Slider's own
-        rotary parameters reach no pixel here. They reach an accessibility client, a look-and-feel,
-        and any JUCE default paint path someone later reinstates — all of which would have been
-        handed an arc pointing at the floor.
-
-        `printedScaleDefects` cannot catch it either: it checks a ring's marks against the
-        parameter's range, and this is neither a mark nor a range. */
+        **Nothing on the panel showed it**, which is the other half. `paint()` is fully overridden,
+        so the Slider's own rotary parameters were unread — and are still unread by the drawing,
+        which computes its angle from `knobSweepStartDeg`. They are set because a future reader who
+        reinstates any default paint path would otherwise get JUCE's 270 and be quietly wrong.
+    */
     setRotaryParameters (juce::degreesToRadians (360.0f - Layout::knobSweepDegrees * 0.5f),
                          juce::degreesToRadians (360.0f + Layout::knobSweepDegrees * 0.5f),
                          true);
@@ -69,10 +49,6 @@ void KnobFilmstrip::mouseDown (const juce::MouseEvent& e)
     juce::Slider::mouseDown (e);
 }
 
-const juce::Image& KnobFilmstrip::stripImage() const
-{
-    return cachedStrip (whichStrip);
-}
 
 void KnobFilmstrip::setCentrePosition (juce::Point<float> centre)
 {

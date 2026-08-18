@@ -51,9 +51,10 @@ FetchContent_MakeAvailable(NeonFoundryCore)
 # of itself. design/screenshots/panel.png is an acceptance target, not a runtime asset.
 juce_add_binary_data(ElmerBinaryData
     SOURCES
-        design/assets/knob-detect-128.png
-        design/assets/knob-timing-128.png
-        design/assets/knob-output-128.png
+        # The three 128-frame knob sheets are RETIRED — §3.1 draws the skirt, cap, pointer, arc
+        # and ticks in code, and bundle 3's opening makes the meter face and needle the only
+        # bitmaps on this panel. They stay in design/assets/ as the reference the code was drawn
+        # against; what is removed is embedding them in a binary nothing reads them from.
         design/assets/meter-face.png
         design/assets/meter-needle.png
         design/assets/scale-lg.png

@@ -3,7 +3,12 @@
 #include "ElmerTheme.h"
 
 /**
-    A knob drawn from a 128-frame vertical bitmap filmstrip.
+    A knob, code-drawn per §3.1 into a cached static layer with only its pointer redrawn per frame.
+
+    **The name is now wrong and is kept for one more round.** It rendered a 128-frame vertical
+    filmstrip until §3.1 retired the sheets; renaming the class touches every construction site and
+    would land in the same commit as the drawing change, which is the noise the `ProgramId` aliasing
+    decision exists to avoid. It gets its own commit, next to nothing else.
 
     Subclasses juce::Slider purely for its drag-to-value mapping and SliderAttachment compatibility;
     paint() fully replaces the look, so LookAndFeel::drawRotarySlider is never invoked. Same pattern
@@ -41,12 +46,7 @@ private:
     juce::Image staticLayer;
     int staticLayerBuilds = 0;
 
-    /*  **RETIRED with the filmstrips and kept only until the last reader goes.** `paint` is fully
-        code-drawn now, so nothing calls this; the two 128-frame sheets it reaches are dead weight in
-        BinaryData. Removing the declaration, the definition, `cachedStrip` and the sheets themselves
-        is one mechanical commit and is deliberately not folded into the drawing change — the same
-        reason `KnobFilmstripComponent` kept its name in Chorus-60 for a round. */
-    const juce::Image& stripImage() const;
+
 
     ElmerTheme::Layout::Strip whichStrip;
     float diameter;

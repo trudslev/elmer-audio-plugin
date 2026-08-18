@@ -49,6 +49,28 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## RUN `check_contrast` AFTER THE TYPE PASS, AGAINST THIS CASTING'S OWN GROUNDS
+
+**Not before, and not against §6's published table.** Two things moved this round that every
+contrast figure in the spec was computed against:
+
+- **The meter face was redrawn.** Bundle 3's is lit from the top and centre — 251.7 against 199.2 at
+  the lower corners — where the previous cut measured 229 top / 242 bottom and flat across. Anything
+  quoted against the meter's field is quoted against an asset that no longer exists.
+- **The body went from four sections to three columns.** The recessed group boxes are gone entirely,
+  so ink that used to sit on a box field now sits on bare fascia, which is a different ground.
+
+§6's table was computed against the superseded cut, so **a figure agreeing with it is not evidence**
+— it may agree because both were measured on the same stale asset. The grounds are what moved.
+
+The tool takes its grounds from `tools/contrast/elmer.json`, and **that file needs the same
+treatment Chorus-60's did**: it pointed at a superseded plate on a superseded canvas and named a
+region for an element that had been deleted. Re-derive the regions against what the panel draws now
+before trusting a green run — a clean result from stale regions is the failure this suite records as
+"clean because unexamined".
+
+---
+
 ## The printed rings are THREE cases, not one — measured 2026-08-18
 
 **The suite rule is that a mark's angle must come from what drives the pointer**, and Chorus-60's
