@@ -73,7 +73,10 @@ those faces and the only symptom was text centred inside a box nobody drew. It s
 the material had to be painted from those rects.
 
 **So when this casting moves: alias every band figure in one edit, then re-measure against the table
-above.**
+above.** A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
+measurement. And note that **a literal which happens to agree with core is indistinguishable from an
+alias by reading** — Reflect-84 held four such literals, one of them 2 px off §4's shared descriptor
+anchor, in the casting whose editor had been declared conformant.
 
 > **THE ALIAS AND THE CANVAS CANNOT BE SEPARATE COMMITS — checked 2026-08-18, before starting.**
 > The instruction above is right about *one edit* and understates why. The shared band puts the LCD
@@ -97,10 +100,7 @@ above.**
 > **The height drop is what makes this casting different from the other five**, and the constants
 > most likely to be missed are the ones derived from the old bottom rather than from the top: the
 > `screwCentres` at y 765, `contentBottom` 756, and anything measured from `canvasHeight`. Chorus-60's
-> equivalent move left its body regions 44 px out for two commits and nothing failed. A rect that moves and a rect that does not are indistinguishable in a diff and obvious in a
-measurement. And note that **a literal which happens to agree with core is indistinguishable from an
-alias by reading** — Reflect-84 held four such literals, one of them 2 px off §4's shared descriptor
-anchor, in the casting whose editor had been declared conformant.
+> equivalent move left its body regions 44 px out for two commits and nothing failed.
 
 ---
 
