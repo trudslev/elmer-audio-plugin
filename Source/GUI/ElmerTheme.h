@@ -526,10 +526,14 @@ namespace Layout
     inline constexpr float detectionW = 340.0f;
 
     // The meter column is flex:1 after a 20px gap, and the 588px meter is centred inside it.
-    inline constexpr float meterX = 446.0f;
-    inline constexpr float meterW = 588.0f;
-    inline constexpr float meterH = 236.0f;
-    inline constexpr float meterY = 213.0f;
+    /*  **The meter well, at the delivered prototype's box: (60, 176), 396 x 159.** It was
+        (446, 213) at 588 x 236 — the previous canvas's, where the meter sat right of centre. §2
+        puts GAIN REDUCTION METER at (60, 150) with the well beneath it, so the whole instrument
+        moves to the left column and shrinks by a third. */
+    inline constexpr float meterX = 60.0f;
+    inline constexpr float meterW = 396.0f;
+    inline constexpr float meterH = 159.0f;
+    inline constexpr float meterY = 176.0f;
     inline constexpr float meterRadius = 4.0f;
     inline constexpr float meterSpecSize = 11.5f;
     inline constexpr float meterSpecTracking = 1.8f;
@@ -553,6 +557,11 @@ namespace Layout
         measured position from the new cut, and checking it as "776 - 51 -> 660 - 51 = 609" would
         have been wrong by 25. Bottom-derived does not mean bottom-relative. */
     inline constexpr float footerY = 634.0f;
+    /** Both ends, from the delivered prototype. One full-width run is what put `SN 0871` through
+        OUTPUT's scale — see PanelBackground's note. */
+    inline constexpr float footerLeftX = 26.0f;
+    inline constexpr float footerRightX = 914.0f;
+    inline constexpr float footerLineBox = 13.0f;
     inline constexpr float footerTextSize = 11.5f;
     inline constexpr float footerTracking = 1.8f;
     inline constexpr float scribbleSize = 21.0f;
@@ -725,11 +734,52 @@ namespace Layout
     /** Face source is 1000 x 402 with the needle pivot at (500, 500) - BELOW the visible face, by
         design. The needle sprite is 60 x 510 with its own pivot at (30, 499). At the 588px display
         width the scale factor is 0.588, putting the pivot at (294, 294) inside the meter body. */
-    inline constexpr float meterFaceSourceW = 1000.0f;
-    inline constexpr float meterScale = meterW / meterFaceSourceW;   // 0.588
-    inline constexpr juce::Point<float> meterPivot { 294.0f, 294.0f };
-    inline constexpr float needleSourceW = 60.0f;
-    inline constexpr juce::Point<float> needleSourcePivot { 30.0f, 499.0f };
+    /*  **ALL FOUR SPRITE CONSTANTS DESCRIBED A SUPERSEDED ASSET PAIR, AND THAT IS WHY THE NEEDLE
+        RESTED OUTSIDE THE FACE.**
+
+        Measured off the delivered files rather than read from anywhere: `meter-face.png` is
+        **1188 x 478** and `meter-needle.png` is **71 x 607**. The constants said 1000 and 60.
+
+        A wrong source width is not a wrong size — it is a wrong SCALE, and the scale multiplies the
+        pivot offset. At 588/1000 the needle's pivot offset came out (17.6, 293.4) where the real
+        asset needs (35.5, 592.9) x scale, so the sprite hung roughly 55 px below where its pivot
+        said it was and swung out of the well. **The angle law was never wrong**: the prototype's
+        `63 - (gr/20)*126` is exactly what this build already computed, which is why the symptom
+        read as a pivot fault and not a value fault.
+
+        The needle's source pivot is derived from the prototype's own placement rather than guessed:
+        it draws the sprite at (-11.9, -197.6) from the pivot at a drawn size of 23.8 x 202.3, so in
+        source pixels the pivot sits at (11.9/23.8 x 71, 197.6/202.3 x 607) = (35.5, 592.9).
+
+        **The meter pivot is 0.5 x the face WIDTH in both axes**, which the prototype states in
+        words — "pivot at 0.5 x face width below the top edge" — and which this build already had
+        right. It is worth keeping as an expression: on a 159-tall well the y is 198, comfortably
+        below the well's own bottom, and a reader checking it against the HEIGHT would move it. */
+    inline constexpr float meterFaceSourceW = 1188.0f;
+    inline constexpr float meterFaceSourceH = 478.0f;
+    inline constexpr float meterScale = meterW / meterFaceSourceW;
+    inline constexpr juce::Point<float> meterPivot { meterW * 0.5f, meterW * 0.5f };
+    inline constexpr float needleSourceW = 71.0f;
+    inline constexpr juce::Point<float> needleSourcePivot { 35.5f, 592.9f };
+
+    /*  **§Meter's glass sheen, taken from the prototype rather than approximated.** It is
+        `linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, rgba(255,255,255,0) 40%)` — a band
+        along the upper-left that is OUT by 40 % of the gradient line, leaving the rest of the glass
+        clear.
+
+        The build had a gradient from the box's top-left corner to (0.42 w, 0.78 h) holding .10 all
+        the way to 55 %, which is a different direction and more than twice the reach: a wash over
+        the whole face at constant alpha, which reads as flat cream rather than as light. Same class
+        as the knob specular that needed the gradient squashed rather than the path — a plausible
+        construction giving the wrong falloff.
+
+        CSS measures the angle clockwise from "to top", so 118 deg runs right and slightly down:
+        direction (sin 118, -cos 118) = (0.883, 0.469) with y downward. The gradient line's length
+        is |w sin A| + |h cos A|, and it is centred on the box, which is what puts its start OUTSIDE
+        the top-left corner. */
+    constexpr float meterSheenAngleDeg = 118.0f;
+    constexpr float meterSheenAlpha = 0.10f;
+    constexpr float meterSheenHoldStop = 0.22f, meterSheenOutStop = 0.40f;
 
     /** angle = 63 - (GR / 20) * 126 degrees, clamped 0..20 dB. 0 dB parks the needle at the far
         RIGHT and it swings LEFT as the compressor works - the scale is gain reduction, not level. */

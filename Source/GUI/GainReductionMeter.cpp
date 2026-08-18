@@ -66,11 +66,25 @@ void GainReductionMeter::paint (juce::Graphics& g)
         g.drawImageTransformed (needle, transform, false);
     }
 
-    // Diagonal glass sheen, over everything.
-    juce::ColourGradient sheen { juce::Colours::white.withAlpha (0.10f), 0.0f, 0.0f,
-                                 juce::Colours::transparentWhite,
-                                 body.getWidth() * 0.42f, body.getHeight() * 0.78f, false };
-    sheen.addColour (0.55, juce::Colours::white.withAlpha (0.10f));
-    g.setGradientFill (sheen);
-    g.fillRect (body);
+    /*  The glass sheen, built as the prototype's `linear-gradient(118deg, …)` rather than
+        approximated — see `Layout::meterSheenAngleDeg`. A CSS linear-gradient is centred on its box
+        and its line runs |w sin A| + |h cos A|, so both ends sit outside the box; computing it that
+        way is what makes the band land along the upper-left instead of washing the whole face. */
+    {
+        const float a = juce::degreesToRadians (Layout::meterSheenAngleDeg);
+        const juce::Point<float> dir { std::sin (a), -std::cos (a) };
+        const float lineLength = std::abs (body.getWidth() * dir.x)
+                               + std::abs (body.getHeight() * dir.y);
+        const auto centre = body.getCentre();
+        const auto start = centre - dir * (lineLength * 0.5f);
+        const auto end   = centre + dir * (lineLength * 0.5f);
+
+        const auto lit = juce::Colours::white.withAlpha (Layout::meterSheenAlpha);
+
+        juce::ColourGradient sheen { lit, start, juce::Colours::transparentWhite, end, false };
+        sheen.addColour (Layout::meterSheenHoldStop, lit);
+        sheen.addColour (Layout::meterSheenOutStop, juce::Colours::transparentWhite);
+        g.setGradientFill (sheen);
+        g.fillRect (body);
+    }
 }

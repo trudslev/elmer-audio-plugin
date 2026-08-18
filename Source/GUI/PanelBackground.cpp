@@ -410,11 +410,27 @@ void PanelBackground::paintFooter (juce::Graphics& g)
                            juce::Justification::left, Colour::markerInk, false);
     }
 
+    /*  **TWO footer strings, not one running the width of the panel.**
+
+        This drew a single right-aligned run — `GL-87 · CONSOLE MODULE · SN 0871   ·   v1.0` — into
+        a box spanning the whole content width. Right-aligned in a full-width box, its ink ended up
+        under the OUTPUT column, so `SN 0871` printed straight through that group's `%` and `100`
+        numerals. Two elements claiming one band, and neither could know about the other.
+
+        The delivered prototype splits it: `GL-87 · SN 0042` at **x 26**, and the version alone
+        right-aligned at **x 914** over 400 px. Each occupies its own end of the panel and neither
+        crosses the middle, which is what stops it colliding with whatever the body puts there.
+
+        `CONSOLE MODULE` is dropped with the split — the prototype's left string is the model and the
+        serial only, and re-adding it is what would push the left run back under the TIMING column. */
     const auto footFont = Font::monoBold (Layout::footerTextSize);
     const auto dot = Text::middleDot();
-    Text::drawTracked (g, "GL-87 " + dot + " CONSOLE MODULE " + dot + " SN 0871   " + dot + "   v"
-                           NF_VERSION_SHORT,
-                       footFont, Layout::footerTracking,
-                       { Layout::contentX, Layout::footerY + 6.0f, Layout::contentWidth, 14.0f },
+
+    Text::drawTracked (g, "GL-87 " + dot + " SN 0871", footFont, Layout::footerTracking,
+                       { Layout::footerLeftX, Layout::footerY, 400.0f, Layout::footerLineBox },
+                       juce::Justification::left, Colour::ink);
+
+    Text::drawTracked (g, "v" NF_VERSION_SHORT, footFont, Layout::footerTracking,
+                       { Layout::footerRightX, Layout::footerY, 400.0f, Layout::footerLineBox },
                        juce::Justification::right, Colour::ink);
 }

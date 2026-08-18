@@ -579,7 +579,21 @@ void ProgramHeader::paint (juce::Graphics& g)
 
     // The meter's live GR figure, right-aligned under the meter opposite MOVING COIL. It is a
     // readout, so it belongs here with the other live text rather than in the baked layer.
-    Text::drawTracked (g, "GR -" + juce::String (grDb, 1) + " dB",
+    /*  **NO SIGN AT ZERO, AND THE MINUS IS U+2212.** This read `"GR -" + String(grDb,1)`, so a
+        parked meter printed **GR -0.0 dB** — a sign on zero, claiming a reduction that is not
+        happening. The suite's meter ruling removed the PLUS at exactly 0.0 on the ground that a
+        sign there asserts something false; a minus at 0.0 is the same error mirrored, and this is
+        the only readout in the suite that prepends its sign as a literal rather than letting the
+        value carry it.
+
+        The glyph was an ASCII hyphen where the ruling is U+2212 — shape 4 of the type sweep, and
+        the reason it is substituted at the draw call rather than written into the literal is that
+        `juce::String`'s `const char*` constructor decodes Latin-1. */
+    const juce::String grText = grDb > 0.05f
+        ? juce::String::charToString (juce::juce_wchar (0x2212)) + juce::String (grDb, 1)
+        : juce::String (grDb, 1);
+
+    Text::drawTracked (g, "GR " + grText + " dB",
                        Font::monoBold (Layout::meterSpecSize), Layout::meterSpecTracking,
                        { Layout::meterX, Layout::meterY + Layout::meterH + Layout::meterSpecGap,
                          Layout::meterW, 14.0f },
