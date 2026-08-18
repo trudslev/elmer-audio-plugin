@@ -139,7 +139,7 @@ namespace Font
     inline juce::Typeface::Ptr archivoBlack()
     {
         static const juce::Typeface::Ptr t = juce::Typeface::createSystemTypefaceFor (
-            BinaryData::ArchivoBlackRegular_ttf, (size_t) BinaryData::ArchivoBlackRegular_ttfSize);
+            BinaryData::Archivo_ExpandedBold_ttf, (size_t) BinaryData::Archivo_ExpandedBold_ttfSize);
         return t;
     }
 
@@ -332,7 +332,7 @@ namespace Layout
 
     inline constexpr float nameplateX = 37.0f;      // contentX + 15px column padding
     inline constexpr float nameplateY = 22.0f;      // contentY + 2px column padding
-    inline constexpr float wordmarkSize = 53.0f;
+    inline constexpr float wordmarkSize = 31.0f;
     inline constexpr float wordmarkTracking = 6.0f;
     inline constexpr float plinthPadLeft = 18.0f;
     inline constexpr float plinthPadRight = 20.0f;

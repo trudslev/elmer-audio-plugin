@@ -60,7 +60,9 @@ juce_add_binary_data(ElmerBinaryData
         design/assets/scale-lg.png
         design/assets/scale-sm.png
         design/assets/scale-5.png
-        design/fonts/archivo-black/ArchivoBlack-Regular.ttf
+        # §6: "Archivo 700, width 125 % — the variable face at wdth 125, wght 700, NOT Archivo
+        # Black". Archivo_Expanded-Bold is that instance cut static, which is what JUCE can use.
+        design/fonts/Archivo_Expanded-Bold.ttf
         design/fonts/barlow-condensed/BarlowCondensed-SemiBold.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Medium.ttf

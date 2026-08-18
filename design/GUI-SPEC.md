@@ -360,7 +360,7 @@ The serial and version consolidate into **one right-aligned footer line** at (92
 
 | Role | Face | Size / tracking |
 |---|---|---|
-| Wordmark | Archivo 700, width 125 % | 31 / line 34 / .10 em |
+| Wordmark | **Archivo 700, width 125 %** — the variable face at `wdth 125, wght 700`, **not Archivo Black** | 31 / line 34 / .10 em |
 | Model line | Barlow Condensed 600 | 14 / 17 / .26 em |
 | Model number | IBM Plex Mono 500 | 11 / 14 / .20 em |
 | Group headings | Barlow Condensed 600 | 12 / 15 / .28 em |
@@ -372,6 +372,16 @@ The serial and version consolidate into **one right-aligned footer line** at (92
 | Button lamps | Barlow Condensed 600 | 11 / 13 / .12 em |
 | Footer | IBM Plex Mono 500 | 10 / 13 / .18 em |
 | Scribble strip | Permanent Marker | 28.5 / 1 |
+
+**The wordmark's 31 px is measured on `Archivo` at `wdth 125, wght 700` and is valid only for that
+instance.** `Archivo Black` is a separate static family at weight 900 with no width axis; it appears
+in the panel's font stack as a **fallback**, never as the specified face. **31 px does not transfer to
+it** — the two em sizes are unrelated, and adopting one against the other renders the wordmark
+narrower and heavier at once. **The face now ships:** `elmer/fonts/Archivo_Expanded-Bold.ttf` (`wdth` 125 · `wght` 700), with the
+variable `Archivo-VariableFont_wdth_wght.ttf` beside it. **31 px is directly implementable and this
+row can be adopted with the rest of the table.** With the static, **drop `font-stretch: 125%`** — the
+width is in the file, and leaving it applies the stretch twice or not at all depending on the
+renderer. See `shared/FONTS.md`.
 
 ### Contrast, computed against this casting's own grounds
 
