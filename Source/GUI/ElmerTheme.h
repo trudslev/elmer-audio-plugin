@@ -46,6 +46,10 @@ namespace Colour
     inline const juce::Colour ink            { 0xFF0F0F0C };
     inline const juce::Colour wordmarkInk    { 0xFF24231F };
     inline const juce::Colour markerInk      { 0xFF2B2A26 };
+    /** §6's meter sub-caption — flavour, not functional, and the only ink on this panel BRAND.md
+        lets sit below the 7:1 bar.
+        // contrast: 5.78:1 vs fascia [flavour] */
+    inline const juce::Colour inkFlavour     { 0xFF2D2B24 };
 
     // --- panels --------------------------------------------------------------
     inline const juce::Colour dividerLeft    { juce::Colour::fromRGBA (60, 54, 44, 115) };  // .45
@@ -506,7 +510,62 @@ namespace Layout
     inline constexpr float levelTextSize = 14.0f;
 
     // --- divider --------------------------------------------------------------
-    inline constexpr float dividerY = 140.0f;       // headerBottom + 8
+    /*  **§2's BODY IS THREE HAIRLINES AND FOUR CENTRED HEADINGS — the recessed section boxes are
+        GONE.**
+
+        This panel drew four recessed groups: a translucent vertical wash on a rounded rect, a white
+        top edge, a dark bottom edge, and the heading set left inside the box. The delivered
+        prototype has **no box treatment anywhere** — grepped for it and the count is zero — and
+        divides the body with three 1 px `rgba(255,255,255,.5)` rules instead, with each heading
+        centred over the region it names rather than tucked into a corner of it.
+
+        That is a change of idiom rather than of figures: a recessed group says "these controls are
+        in a well", and a scored line says "the casting is divided here", which is what a console
+        module's silkscreen actually does.
+
+        The three rules, measured off the prototype rather than derived from the sections they
+        separate — they do not all start or stop on the same edges, and deriving them from the
+        heading rows would have put the lower one 16 px high. */
+    inline constexpr float dividerInk = 0.5f;   // rgba(255,255,255,.5)
+    inline constexpr float dividerDetectorX = 500.0f, dividerDetectorY = 136.0f;
+    inline constexpr float dividerDetectorH = 244.0f;
+    inline constexpr float dividerHorizontalX = 16.0f, dividerHorizontalY = 386.0f;
+    inline constexpr float dividerHorizontalW = 1308.0f;
+    inline constexpr float dividerLowerX = 700.0f, dividerLowerY = 396.0f;
+    inline constexpr float dividerLowerH = 248.0f;
+
+    /*  §2's four headings. **Three are Barlow Condensed 600 at 12 / 15 / .28 em and the fourth is
+        not**, which is a disagreement between §2 and the prototype rather than an oversight here.
+
+        §2 lists all four together under one type line. The prototype sets GAIN REDUCTION METER in
+        **IBM Plex Mono 500 at 11 / 14 / .14 em** — the same face, size and tracking as
+        `STEREO LINKED · ONE DETECTOR` directly beneath it, which reads as the meter's own caption
+        pair rather than as a section heading that happens to sit above a meter.
+
+        The prototype is the artefact and it distinguishes them deliberately, so it wins; §2's line
+        is a grouping statement about layout. Flagged rather than silently reconciled. */
+    /*  This casting stores tracking in ABSOLUTE PX, unlike its siblings, because `Font::of` already
+        takes a CSS px through `withPointHeight` and there is no em converter here. The em is kept
+        as the source and the px derived from it, so the two cannot drift — a bare 3.36 would be a
+        figure nobody could check against §2. */
+    inline constexpr float sectionHeadingCssPx = 12.0f, sectionHeadingTrackingEm = 0.28f;
+    inline constexpr float sectionHeadingTracking = sectionHeadingCssPx * sectionHeadingTrackingEm;
+    inline constexpr float sectionHeadingLineBox = 15.0f;
+    inline constexpr float meterCaptionCssPx = 11.0f, meterCaptionTrackingEm = 0.14f;
+    inline constexpr float meterCaptionTracking = meterCaptionCssPx * meterCaptionTrackingEm;
+    inline constexpr float meterCaptionLineBox = 14.0f;
+
+    struct SectionHeading { const char* text; float x, y, w; };
+    inline constexpr std::array<SectionHeading, 3> sectionHeadings { {
+        { "DETECTOR", 510.0f, 150.0f, 804.0f },
+        { "TIMING",    26.0f, 412.0f, 664.0f },
+        { "OUTPUT",   710.0f, 412.0f, 604.0f } } };
+
+    inline constexpr SectionHeading meterCaption { "GAIN REDUCTION METER", 60.0f, 150.0f, 396.0f };
+    inline constexpr SectionHeading meterSubCaption { "STEREO LINKED \xc2\xb7 ONE DETECTOR",
+                                                      60.0f, 342.0f, 396.0f };
+
+    inline constexpr float dividerY = 140.0f;       // SUPERSEDED, retired with paintSections
 
     // --- top row --------------------------------------------------------------
     inline constexpr float topRowY = 155.0f;        // dividerY + 1 + 14

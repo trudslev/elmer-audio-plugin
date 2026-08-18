@@ -267,14 +267,41 @@ void PanelBackground::paintHeaderChrome (juce::Graphics& g)
 
 void PanelBackground::paintSections (juce::Graphics& g)
 {
-    drawSection (g, { Layout::detectionX, Layout::topRowY, Layout::detectionW, Layout::topRowH },
-                 "DETECTION");
-    drawSection (g, { Layout::timingX, Layout::bottomRowY, Layout::timingW, Layout::bottomRowH },
-                 "TIMING");
-    drawSection (g, { Layout::characterX, Layout::bottomRowY, Layout::characterW, Layout::bottomRowH },
-                 "CHARACTER");
-    drawSection (g, { Layout::outputX, Layout::bottomRowY, Layout::outputW, Layout::bottomRowH },
-                 "OUTPUT");
+    /*  **§2: three scored rules and four centred headings. The recessed group boxes are gone.**
+
+        `drawSection` drew a translucent wash on a rounded rect with a light top edge, a dark bottom
+        edge and the heading set left inside it. The delivered prototype carries no box treatment at
+        all and divides the body with 1 px `rgba(255,255,255,.5)` rules, each heading centred over
+        the region it names. A recessed group says "these controls sit in a well"; a scored line says
+        "the casting is divided here", which is what a console module's silkscreen does. */
+    g.setColour (juce::Colours::white.withAlpha (Layout::dividerInk));
+    g.fillRect (Layout::dividerDetectorX, Layout::dividerDetectorY, 1.0f, Layout::dividerDetectorH);
+    g.fillRect (Layout::dividerHorizontalX, Layout::dividerHorizontalY,
+                Layout::dividerHorizontalW, 1.0f);
+    g.fillRect (Layout::dividerLowerX, Layout::dividerLowerY, 1.0f, Layout::dividerLowerH);
+
+    const auto headingFont = Font::label (Layout::sectionHeadingCssPx);
+    const float headingTracking = Layout::sectionHeadingTracking;
+
+    for (const auto& h : Layout::sectionHeadings)
+        Text::drawTracked (g, h.text, headingFont, headingTracking,
+                           { h.x, h.y, h.w, Layout::sectionHeadingLineBox },
+                           juce::Justification::centred, Colour::ink);
+
+    // The meter's own caption pair, in mono rather than the heading face — see the theme's note on
+    // where §2 and the prototype disagree.
+    const auto capFont = Font::mono (Layout::meterCaptionCssPx);
+    const float capTracking = Layout::meterCaptionTracking;
+
+    Text::drawTracked (g, Layout::meterCaption.text, capFont, capTracking,
+                       { Layout::meterCaption.x, Layout::meterCaption.y,
+                         Layout::meterCaption.w, Layout::meterCaptionLineBox },
+                       juce::Justification::centred, Colour::ink);
+
+    Text::drawTracked (g, juce::String::fromUTF8 (Layout::meterSubCaption.text), capFont, capTracking,
+                       { Layout::meterSubCaption.x, Layout::meterSubCaption.y,
+                         Layout::meterSubCaption.w, Layout::meterCaptionLineBox },
+                       juce::Justification::centred, Colour::inkFlavour);
 
     // KNEE sits in DETECTION's second row and has a heading of its own.
     Text::drawTracked (g, "KNEE", Font::label (Layout::controlLabelSize), Layout::controlLabelTracking,
@@ -338,17 +365,22 @@ void PanelBackground::paintKnobFurniture (juce::Graphics& g)
 
 void PanelBackground::paintMeterChrome (juce::Graphics& g)
 {
+    /*  **ONLY `MOVING COIL · 300 ms BALLISTIC` IS DRAWN HERE NOW — the other two moved and were
+        being printed TWICE.**
+
+        This block drew all three of the meter's spec lines from `meterX`/`meterY`: the caption above
+        the well, the stereo note opposite it on the same row, and the ballistic note below. §2 gives
+        the caption its own position at (60, 150) and puts the stereo note at (60, 342) as a second
+        CENTRED line under the well rather than as a right-aligned partner on the caption's row — so
+        both are drawn by `paintSections` against the prototype's figures.
+
+        Leaving them here as well double-printed each at a different place, which is visible and was:
+        the new centred caption sat across the old left-aligned one. Worth naming because the plate
+        inversion made double-printing this casting's failure mode too, in the opposite direction to
+        the absent-element one — a runtime draw that moves leaves its old site behind. */
     const auto spec = Font::monoBold (Layout::meterSpecSize);
-    const float headerY = Layout::meterY - Layout::meterSpecGap - 14.0f;
     const float footerY = Layout::meterY + Layout::meterH + Layout::meterSpecGap;
 
-    Text::drawTracked (g, "GAIN REDUCTION METER", spec, Layout::meterSpecTracking,
-                       { Layout::meterX, headerY, Layout::meterW, 14.0f },
-                       juce::Justification::left, Colour::ink);
-    Text::drawTracked (g, "STEREO LINKED " + Text::middleDot() + " ONE DETECTOR", spec,
-                       Layout::meterSpecTracking,
-                       { Layout::meterX, headerY, Layout::meterW, 14.0f },
-                       juce::Justification::right, Colour::ink);
     Text::drawTracked (g, "MOVING COIL " + Text::middleDot() + " 300 ms BALLISTIC", spec,
                        Layout::meterSpecTracking,
                        { Layout::meterX, footerY, Layout::meterW, 14.0f },
