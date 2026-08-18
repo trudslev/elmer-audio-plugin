@@ -155,6 +155,70 @@ public:
             checkRing (ParamIDs::attack, Elmer::PrintedScale::attackMs, 2.1f, "ATTACK");
         }
 
+        beginTest ("Which rings' FRACTIONS are derived output — and three answers, not one");
+        {
+            /*  **The question Chorus-60's RATE answered.** `Mark` stores `{position01,
+                printedValue}` — a fraction AND a value for the same mark. If `convertTo0to1(value)`
+                reproduces the stored fraction, the fraction is derived output that has been
+                transcribed, and storing the value alone is strictly stronger: a taper change then
+                moves the ring WITH the pointer instead of leaving numerals where it never goes.
+
+                Chorus-60's RATE regenerated its published fractions to six decimals that way, which
+                is how the catalogue's figures turned out to be derived output.
+
+                **MEASURED HERE, AND ELMER'S RINGS ARE NOT ALL THE SAME CASE.** Three rings, three
+                answers, and only one of them is RATE's:
+
+                  THRESHOLD     0.000000000  the fraction IS derived output — convert it
+                  SIDECHAIN HP  0.800000012  structurally cannot — see below
+                  ATTACK        0.007388830  could, and it would be WRONG — see below
+
+                **SIDECHAIN HP's parameter stores the knob POSITION, not a frequency**, because the
+                control has a dead zone: its first tenth is OFF and its next clamps to 40 Hz, so a
+                frequency-valued parameter could not represent where the pointer actually is. So
+                `convertTo0to1(140.0f)` asks the range to place a Hz value on a 0–1 parameter and
+                gets a clamp. The FRACTION is the primary datum on that ring and the printed value is
+                the derived one — the exact inverse of every other ring here.
+
+                **ATTACK's printed values are deliberately not its exact ones.** The panel prints
+                0.1 / 0.3 / 1 / 3 / 10 / 30 for an exact series of 0.1 / 0.313 / 0.979 / 3.06 /
+                9.58 / 30, which is how real panels are marked. Deriving the angle from the PRINTED
+                value would move each tick to where the rounded value sits — 0.0074 of sweep, about
+                2 degrees — so the numeral would be exact and the tick would be wrong. The residual
+                is the rounding, and it is the reason to leave that ring alone.
+
+                So this is reported per ring rather than converted wholesale. The suite-wide rule
+                still holds — a mark's angle should come from what drives the pointer — but on two
+                of these three rings the stored fraction IS what drives it. */
+            const auto residualFor = [&dummy, this] (const char* id, const auto& marks,
+                                                     const juce::String& label)
+            {
+                auto* p = dummy.apvts.getParameter (id);
+                if (p == nullptr) { expect (false, label + ": no parameter"); return; }
+
+                float worst = 0.0f;
+                for (const auto& m : marks)
+                    worst = juce::jmax (worst,
+                                        std::abs (p->convertTo0to1 (m.printedValue) - m.position01));
+
+                logMessage ("  " + label.paddedRight (' ', 14) + "worst residual "
+                            + juce::String (worst, 9));
+            };
+
+            residualFor (ParamIDs::threshold,   Elmer::PrintedScale::threshold,   "THRESHOLD");
+            // Asserted, because THRESHOLD is the one ring where the fraction is provably redundant
+            // and a future edit that made it stop being redundant is a real defect.
+            for (const auto& m : Elmer::PrintedScale::threshold)
+                if (auto* pp = dummy.apvts.getParameter (ParamIDs::threshold))
+                    expectWithinAbsoluteError (pp->convertTo0to1 (m.printedValue), m.position01,
+                                               1.0e-6f,
+                                               "THRESHOLD's stored fraction no longer regenerates "
+                                               "from its value, so the two have diverged and the "
+                                               "ring may point where the parameter does not");
+            residualFor (ParamIDs::sidechainHp, Elmer::PrintedScale::sidechainHp, "SIDECHAIN HP");
+            residualFor (ParamIDs::attack,      Elmer::PrintedScale::attackMs,    "ATTACK");
+        }
+
         beginTest ("THRESHOLD - linear, every printed mark exact");
         for (const auto& m : Elmer::PrintedScale::threshold)
             expectWithinAbsoluteError (valueAt (ParamIDs::threshold, m.position01), m.printedValue, 0.001f,

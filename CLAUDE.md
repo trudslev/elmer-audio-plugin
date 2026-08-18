@@ -49,6 +49,39 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## The printed rings are THREE cases, not one — measured 2026-08-18
+
+**The suite rule is that a mark's angle must come from what drives the pointer**, and Chorus-60's
+RATE showed the catalogue's published fractions were derived output: `convertTo0to1(value)`
+regenerated them to six decimals. Elmer stores `{position01, printedValue}` — a fraction *and* a
+value for the same mark — so the obvious reading is that the same conversion applies here.
+
+**It does not, and the measurement says so per ring:**
+
+| Ring | Residual | Verdict |
+|---|---|---|
+| THRESHOLD | **0.000000000** | the fraction IS derived output — redundant, and now asserted so |
+| SIDECHAIN HP | **0.800000012** | structurally cannot convert |
+| ATTACK | **0.007388830** | could, and it would be **wrong** |
+
+**SIDECHAIN HP's parameter stores the knob POSITION, not a frequency**, because the control has a
+dead zone — its first tenth is OFF, its next clamps to 40 Hz — so a frequency-valued parameter could
+not represent where the pointer is. `convertTo0to1(140.0f)` asks a 0–1 parameter to place a Hz value
+and gets a clamp. **On that ring the fraction is the primary datum and the printed value is the
+derived one** — the exact inverse of every other ring.
+
+**ATTACK's printed values are deliberately not its exact ones**: the panel prints
+0.1 / 0.3 / 1 / 3 / 10 / 30 against an exact 0.1 / 0.313 / 0.979 / 3.06 / 9.58 / 30, which is how
+real panels are marked. Deriving the angle from the *printed* value moves each tick to where the
+rounded value sits — 0.0074 of sweep, about 2°. The numeral would be exact and the tick wrong.
+
+**So do not convert this casting's rings wholesale.** The rule holds — the angle must come from what
+drives the pointer — and on two of these three rings the stored fraction *is* what drives it. This
+is the survey rule in miniature: three rings looked like one class and returned three answers, and
+a wholesale conversion would have been defensible, uniform and wrong on two of them.
+
+---
+
 ## RESUME POINT — bundle 3 SUPERSEDES the body work of 2026-08-18, and the prototype is now stale
 
 **Read this before touching the body.** Two commits from 2026-08-18 — `018567d` (the meter) and
