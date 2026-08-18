@@ -267,46 +267,46 @@ void PanelBackground::paintHeaderChrome (juce::Graphics& g)
 
 void PanelBackground::paintSections (juce::Graphics& g)
 {
-    /*  **§2: three scored rules and four centred headings. The recessed group boxes are gone.**
+    /*  **§2: two full-band dividers and three centred column headings.**
 
-        `drawSection` drew a translucent wash on a rounded rect with a light top edge, a dark bottom
-        edge and the heading set left inside it. The delivered prototype carries no box treatment at
-        all and divides the body with 1 px `rgba(255,255,255,.5)` rules, each heading centred over
-        the region it names. A recessed group says "these controls sit in a well"; a scored line says
-        "the casting is divided here", which is what a console module's silkscreen does. */
+        This drew three rules and four headings against bundle 2's four-section table one day
+        earlier. Bundle 3 is three columns — DETECTOR left, meter centred, TIMING over OUTPUT right
+        — with both rules running the full band as a matched pair rather than stopping at each
+        column's last row. See the theme's note on why they are transcribed and not derived: each
+        sits mid-gutter, so a figure computed from a column edge lands plausibly and wrongly. */
     g.setColour (juce::Colours::white.withAlpha (Layout::dividerInk));
-    g.fillRect (Layout::dividerDetectorX, Layout::dividerDetectorY, 1.0f, Layout::dividerDetectorH);
-    g.fillRect (Layout::dividerHorizontalX, Layout::dividerHorizontalY,
-                Layout::dividerHorizontalW, 1.0f);
-    g.fillRect (Layout::dividerLowerX, Layout::dividerLowerY, 1.0f, Layout::dividerLowerH);
+    const float bandH = Layout::bodyBandBottom - Layout::bodyBandTop;
+    g.fillRect (Layout::dividerLeftX,  Layout::bodyBandTop, 1.0f, bandH);
+    g.fillRect (Layout::dividerRightX, Layout::bodyBandTop, 1.0f, bandH);
 
     const auto headingFont = Font::label (Layout::sectionHeadingCssPx);
-    const float headingTracking = Layout::sectionHeadingTracking;
-
     for (const auto& h : Layout::sectionHeadings)
-        Text::drawTracked (g, h.text, headingFont, headingTracking,
+        Text::drawTracked (g, h.text, headingFont, Layout::sectionHeadingTracking,
                            { h.x, h.y, h.w, Layout::sectionHeadingLineBox },
                            juce::Justification::centred, Colour::ink);
 
-    // The meter's own caption pair, in mono rather than the heading face — see the theme's note on
-    // where §2 and the prototype disagree.
-    const auto capFont = Font::mono (Layout::meterCaptionCssPx);
-    const float capTracking = Layout::meterCaptionTracking;
+    /*  §4's two meter rows, each with a left and a right string. **One table, so a move takes both
+        ends** — drawing the halves from separate sites is what printed the caption twice yesterday.
+        The caption row's right half is the live GR figure and belongs with the other live text, so
+        `ProgramHeader` draws it. */
+    const auto rowFont = Font::mono (Layout::meterRowCssPx);
+    const auto dot = Text::middleDot();
 
-    Text::drawTracked (g, Layout::meterCaption.text, capFont, capTracking,
-                       { Layout::meterCaption.x, Layout::meterCaption.y,
-                         Layout::meterCaption.w, Layout::meterCaptionLineBox },
-                       juce::Justification::centred, Colour::ink);
+    const auto meterRow = [&] (float y, const juce::String& left, const juce::String& right,
+                               juce::Colour ink)
+    {
+        const juce::Rectangle<float> r { Layout::meterX, y, Layout::meterW, Layout::meterRowLineBox };
+        Text::drawTracked (g, left, rowFont, Layout::meterRowTracking, r,
+                           juce::Justification::left, ink);
+        if (right.isNotEmpty())
+            Text::drawTracked (g, right, rowFont, Layout::meterRowTracking, r,
+                               juce::Justification::right, ink);
+    };
 
-    Text::drawTracked (g, juce::String::fromUTF8 (Layout::meterSubCaption.text), capFont, capTracking,
-                       { Layout::meterSubCaption.x, Layout::meterSubCaption.y,
-                         Layout::meterSubCaption.w, Layout::meterCaptionLineBox },
-                       juce::Justification::centred, Colour::inkFlavour);
-
-    // KNEE sits in DETECTION's second row and has a heading of its own.
-    Text::drawTracked (g, "KNEE", Font::label (Layout::controlLabelSize), Layout::controlLabelTracking,
-                       { Layout::kneeButtonsTopLeft.x, Layout::kneeLabelY, Layout::lampW, 14.0f },
-                       juce::Justification::centred, Colour::ink);
+    meterRow (Layout::meterLabelRowY, "GAIN REDUCTION METER",
+              "MOVING COIL " + dot + " 300 ms BALLISTIC", Colour::ink);
+    meterRow (Layout::meterCaptionRowY, "STEREO LINKED " + dot + " ONE DETECTOR", {},
+              Colour::inkFlavour);
 }
 
 void PanelBackground::paintKnobFurniture (juce::Graphics& g)
@@ -365,26 +365,12 @@ void PanelBackground::paintKnobFurniture (juce::Graphics& g)
 
 void PanelBackground::paintMeterChrome (juce::Graphics& g)
 {
-    /*  **ONLY `MOVING COIL · 300 ms BALLISTIC` IS DRAWN HERE NOW — the other two moved and were
-        being printed TWICE.**
-
-        This block drew all three of the meter's spec lines from `meterX`/`meterY`: the caption above
-        the well, the stereo note opposite it on the same row, and the ballistic note below. §2 gives
-        the caption its own position at (60, 150) and puts the stereo note at (60, 342) as a second
-        CENTRED line under the well rather than as a right-aligned partner on the caption's row — so
-        both are drawn by `paintSections` against the prototype's figures.
-
-        Leaving them here as well double-printed each at a different place, which is visible and was:
-        the new centred caption sat across the old left-aligned one. Worth naming because the plate
-        inversion made double-printing this casting's failure mode too, in the opposite direction to
-        the absent-element one — a runtime draw that moves leaves its old site behind. */
-    const auto spec = Font::monoBold (Layout::meterSpecSize);
-    const float footerY = Layout::meterY + Layout::meterH + Layout::meterSpecGap;
-
-    Text::drawTracked (g, "MOVING COIL " + Text::middleDot() + " 300 ms BALLISTIC", spec,
-                       Layout::meterSpecTracking,
-                       { Layout::meterX, footerY, Layout::meterW, 14.0f },
-                       juce::Justification::left, Colour::ink);
+    /*  **EMPTY, and kept as a named seam rather than deleted.** It drew the meter's three spec
+        lines from `meterX`/`meterY`. §4 gives them as two rows with a left and a right half each,
+        so all of them are `paintSections`' now — drawing any of them here as well is what printed
+        the caption twice yesterday, and an empty function makes that mistake visible if anyone
+        re-adds a line to "the meter's own" site. */
+    juce::ignoreUnused (g);
 }
 
 void PanelBackground::paintFooter (juce::Graphics& g)
@@ -399,7 +385,10 @@ void PanelBackground::paintFooter (juce::Graphics& g)
         // tape has to be wide enough for, so measuring without it undersizes the strip AND crowds
         // the text inside it.
         const float textWidth = Text::trackedWidth (text, markerFont, Layout::scribbleTracking);
-        const juce::Rectangle<float> tape { Layout::contentX + 6.0f, Layout::footerY - 10.0f,
+        // §5: (396, 566) in the CENTRE column, about 45 px left of its centre line — a stated
+        // position, not a centring to compute. It was bottom-left, at contentX + 6 against the
+        // footer, which is the corner the left divider used to be shortened by 74 px to clear.
+        const juce::Rectangle<float> tape { Layout::scribbleX, Layout::scribbleY,
                                             textWidth + Layout::scribblePadLeft + Layout::scribblePadRight,
                                             Layout::scribbleSize + Layout::scribblePadTop
                                                 + Layout::scribblePadBottom };
@@ -442,27 +431,16 @@ void PanelBackground::paintFooter (juce::Graphics& g)
                            juce::Justification::left, Colour::markerInk, false);
     }
 
-    /*  **TWO footer strings, not one running the width of the panel.**
-
-        This drew a single right-aligned run — `GL-87 · CONSOLE MODULE · SN 0871   ·   v1.0` — into
-        a box spanning the whole content width. Right-aligned in a full-width box, its ink ended up
-        under the OUTPUT column, so `SN 0871` printed straight through that group's `%` and `100`
-        numerals. Two elements claiming one band, and neither could know about the other.
-
-        The delivered prototype splits it: `GL-87 · SN 0042` at **x 26**, and the version alone
-        right-aligned at **x 914** over 400 px. Each occupies its own end of the panel and neither
-        crosses the middle, which is what stops it colliding with whatever the body puts there.
-
-        `CONSOLE MODULE` is dropped with the split — the prototype's left string is the model and the
-        serial only, and re-adding it is what would push the left run back under the TIMING column. */
+    /*  **ONE right-aligned footer line — §5 consolidates the pair.** Yesterday this became two
+        strings, a left `GL-87 · SN 0871` and a right `v1.0`, to stop a single full-width run
+        crossing OUTPUT's scale. §5 supersedes that with one line at (924, 640): the collision it
+        solved cannot recur because the line no longer reaches the middle of the panel. */
     const auto footFont = Font::monoBold (Layout::footerTextSize);
     const auto dot = Text::middleDot();
 
-    Text::drawTracked (g, "GL-87 " + dot + " SN 0871", footFont, Layout::footerTracking,
-                       { Layout::footerLeftX, Layout::footerY, 400.0f, Layout::footerLineBox },
-                       juce::Justification::left, Colour::ink);
-
-    Text::drawTracked (g, "v" NF_VERSION_SHORT, footFont, Layout::footerTracking,
-                       { Layout::footerRightX, Layout::footerY, 400.0f, Layout::footerLineBox },
+    Text::drawTracked (g, "GL-87 " + dot + " SN 0871 " + dot + " v" NF_VERSION_SHORT,
+                       footFont, Layout::footerTracking,
+                       { Layout::footerLineX, Layout::footerLineY, Layout::footerLineW,
+                         Layout::footerLineBox },
                        juce::Justification::right, Colour::ink);
 }

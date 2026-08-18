@@ -510,60 +510,66 @@ namespace Layout
     inline constexpr float levelTextSize = 14.0f;
 
     // --- divider --------------------------------------------------------------
-    /*  **§2's BODY IS THREE HAIRLINES AND FOUR CENTRED HEADINGS — the recessed section boxes are
-        GONE.**
+    /*  **§2's BODY IS THREE COLUMNS — and this replaces the FOUR-SECTION table of one day earlier.**
 
-        This panel drew four recessed groups: a translucent vertical wash on a rounded rect, a white
-        top edge, a dark bottom edge, and the heading set left inside the box. The delivered
-        prototype has **no box treatment anywhere** — grepped for it and the count is zero — and
-        divides the body with three 1 px `rgba(255,255,255,.5)` rules instead, with each heading
-        centred over the region it names rather than tucked into a corner of it.
+        Bundle 2 gave a meter + DETECTOR row over a TIMING + OUTPUT row, divided at x 500 / y 386 /
+        x 700. Bundle 3 replaces it with **DETECTOR left, the meter centred in its own column,
+        TIMING over OUTPUT right**, so that left-to-right order carries the signal path: detection,
+        then timing, then output.
 
-        That is a change of idiom rather than of figures: a recessed group says "these controls are
-        in a well", and a scored line says "the casting is divided here", which is what a console
-        module's silkscreen actually does.
+        **Both dividers run the FULL band and are a matched pair**, y 156 → 630. They previously
+        stopped at each column's own last row, which left the left one 74 px short — that existed to
+        clear the scribble strip in the bottom-left corner, and the strip has moved to the centre
+        column, so nothing is down there to collide with.
 
-        The three rules, measured off the prototype rather than derived from the sections they
-        separate — they do not all start or stop on the same edges, and deriving them from the
-        heading rows would have put the lower one 16 px high. */
+        **Each divider sits MID-GUTTER, not at a fixed inset from either side**, and that is why
+        they are transcribed rather than derived: §2 states DETECTOR's ink ends at 293 and the well
+        starts at 355, so the rule takes **324** with 31 px of air either way. A figure computed from
+        a column edge would land somewhere else and look entirely reasonable. */
+    inline constexpr float bodyBandTop = 156.0f, bodyBandBottom = 630.0f;
     inline constexpr float dividerInk = 0.5f;   // rgba(255,255,255,.5)
-    inline constexpr float dividerDetectorX = 500.0f, dividerDetectorY = 136.0f;
-    inline constexpr float dividerDetectorH = 244.0f;
-    inline constexpr float dividerHorizontalX = 16.0f, dividerHorizontalY = 386.0f;
-    inline constexpr float dividerHorizontalW = 1308.0f;
-    inline constexpr float dividerLowerX = 700.0f, dividerLowerY = 396.0f;
-    inline constexpr float dividerLowerH = 248.0f;
+    inline constexpr float dividerLeftX = 324.0f;
+    inline constexpr float dividerRightX = 1010.0f;
 
-    /*  §2's four headings. **Three are Barlow Condensed 600 at 12 / 15 / .28 em and the fourth is
-        not**, which is a disagreement between §2 and the prototype rather than an oversight here.
-
-        §2 lists all four together under one type line. The prototype sets GAIN REDUCTION METER in
-        **IBM Plex Mono 500 at 11 / 14 / .14 em** — the same face, size and tracking as
-        `STEREO LINKED · ONE DETECTOR` directly beneath it, which reads as the meter's own caption
-        pair rather than as a section heading that happens to sit above a meter.
-
-        The prototype is the artefact and it distinguishes them deliberately, so it wins; §2's line
-        is a grouping statement about layout. Flagged rather than silently reconciled. */
-    /*  This casting stores tracking in ABSOLUTE PX, unlike its siblings, because `Font::of` already
-        takes a CSS px through `withPointHeight` and there is no em converter here. The em is kept
-        as the source and the px derived from it, so the two cannot drift — a bare 3.36 would be a
-        figure nobody could check against §2. */
+    /*  §2's three column headings, Barlow Condensed 600 at 12 / 15 / .28 em, each CENTRED over the
+        region it names. OUTPUT is the one that moved axis rather than position: it was a bottom-row
+        section beside TIMING and is now stacked BELOW it in the same right column. */
     inline constexpr float sectionHeadingCssPx = 12.0f, sectionHeadingTrackingEm = 0.28f;
     inline constexpr float sectionHeadingTracking = sectionHeadingCssPx * sectionHeadingTrackingEm;
     inline constexpr float sectionHeadingLineBox = 15.0f;
-    inline constexpr float meterCaptionCssPx = 11.0f, meterCaptionTrackingEm = 0.14f;
-    inline constexpr float meterCaptionTracking = meterCaptionCssPx * meterCaptionTrackingEm;
-    inline constexpr float meterCaptionLineBox = 14.0f;
 
     struct SectionHeading { const char* text; float x, y, w; };
     inline constexpr std::array<SectionHeading, 3> sectionHeadings { {
-        { "DETECTOR", 510.0f, 150.0f, 804.0f },
-        { "TIMING",    26.0f, 412.0f, 664.0f },
-        { "OUTPUT",   710.0f, 412.0f, 604.0f } } };
+        { "DETECTOR",   16.0f, 156.0f, 294.0f },
+        { "TIMING",   1040.0f, 156.0f, 268.0f },
+        { "OUTPUT",   1040.0f, 339.0f, 268.0f } } };
 
-    inline constexpr SectionHeading meterCaption { "GAIN REDUCTION METER", 60.0f, 150.0f, 396.0f };
-    inline constexpr SectionHeading meterSubCaption { "STEREO LINKED \xc2\xb7 ONE DETECTOR",
-                                                      60.0f, 342.0f, 396.0f };
+    /*  §4's two meter rows. **Each carries a LEFT and a RIGHT string**, which is the pairing that
+        went wrong yesterday: the caption and the stereo note were drawn from two different sites
+        and printed twice. They are one table now, so a move takes both ends with it.
+
+        The live `GR −x.x dB` is the right half of the caption row and is drawn by `ProgramHeader`
+        with the other live text — it is the only one of the four that changes. */
+    inline constexpr float meterLabelRowY = 179.0f;
+    inline constexpr float meterCaptionRowY = 457.0f;
+    inline constexpr float meterRowCssPx = 11.0f, meterRowTrackingEm = 0.14f;
+    inline constexpr float meterRowTracking = meterRowCssPx * meterRowTrackingEm;
+    inline constexpr float meterRowLineBox = 14.0f;
+
+    /*  §5: the strip is **centred under the meter** now, not in the bottom-left corner, and §5 is
+        explicit that it was never retired — it existed in the 1120 x 776 prototype's footer and
+        fell out of a re-layout unrecorded. Scaled 1.5x from 19 px this round, with padding and
+        tracking scaled alongside so the tape grows with the type rather than the type outgrowing
+        the tape.
+
+        (396, 566) is "about 45 px left of the centre column's centre line", which §5 says in words —
+        so it is a stated position and not a centring to compute. */
+    inline constexpr float scribbleX = 396.0f, scribbleY = 566.0f;
+
+    /*  §5: the serial and the version consolidate into ONE right-aligned line. This casting drew
+        two — a left `GL-87 · SN 0871` and a right `v1.0` — which was yesterday's fix for the run
+        that crossed OUTPUT's scale. One line supersedes it. */
+    inline constexpr float footerLineX = 924.0f, footerLineY = 640.0f, footerLineW = 400.0f;
 
     inline constexpr float dividerY = 140.0f;       // SUPERSEDED, retired with paintSections
 
@@ -631,7 +637,16 @@ namespace Layout
     inline constexpr float footerLineBox = 13.0f;
     inline constexpr float footerTextSize = 11.5f;
     inline constexpr float footerTracking = 1.8f;
-    inline constexpr float scribbleSize = 21.0f;
+    /*  **28.5, scaled 1.5x from the original 19 px this round — and this read 21.**
+
+        §5 states the scale explicitly and states that padding and tracking scale WITH the type, so
+        the tape grows proportionally rather than the type outgrowing it. 21 was neither the
+        original nor the scaled figure; it is what this build had drifted to.
+
+        §5 also records that the strip **was never retired** — it existed in the 1120 x 776
+        prototype's footer and fell out of a re-layout unrecorded, which is why bundle 3 restates it
+        rather than introducing it. */
+    inline constexpr float scribbleSize = 28.5f;
     inline constexpr float scribbleRotationDegrees = -2.4f;
 
     /** The tape's padding, from the prototype's `padding: 9px 30px 11px 32px` - **asymmetric on
@@ -639,10 +654,11 @@ namespace Layout
         the 0.5px letter-spacing below they are what sizes the tape: the strip was 29.5px narrower
         than the render because it used 42px of total horizontal padding against the specified 62,
         and drew the marker text with no tracking at all. */
-    inline constexpr float scribblePadLeft   = 32.0f;
-    inline constexpr float scribblePadRight  = 30.0f;
-    inline constexpr float scribblePadTop    = 9.0f;
-    inline constexpr float scribblePadBottom = 11.0f;
+    // §5's padding, 10.5 / 39 / 13.5 / 42 as top / right / bottom / left.
+    inline constexpr float scribblePadLeft   = 42.0f;
+    inline constexpr float scribblePadRight  = 39.0f;
+    inline constexpr float scribblePadTop    = 10.5f;
+    inline constexpr float scribblePadBottom = 13.5f;
     inline constexpr float scribbleTracking  = 0.5f;
 
     //==========================================================================
