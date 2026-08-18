@@ -868,10 +868,21 @@ namespace Layout
     constexpr float knobArcRadiusGap = 6.0f, knobArcThickness = 1.4f;
     inline const juce::Colour knobArcInk { 0x4D16150F };   // rgba(22,21,15,.30)
 
-    /*  §3.1's ticks. **Both are measured from the CENTRE and they share an INNER end, not an outer
-        one** — a numbered tick runs to r + 14 and a plain one to r + 10, inked 9 and 5 from their
-        outer ends. That is the opposite construction to Chorus-60's rings, where both grew outward
-        from one inner radius, and it is why the two castings' tick tables cannot be copied. */
+    /*  §3.1's ticks. **Both share an INNER end and differ at the outer**: a numbered tick runs to
+        r + 14 inked 9, a plain one to r + 10 inked 5, so both are inked from **r + 5** outward.
+
+        **A PREVIOUS COMMIT CALLED THIS THE OPPOSITE OF CHORUS-60'S AND THAT WAS WRONG.** That
+        casting's ring is `tickInner = r + 8` drawn to `tickInner + length` — also a shared inner
+        end, also differing at the outer. The two constructions are the same shape.
+
+        What is genuinely inverted is how the two SPECS express it. Elmer's states the outer length
+        and the ink, so the inner end is derived (14 − 9 = 5). Chorus-60's states the inner gap and
+        the length, so the outer end is derived (8 + 9 = 17). Reading one as if it were the other
+        puts every tick out by the difference and produces a perfectly plausible ring.
+
+        So the property worth asserting is the **shared inner end**, not the two lengths: it is what
+        both constructions have in common and what a mis-transcription between them destroys. The
+        lengths differ between the castings legitimately and tell you nothing. */
     constexpr float knobNumberedTickLength = 14.0f, knobNumberedTickInk = 9.0f;
     constexpr float knobNumberedTickWidth = 2.0f;
     constexpr float knobPlainTickLength = 10.0f, knobPlainTickInk = 5.0f;
@@ -879,6 +890,46 @@ namespace Layout
     inline const juce::Colour knobTickInk { 0xFF16150F };   // 7.47:1 on fascia
 
     constexpr float knobNumeralCssPx = 11.0f, knobNumeralLineBox = 11.0f;
+
+    /** Derived, not transcribed: both tick kinds are inked from here outward. */
+    constexpr float knobTickInnerRadiusGap = knobNumberedTickLength - knobNumberedTickInk;   // 5
+
+    /*  §3.1's ring: the sweep arc, the ticks and the numerals. **They were baked ring bitmaps** —
+        one per ring size, drawn by `PanelBackground` — and are drawn here now.
+
+        The arc's 0.7778 turn is the 280° sweep as a fraction, so it is computed from the sweep
+        rather than restated: the arc and the pointer cannot disagree about the span. */
+    inline void paintKnobRing (juce::Graphics& g, juce::Point<float> centre, float diameter,
+                               const std::vector<std::pair<float, juce::String>>& marks)
+    {
+        const float r = diameter * 0.5f;
+
+        {
+            const float arcR = r + knobArcRadiusGap;
+            juce::Path arc;
+            arc.addCentredArc (centre.x, centre.y, arcR, arcR, 0.0f,
+                               juce::degreesToRadians (knobSweepStartDeg),
+                               juce::degreesToRadians (knobSweepStartDeg + knobSweepSpanDeg), true);
+            g.setColour (knobArcInk);
+            g.strokePath (arc, juce::PathStrokeType (knobArcThickness));
+        }
+
+        const float inner = r + knobTickInnerRadiusGap;
+
+        for (const auto& [value01, printed] : marks)
+        {
+            const bool numbered = printed.isNotEmpty();
+            const float outer = inner + (numbered ? knobNumberedTickInk : knobPlainTickInk);
+            const float width = numbered ? knobNumberedTickWidth : knobPlainTickWidth;
+            const float angle = knobSweepStartDeg + value01 * knobSweepSpanDeg;
+
+            const auto dir = juce::Point<float> (std::sin (juce::degreesToRadians (angle)),
+                                                 -std::cos (juce::degreesToRadians (angle)));
+
+            g.setColour (knobTickInk);
+            g.drawLine ({ centre + dir * inner, centre + dir * outer }, width);
+        }
+    }
 
     /*  **THE STATIC LAYER — everything that does not move with the value.** Drawn at the
         component's own origin so the cached image is position-independent. */

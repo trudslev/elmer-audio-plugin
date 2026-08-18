@@ -134,6 +134,44 @@ public:
                           "the two classes' unit lines no longer share a baseline");
         }
 
+        beginTest ("The two tick kinds share an INNER end — the property, not the lengths");
+        {
+            /*  **This asserts the shared inner end rather than the two lengths, and the reason is a
+                mistake already made.** A commit called Elmer's tick construction the OPPOSITE of
+                Chorus-60's — that casting's ring is `tickInner = r + 8` drawn to
+                `tickInner + length`, which is also a shared inner end differing at the outer. The
+                two are the same shape and the claim was wrong.
+
+                What is inverted is how the two SPECS express it. Elmer's states the outer length
+                and the ink, so the inner end is derived (14 − 9 = 5). Chorus-60's states the inner
+                gap and the length, so the outer end is derived (8 + 9 = 17). **Reading one as if it
+                were the other puts every tick out by the difference and draws a perfectly plausible
+                ring** — it would compile, run, and look like a ring.
+
+                So the lengths are the figures that differ legitimately between castings and tell
+                you nothing. The shared inner end is what both constructions have in common, and it
+                is what a mis-transcription between them destroys. */
+            const float numberedInner = knobNumberedTickLength - knobNumberedTickInk;
+            const float plainInner    = knobPlainTickLength - knobPlainTickInk;
+
+            logMessage ("  numbered: inked " + juce::String (numberedInner, 1) + " -> "
+                        + juce::String (knobNumberedTickLength, 1));
+            logMessage ("  plain:    inked " + juce::String (plainInner, 1) + " -> "
+                        + juce::String (knobPlainTickLength, 1));
+
+            expectEquals (numberedInner, plainInner,
+                          "the two tick kinds no longer start at one radius. §3.1 gives them a "
+                          "shared inner end and different outer ones; if the inner ends have "
+                          "diverged, a length or an ink figure has been read from the wrong spec");
+
+            expectEquals (knobTickInnerRadiusGap, numberedInner,
+                          "the derived inner gap and the one the lengths imply disagree");
+
+            expectGreaterThan (knobNumberedTickLength, knobPlainTickLength,
+                               "a numbered tick is no longer the longer of the two, so the ring "
+                               "reads its emphasis backwards");
+        }
+
         beginTest ("The sweep is 280 degrees from -140, not the suite's 270");
         {
             expectEquals (knobSweepSpanDeg, 280.0f);

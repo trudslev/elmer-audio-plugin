@@ -1,26 +1,34 @@
 #include "PanelBackground.h"
+#include "../Parameters.h"
 
 using namespace ElmerTheme;
 
 namespace
 {
-    const juce::Image& ringImage (Layout::Ring r)
+    /** Each ring's marks as `{position01, printedText}`, taken through that ring's own PRIMARY
+        datum. `Parameters.h` states which per table — three of the six answer differently, and a
+        wholesale conversion would be uniform and wrong on two of them. */
+    std::vector<std::pair<float, juce::String>> marksFor (const juce::String& paramId)
     {
-        static const juce::Image large = juce::ImageCache::getFromMemory (
-            BinaryData::scalelg_png, BinaryData::scalelg_pngSize);
-        static const juce::Image small = juce::ImageCache::getFromMemory (
-            BinaryData::scalesm_png, BinaryData::scalesm_pngSize);
-        static const juce::Image five = juce::ImageCache::getFromMemory (
-            BinaryData::scale5_png, BinaryData::scale5_pngSize);
+        using namespace Elmer;
+        std::vector<std::pair<float, juce::String>> out;
 
-        switch (r)
+        const auto take = [&out] (const auto& marks)
         {
-            case Layout::Ring::small9: return small;
-            case Layout::Ring::five:   return five;
-            case Layout::Ring::large11:
-            default:                   return large;
-        }
+            for (const auto& m : marks)
+                out.push_back ({ m.position01, juce::String (m.printedValue, 0) });
+        };
+
+        if (paramId == ParamIDs::threshold)        take (PrintedScale::threshold);
+        else if (paramId == ParamIDs::sidechainHp) take (PrintedScale::sidechainHp);
+        else if (paramId == ParamIDs::attack)      take (PrintedScale::attackMs);
+        else if (paramId == ParamIDs::iron)        take (PrintedScale::iron);
+        else if (paramId == ParamIDs::makeup)      take (PrintedScale::makeupDb);
+        else if (paramId == ParamIDs::mix)         take (PrintedScale::mix);
+
+        return out;
     }
+
 
     /** A recessed control group. The wash is drawn as two passes because CSS interpolates
         translucent stops in premultiplied space and JUCE does not - one gradient carrying a mid
@@ -320,20 +328,20 @@ void PanelBackground::paintKnobFurniture (juce::Graphics& g)
         const juce::Point<float> areaTopLeft { spec.areaCentre.x - spec.areaSize * 0.5f,
                                                spec.areaCentre.y - spec.areaSize * 0.5f };
 
-        // Tick ring, under where the knob will sit. Drawn at 0.62 so it reads as printed ink on
-        // grey rather than as drawn UI - that is intentional and should not be "fixed".
-        {
-            const auto& ring = ringImage (spec.ring);
+        /*  §3.1's ring — the sweep arc and the ticks, DRAWN. It was a baked bitmap per ring size,
+            blitted at 0.62 opacity so it read as printed ink on grey rather than as drawn UI.
 
-            if (ring.isValid())
-            {
-                juce::Graphics::ScopedSaveState state { g };
-                g.setOpacity (Layout::tickRingOpacity);
-                g.setImageResamplingQuality (juce::Graphics::highResamplingQuality);
-                g.drawImage (ring, juce::Rectangle<float> (areaTopLeft.x + 2.0f, areaTopLeft.y + 2.0f,
-                                                           spec.ringSize, spec.ringSize),
-                             juce::RectanglePlacement::stretchToFit, false);
-            }
+            **That opacity is kept and is not a translucency hack**: the ring is silkscreen on a
+            metal panel and reads wrong at full strength. It is the one thing carried over from the
+            bitmap treatment, because it was a deliberate choice rather than an artefact of blitting.
+
+            The marks come from `PrintedScale` through each ring's own primary datum — see
+            `Parameters.h`, where three of the six rings answer differently about which of
+            `{position01, printedValue}` drives the angle. */
+        {
+            juce::Graphics::ScopedSaveState state { g };
+            g.setOpacity (Layout::tickRingOpacity);
+            Layout::paintKnobRing (g, spec.areaCentre, spec.knobSize, marksFor (spec.paramId));
         }
 
         // Printed legends, at their literal hand-tuned offsets. Each is a 40px centred box, so the
