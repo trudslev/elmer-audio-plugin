@@ -184,6 +184,14 @@ private:
         The row height is 22 and never grows to the platform's standard item height: seventeen rows
         have to fit the panel without scrolling, and macOS's standard is taller than 22. That rule
         is nf::MenuMetricsLookAndFeel's now, and it started here. */
+public:
+    /** Test seams. The caption's size and the published metrics, so `MenuMetricsTests` measures
+        what this class actually uses rather than rebuilding its own copy — which is how Chorus-60's
+        equivalent came to agree with a defect for a revision. */
+    static constexpr float captionCssPx() { return headerTextSize; }
+    static nf::MenuMetrics publishedMetrics() { return metrics(); }
+
+private:
     static nf::MenuMetrics metrics()
     {
         nf::MenuMetrics m;
@@ -197,7 +205,29 @@ private:
     }
 
     static constexpr int   rowHeight       = 22;
-    static constexpr int   headerHeight     = 19;   // 3px top padding + a 9px line + 4px bottom
+
+    /*  **19, AND THE ARITHMETIC THIS COMMENT USED TO STATE WAS WRONG WHILE THE ANSWER WAS RIGHT.**
+
+        It read "3px top padding + a 9px line + 4px bottom", citing the spec's
+        `padding: 3px 12px 4px`, and summed **3 + 12 + 4**. In that CSS shorthand the 12 is the
+        LEFT AND RIGHT padding — the horizontal axis. The vertical sum is 3 + <line box> + 4, and
+        the prototype declares no `line-height` at all, so the middle term is IBM Plex Mono's own
+        natural line box at 9 CSS px: **11.7**.
+
+        3 + 11.7 + 4 = 18.7, which rounds to 19. **The figure is correct and its stated derivation
+        was a coincidence** — it took a number from the wrong axis that happens to sit 0.3 px from
+        the right one.
+
+        That matters more here than it would anywhere else, because **this casting is where the
+        suite's caption figure came from**: five other castings were ruled against Elmer's 19. A
+        wrong derivation under a right number is the shape that survives review, and it survived
+        here with no test in the repo the number came from. `Tests/MenuMetricsTests.cpp` is that
+        test now, and it asserts the CONSTRUCTION rather than the literal.
+
+        **The type itself is genuinely CSS px** — `ElmerTheme::Font::of` builds through
+        `withPointHeight` — so the base figure is sound and nothing inherited an error. That was the
+        open question and it is answered by measurement, not by reading this comment. */
+    static constexpr int   headerHeight     = 19;
     static constexpr int   separatorHeight = 9;
     static constexpr int   verticalPadding = 4;
 

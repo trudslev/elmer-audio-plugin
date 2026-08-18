@@ -10,6 +10,7 @@ target_sources(ElmerTests PRIVATE
     ChannelLayoutTests.cpp
     PendingProgramLockTests.cpp
     TestMain.cpp
+    MenuMetricsTests.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
     CompressorTests.cpp
