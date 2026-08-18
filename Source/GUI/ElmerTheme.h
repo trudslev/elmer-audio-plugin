@@ -589,10 +589,18 @@ namespace Layout
         (446, 213) at 588 x 236 — the previous canvas's, where the meter sat right of centre. §2
         puts GAIN REDUCTION METER at (60, 150) with the well beneath it, so the whole instrument
         moves to the left column and shrinks by a third. */
-    inline constexpr float meterX = 60.0f;
-    inline constexpr float meterW = 396.0f;
-    inline constexpr float meterH = 159.0f;
-    inline constexpr float meterY = 176.0f;
+    /*  **BUNDLE 3's well: 630 x 254 at (355, 199).** It was (60, 176) at 396 x 159 for one day —
+        bundle 2's centre column — and (446, 213) at 588 x 236 before that. §4 states it outright
+        now rather than leaving it to a prototype, which is why this is a transcription rather than
+        a measurement off markup.
+
+        **The aspect is locked by the cut face at 2.4854:1** — §4 says width and height are one
+        figure, not two — so a future change to either must come from a re-cut rather than from
+        here. 630 / 253.5 = 2.4852, which is that ratio to four places. */
+    inline constexpr float meterX = 355.0f;
+    inline constexpr float meterW = 630.0f;
+    inline constexpr float meterH = 254.0f;
+    inline constexpr float meterY = 199.0f;
     inline constexpr float meterRadius = 4.0f;
     inline constexpr float meterSpecSize = 11.5f;
     inline constexpr float meterSpecTracking = 1.8f;
@@ -818,8 +826,22 @@ namespace Layout
     inline constexpr float meterFaceSourceH = 478.0f;
     inline constexpr float meterScale = meterW / meterFaceSourceW;
     inline constexpr juce::Point<float> meterPivot { meterW * 0.5f, meterW * 0.5f };
-    inline constexpr float needleSourceW = 71.0f;
-    inline constexpr juce::Point<float> needleSourcePivot { 35.5f, 592.9f };
+    /*  **RE-MEASURED FOR BUNDLE 3, WHICH REDREW THE NEEDLE — and these were corrected against the
+        PREVIOUS file less than a day earlier.**
+
+        The needle was 71 x 607 and is now **18 x 525**: a much finer pointer, not a rescale. So the
+        constants fixed on 2026-08-18 were already describing a file that no longer exists, which is
+        the same defect they were fixing one revision earlier. The face keeps its 1188 x 478
+        dimensions and changed content, so its two figures still hold — checking only the one that
+        looked suspect would have missed the needle.
+
+        Derived from §4 rather than guessed: the needle draws at 9.55 x 278.4 placed at
+        (-4.77, -273.2) from the pivot, so in source pixels the pivot sits at
+        (4.77/9.55 x 18, 273.2/278.4 x 525) = **(8.99, 515.2)**. The implied scale, 9.55/18 =
+        0.5306, agrees with the face's 630/1188 = 0.5303 — an independent check that the pair is cut
+        to one scale. */
+    inline constexpr float needleSourceW = 18.0f;
+    inline constexpr juce::Point<float> needleSourcePivot { 8.99f, 515.2f };
 
     /*  **§Meter's glass sheen, taken from the prototype rather than approximated.** It is
         `linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, rgba(255,255,255,0) 40%)` — a band

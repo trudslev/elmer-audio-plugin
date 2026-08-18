@@ -49,6 +49,41 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## RESUME POINT — bundle 3 SUPERSEDES the body work of 2026-08-18, and the prototype is now stale
+
+**Read this before touching the body.** Two commits from 2026-08-18 — `018567d` (the meter) and
+`9bbf474` (§2's dividers and headings) — were built against the bundle-2 spec's **four-section**
+table. Bundle 3 replaces it with **three columns**, and the layout moved far enough that anything
+positioned against the old table is suspect rather than merely shifted.
+
+| | bundle 2 (built) | bundle 3 (current) |
+|---|---|---|
+| Structure | four sections: meter + DETECTOR over TIMING + OUTPUT | **three columns**: DETECTOR left, meter centred, TIMING over OUTPUT right |
+| Dividers | x 500 (y 136→380), y 386 horizontal, x 700 (y 396→644) | **x 324 and x 1010**, both y 156 → 630, a matched pair running the full band |
+| Headings | DETECTOR (510,150) · TIMING (26,412) · OUTPUT (710,412) | DETECTOR (16,156) w294 · TIMING (1040,156) w268 · **OUTPUT (1040,339)** w268 |
+| Scribble strip | bottom-left | **centred under the meter** |
+| Body band | — | y **156 → 630**; footer at (924, 640) right-aligned |
+
+**The dividers are mid-gutter, not a fixed inset** — §2 states DETECTOR's ink ends at 293 and the
+well starts at 355, so the rule takes 324 with 31 px either side. A figure derived from a column
+edge would land somewhere else and look reasonable.
+
+**NO PROTOTYPE WAS DELIVERED IN BUNDLE 3.** There is no `.dc.html` anywhere in it, so
+`design/Elmer GL-87 Panel.dc.html` is the **bundle-2** cut and its positions are the ones this note
+supersedes. That is the reverse of the trap that caught this casting on 2026-08-18, where the
+prototype was current and the superseded `Elmer.dc.html` got read instead — so the rule is not
+"prefer the prototype" but **check which of the two is current for the thing you are reading.**
+Right now: the spec is, for layout. The prototype is still the only source for anything the spec
+does not restate, and every such figure is suspect until the next cut.
+
+**The enumeration applies to the body.** Do not fix only what visibly moved: list what the old
+four-section table positioned, and check each against §2/§3 individually. The meter's own geometry
+came through bundle 3 with **new assets** — `meter-face.png` and `meter-needle.png` both changed
+size — so the sprite constants corrected on 2026-08-18 are measured against files that no longer
+exist and must be re-measured, which is exactly the defect they were fixing.
+
+---
+
 ## RESUME POINT — the header has a measured baseline, and it is what a panel move fails against
 
 **Verified `6b3c610` on 2026-08-17: this casting's header draws exactly where its own constants say.**

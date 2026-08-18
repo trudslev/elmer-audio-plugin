@@ -1,17 +1,17 @@
-# ELMER — GUI SPEC
+# ELMER GL-87 — GUI SPEC
 
-Model **GL-87**, stereo bus compressor. Neon Foundry casting, harmonisation round.
-Authoritative for the build.
+**Bus compressor. Canvas 1340 × 660.** Source of record: `Elmer GL-87 Panel.dc.html`.
+Artwork source of record: `Artwork Cutting Sheet.dc.html`.
 
-**Read `shared/HEADER-PART.md` first.** The block, the band, the LCD cell with its budget
-and cap, the Program buttons and their state matrix, and the meter wells are the shared
-part and are not restated here except where this casting's material meets them.
+Measured off the current cut, not adjusted from the previous revision. Every figure here was read
+from the built panel or from the delivered bitmaps; where a figure is derived, the derivation is
+shown so it can be rechecked rather than trusted.
 
-**Asset format: vector / code-drawn, with two exported bitmaps.** The fascia, every label,
-tick, numeral, knob, cap, lens and legend is drawn at runtime. The gain-reduction meter
-ships as artwork — `assets/elmer/meter-face.png` and `meter-needle.png` — and is the only
-baked element on the panel. Nothing carrying a live value is baked: the needle is a
-separate image rotated at runtime over a static face.
+**The meter face and needle are BITMAPS, not code-drawn.** The panel loads
+`assets/elmer/meter-face.png` and `assets/elmer/meter-needle.png` as `<img>` elements. Nothing on
+the meter is drawn at runtime except the needle's rotation and one sheen gradient. §4 states the
+face's construction anyway, because the bitmaps were redrawn this round and the cutting sheet is
+where they come from — a build that needs to re-cut them needs the figures.
 
 ---
 
@@ -20,324 +20,425 @@ separate image rotated at runtime over a static face.
 | Figure | Value |
 |---|---|
 | Canvas | **1340 × 660** at 100 % |
-| Header block | 16, 16, 1308 × 104 — shared part |
-| Body origin | y **120** |
-| Vertical divider, detector | x 500, y 136 → 380 |
-| Horizontal divider | y 386, x 16 → 1324 |
-| Vertical divider, lower | x 700, y 396 → 644 |
+| Fascia | `linear-gradient(180deg, #b3ac9d, #aca596)` |
+| Panel shadow | `0 10px 40px rgba(0,0,0,.35)` |
+| Header block | (16, 16), 1308 × 104 — shared part, see `shared/HEADER-PART.md` |
+| Body band | y **156 → 630** |
+| Footer line | (924, 640), w 400, right-aligned |
+| Usable width | 1308 (16 px margin each side) |
 
-Fascia `linear-gradient(180deg, #b3ac9d, #aca596)` — painted steel, warm grey.
-Header block `linear-gradient(180deg, #b6afa0, #ada697)` with
-`inset 0 1px 0 rgba(255,255,255,.5)` and `0 3px 5px rgba(0,0,0,.14)`: the block reads as a
-raised panel on the same casting rather than a different material.
-
-**Call 1 brought +220 px** (1120 → 1340). It paid for the four-section layout at full
-width and for the knobs growing under call 3.
+**Height is 660 and stays there.** A band layout was built at 812 and reverted — see §7, call 6.
+Every clearance in this spec is bought against a 660 panel, and the right column spends the full
+520 px between header block and footer.
 
 ---
 
-## 2 · Sections and the function-group colour
+## 2 · The three columns
 
-Four sections, headings Barlow Condensed 600 **12 px / line box 15 / .28 em**, `#0e0d08`:
-**GAIN REDUCTION METER** (60, 150) · **DETECTOR** (510, 150) · **TIMING** (26, 412) ·
-**OUTPUT** (710, 412).
+Two control columns flanking the meter. **Left to right the order is DETECTOR → meter → TIMING /
+OUTPUT, so position carries the signal path**: detection, then timing, then output.
 
-**Cap colour is function-group coding, carried forward and unchanged by this round.**
+| Element | Position |
+|---|---|
+| Divider, DETECTOR / meter | x **324**, y 156 → 630, 1 px `rgba(255,255,255,.5)` |
+| Divider, meter / TIMING+OUTPUT | x **1010**, y 156 → 630, same |
+| DETECTOR heading | (16, 156), w 294, centred |
+| TIMING heading | (1040, 156), w 268, centred |
+| OUTPUT heading | (1040, 339), w 268, centred |
 
-| Group | Highlight · base · shade | Controls |
+Headings: Barlow Condensed 600, **12 px / line box 15 / .28 em**, `#0e0d08`.
+
+**Both dividers run the full band and are a matched pair.** They previously ended at each column's
+own last row, which left the left one 74 px short; that existed to keep it clear of the scribble
+strip in the bottom-left corner. The strip has moved to the centre column, so nothing is down there
+to collide with and the pair reads better matched than fitted.
+
+**Each divider sits mid-gutter**, not at a fixed offset from either side. DETECTOR's ink ends at
+293 and the well starts at 355, so the rule takes 324 — 31 px of air either way. On the right the
+well ends at 985 and OUTPUT's ink starts at 1035, so the rule takes 1010, 25 either way.
+**Consequence: re-sizing the meter moves both rules**, and mid-gutter is the rule that says where to.
+
+**The heading line sits 36 px below the header block.** At 6 px it read as attached to the header
+rather than heading its column; 12 and 24 were both still short. All of that room came out of the
+knob cell (§3), twice. OUTPUT sits **18 px above / 8 below** its own rows — a heading belongs closer
+to the row it heads than to the row above it, so the spacing is deliberately asymmetric.
+
+---
+
+## 3 · Controls
+
+**Eight knobs, two diameter classes, and only two.**
+
+| Class | Ø | Controls |
 |---|---|---|
-| DETECTION | `#EE5C9C` · `#D5257A` · `#8E1152` | THRESHOLD, SIDECHAIN HP, RATIO, KNEE lenses |
-| TIMING | `#4FC79C` · `#17825F` · `#0C6247` | ATTACK, RELEASE |
-| OUTPUT | `#6E9CE8` · `#3A6FD0` · `#1E4189` | IRON, MAKEUP, MIX |
+| Large | **76** | THRESHOLD · RATIO · RELEASE · MAKEUP |
+| Small | **56** | SIDECHAIN HP · ATTACK · IRON · MIX |
 
-Colour is organisation, not information: every legend reads without it, and the
-one-accent rule governs live-state indicators, which a cap colour is not.
+| Column | Row 1 (cy 243) | Row 2 | Row 3 |
+|---|---|---|---|
+| DETECTOR | THRESHOLD Ø76 (cx 83) · RATIO Ø76 (cx 226) | SIDECHAIN HP Ø56 (cx 163), cy 383 | KNEE pair (73, 489) |
+| TIMING | ATTACK Ø56 (cx 1107) · RELEASE Ø76 (cx 1241) | — | — |
+| OUTPUT | — | IRON Ø56 (cx 1107) · MIX Ø56 (cx 1241), cy 418 | MAKEUP Ø76 (cx 1174), cy 546 |
 
----
+**Row centres:** 243 · 383 (SIDECHAIN HP) · 418 (IRON, MIX) · 546 (MAKEUP).
 
-## 3 · Knobs — two classes on a 280° sweep
+**Cell centres** are 83 / 226 left and 1107 / 1241 right. **A knob alone in its row is placed by its
+class:** Ø76 centres on the column (MAKEUP at 1174, on the OUTPUT heading's own centre), Ø56 sits on
+a cell centre. Centring is only safe for the larger class — a lone Ø56 parked between the two cell
+centres reads as a **third diameter**, intermediate between the classes flanking it. The diameters
+were never a third value; position was doing it.
+
+**RATIO's cell is at 226, not 217.** Row 1 carries two Ø76 knobs, and at the nominal 134 pitch their
+numeral rings collide: THRESHOLD's widest numeral reaches 148 and RATIO's would start at 150. At 226
+they clear by 11.
+
+**MAKEUP's row sits closer to the row above than the cell arithmetic allows, and it works only
+because it is centred.** Its numeral band (480–491) and top ticks (494) overlap the vertical band of
+IRON and MIX's legends (bottom 496) — but not their ink, because those legends sit on 1107 and 1241
+while MAKEUP's top numeral sits at 1174, in the 41 px gap between them. **Moved onto a cell centre
+at this height its numerals would land on the legend above it.**
+
+### 3.1 Knob construction
 
 | Figure | Value |
 |---|---|
-| Sweep | **280°**, start **−140°**, angle = `−140 + 280 f` |
-| Classes | **Ø76 primary** (THRESHOLD, RATIO, RELEASE, MAKEUP) · **Ø56 standard** (SIDECHAIN HP, ATTACK, IRON, MIX) |
-| Numerals | five on primary, three on standard |
-| Skirt | `conic-gradient(from 200deg, #e8e3da, #b6afa5 18%, #efeae1 34%, #a8a199 52%, #e6e1d8 70%, #b0a9a0 86%, #e8e3da)` — machined aluminium |
-| Cap | `inset: 6px`, `radial-gradient(circle at 34% 24%, hi, base 52%, lo)` in the group's three stops |
-| Pointer | 3 × (r − 7), `#f6f1e6`, `0 0 2px rgba(0,0,0,.45)` |
-| Sweep arc | 280° conic wedge `rgba(22,21,15,.30)`, masked to a 1.4 px ring |
-| Ticks | major **2 × 9**, minor **1.5 × 5**, ink `#16150f` — **7.47:1** on fascia |
-| Numerals | IBM Plex Mono 500 **11 px / 13**, `#0e0d08`, on a ring at `r + 29.5` |
+| Sweep | **280°, start −140°** — angle = −140 + f × 280 (per-casting freedom, `shared/BRAND-AMENDMENT-BYPASS.md`) |
+| Sweep arc | Ø d + 12, `rgba(22,21,15,.30)`, 1.4 px ring, 0.7778 turn |
+| Skirt | `conic-gradient(from 200deg, #e8e3da, #b6afa5 18%, #efeae1 34%, #a8a199 52%, #e6e1d8 70%, #b0a9a0 86%, #e8e3da)` |
+| Cap | inset 6, `radial-gradient(circle at 34% 24%, hi, base 52%, lo)` per group |
+| Pointer | 3 × (r − 7), `#f6f1e6`, radius 1.5 |
+| Numbered tick | length **r + 14**, ink 9, width 2 |
+| Plain tick | length **r + 10**, ink 5, width 1.5 |
+| Numerals | IBM Plex Mono 500, 11 px, line box 11, `#0e0d08` |
+| Unit line | 10 px / .10 em, top = d + 12 + (38 − r) |
+| Legend | Barlow Condensed 600, 12 px / .18 em, top = d + 25 + (38 − r) |
 
-**Elmer's sweep is 280°, not the suite's 270°** — per-casting sweep freedom, and it is why
-its mark angles cannot be copied from another casting's table.
+**Registration box.** Unit and legend are positioned off a **Ø76 box for every class** — the
+offset is `(76 − d) / 2 = 38 − r`. Pivots register on the row's Y and both legend lines land on one
+baseline across both diameters.
 
-### 3.1 Registration
+**Cell height is derived, not chosen.** Above cy a Ø76 knob spends tick gap 5 + tick 9 + numeral
+gap 3 + half the 11 px numeral line box = **66**; below cy the legend bottom lands at **+78**. Cell
+**144**. The right column spends 3 × 144 + 2 × 15 headings + gaps of 36 / 6 / 18 / 8 / 10 = **520**,
+which is the whole band. The cell was trimmed from 161 in two passes to buy heading clearance, and
+there is no spare vertical left anywhere on a 660 panel.
 
-Both control bands mix classes, so the unit and label are positioned off a **Ø76
-registration box for every class**: `dy = (76 − Ø) / 2`, i.e. `unitTop = Ø + 20 + dy`,
-`labelTop = Ø + 34 + dy`. The label registers on the box (one line per band) and the ring
-registers on itself (pivots on one Y).
+### 3.2 Knob numerals are anchored by the box edge facing the dial
 
-**This panel was drawn before that was understood.** It held the label baseline and missed
-the pivot by exactly 10 px in both bands — its Ø56 cells were bottom-aligned, which is why
-the labels were right and the centres were not. Corrected by bringing the four standard
-pivots back onto their band's Y: **DETECTOR on 262** (three pivots, three labels on one
-line) and **TIMING/OUTPUT on 524** (five pivots, five labels). No label moved.
+A numeral clears its numbered tick's outer end (r + 14) by a constant **3 px**, measured to the box
+edge facing the dial — **not to the box centre**. The radial support of an upright w × h box along a
+mark at angle a is `|w/2·sin a| + |h/2·cos a|`, so the ring is **elliptical, not circular**:
 
-### 3.2 Mark lists
+```
+ri = r + 14 + 3 + |(len × 6.6)/2 × sin a| + |5.5 × cos a|
+```
 
-Angle = `−140 + 280 f`. Numerals in **bold**; other rows are minor ticks at real values.
+6.6 is the IBM Plex Mono 11 px advance; 5.5 is half the line box.
 
-| Knob | Ø | f · printed |
+**At a fixed centre radius the gap is not constant — it swung 11 px.** Measured on the previous
+build: `1.5:1` at −140° **overlapped its tick by 6.3**, while `0` near 3 o'clock cleared by 4.6.
+Long strings at the sweep ends are the worst case, because that is where a wide box turns its long
+edge to the dial. Cell height is unaffected: at a = 0 the support is exactly 5.5, so the topmost
+numeral still sits at r + 28 and **above cy stays 66**.
+
+### 3.3 Function-group cap colour
+
+| Group | hi · base · lo |
+|---|---|
+| DETECTOR | `#EE5C9C` · `#D5257A` · `#8E1152` |
+| TIMING | `#4FC79C` · `#17825F` · `#0C6247` |
+| OUTPUT | `#6E9CE8` · `#3A6FD0` · `#1E4189` |
+
+**Colour is organisation, not information.** Every legend reads without it, and the one-accent rule
+governs live-state indicators, which a cap colour is not.
+
+### 3.4 KNEE
+
+180 px pair at **(73, 489)** — two 34 px lenses with a 12 px gap, legend `KNEE` centred at y **529**.
+Inside the DETECTOR column, directly beneath RATIO: it is the detector's knee, and the column keeps
+it with its group rather than exiling it to a row of its own.
+
+Lit and unlit are separated by **brightness within the DETECTOR magenta**, not by a change of hue:
+
+| State | Face | Ink |
 |---|---|---|
-| THRESHOLD | 76 | 0 **−40** · .2 −30 · .4 **−20** · .6 −10 · .8 **0** · 1 **+10** — dB |
-| SIDECHAIN HP | 56 | 0 **OFF** · .2 40 · .4 75 · .6 **140** · .8 265 · 1 **500** — Hz |
-| RATIO | 76 | 0 **1.5:1** · .25 **2:1** · .5 **4:1** · .75 **10:1** · 1 **20:1** |
-| ATTACK | 56 | 0 **0.1** · .1926 0.3 · .4037 **1** · .5963 3 · .8074 10 · 1 **30** — ms |
-| RELEASE | 76 | 0 **0.1 s** · .25 **0.3 s** · .5 **0.6 s** · .75 **1.2 s** · 1 **AUTO** |
-| IRON | 56 | 0 **0** · .25 25 · .5 **50** · .75 75 · 1 **100** — % |
-| MAKEUP | 76 | 0 **0** · .25 **5** · .5 **10** · .75 **15** · 1 **20** — dB |
-| MIX | 56 | 0 **0** · .25 25 · .5 **50** · .75 75 · 1 **100** — % |
+| Lit | `linear-gradient(180deg,#7a1244,#4d0a2b)` + `inset 0 0 12px 2px rgba(213,37,122,.45)` | `#ffe9f3`, glow `0 0 7px rgba(255,233,243,.6)` |
+| Unlit | `linear-gradient(180deg,#d2b9c6,#b79dab)` | `#150a0f` |
 
-ATTACK's fractions are the build's skew and **must not be evened out**. RELEASE's last
-position is a word, `AUTO`, not a number — it is a real detent at f 1.0 and prints as
-typed. `−` is U+2212; THRESHOLD's `+10` keeps its leading plus. Units print inside the
-arc's bottom gap, never as a suffix on the control name.
+**A lamp darkens its own face when it lights**, so the legend is the bright thing, not the lens.
 
 ---
 
-## 4 · Gain-reduction meter
+## 4 · The meter
 
-The casting's signature display and its only analogue movement.
+**A bitmap in a well, with one runtime rotation and one runtime gradient. Nothing else.**
+
+| Element | Value |
+|---|---|
+| Well | **630 × 254 at (355, 199)**, radius 4, `0 4px 12px rgba(35,30,22,.45)`, `0 1px 0 rgba(255,255,255,.34)` |
+| Face | `assets/elmer/meter-face.png`, drawn at **630 × 253.5** at (0, 0) |
+| Needle | `assets/elmer/meter-needle.png`, drawn at **9.55 × 278.4**, at (−4.77, −273.2) from the pivot |
+| Pivot | **(315, 315)** — 0.5 × face width in both axes |
+| Sweep | **+63° at 0 dB → −63° at 20 dB**, `needleDeg = 63 − (gr / 20) × 126` |
+| Sheen | `linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, rgba(255,255,255,0) 40%)` — the glass, over the lamp |
+| Label row | (355, 179), w 630 — `GAIN REDUCTION METER` left, `MOVING COIL · 300 ms BALLISTIC` right |
+| Caption row | (355, 457), w 630 — `STEREO LINKED · ONE DETECTOR` left, live `GR −x.x dB` right |
+| Aspect | **2.4854:1, locked by the cut face** — width and height are one figure, not two |
+| Top edge | **y 199, so the CREAM CARD's top lands on 205** — level with the top of the Ø76 knob bodies (row 1 cy 243 less r 38) |
+
+**No minus on zero.** Reduction of nothing prints `GR 0.0 dB`, not `−0.0`.
+
+**Align the card, not the well.** The face's 4 px frame is baked into the artwork and scales with it
+— at 630 wide that is **6.4 px** — so a well placed at the knob-top figure puts the cream card 6 px
+low and the meter reads sunken. The well is offset up by the scaled bezel. **The offset is a
+function of the meter's width**: 6.4 at 630, 7.1 at 700.
+
+**The well needs a stated gutter because it is the only hard-edged element in the body.** A knob's
+cell ends in air and clears the rules on its own; the well ends in an inset rectangle with a cast
+shadow, and at one point its edge sat 4 px off the hairline while every other section had clearance.
+
+**Two copies of the face exist and both must be written.** The panel loads
+`assets/elmer/meter-face.png`; the bundle carries `handoff/elmer/assets/meter-face.png`. They are
+the same image and are checksum-identical. A re-cut that writes only the bundle copy leaves the
+panel rendering the previous artwork **while every measurement of the bundle copy reports a match** —
+which is exactly how a flat face survived two corrections. **Verify the copy the panel loads.**
+
+### 4.1 Face construction — for re-cutting the bitmap
+
+Drawn on a **388-wide card** (the 396 face less its 4 px frame each side) in
+`Artwork Cutting Sheet.dc.html`. Delivered at **1188 × 478**.
 
 | Figure | Value |
 |---|---|
-| Well | 396 × 159 at (60, 176), radius 4, `0 4px 12px rgba(35,30,22,.45)`, `0 1px 0 rgba(255,255,255,.34)` |
-| Face | `assets/elmer/meter-face.png` — **delivered 1188 × 478**, drawn at 396 × 159.2 (**3×**, redrawn in the second bundle) |
-| Needle | `assets/elmer/meter-needle.png` — **delivered 71 × 607**, drawn at 23.8 × 202.3 (**3×**, redrawn in the second bundle), pivot at (198, 198) — **0.5 × face width below the top edge**. The element's `top: −197.6px` is a placement offset, not the image height |
-| Travel | **+63° at 0 dB to −63° at 20 dB**, `needleDeg = 63 − (gr / 20) × 126` |
-| Glass | `linear-gradient(118deg, rgba(255,255,255,.10) 0 22%, transparent 40%)` |
-| Caption | `GAIN REDUCTION METER`, IBM Plex Mono 500 11 / 14 / .14 em, `#0e0d08` |
-| Sub-caption | `STEREO LINKED · ONE DETECTOR`, same face, `#2d2b24` — flavour, 5.78:1 |
+| Pivot | (194, 194) on the card — the arc, ticks and numerals share the needle's pivot |
+| Arc | **R 178**, +63° to −63°, stroke **1**, `#16150f` |
+| Tick count | **41 marks, 0.5 dB step**, 3.150° pitch |
+| Major, every 4 dB | **13.7** long · 1.5 wide, numeral attached |
+| Whole dB | **7.41** long · 0.7 wide |
+| Half dB | **4.57** long · 0.6 wide |
+| Tick direction | **inward from the arc only** — zero ink outside the arc radius |
+| Numerals | IBM Plex Mono **500 at 13**, centre radius **≈156** |
+| `dB` | 10.7 / .14 em, centred, top 96 |
+| `GAIN REDUCTION` | 7.5 / .49 em, centred, top 113 |
 
-**The needle rests at zero reduction and swings anticlockwise** — reduction pulls it left,
-which is the movement direction on the hardware this is derived from. Live, drawn at
-runtime, never baked into the face.
+**Four things a styled redraw gets wrong, and did:**
 
----
+1. **The scale steps 0.5 dB — 41 marks, not 21.** Sampling only the whole-dB angles hides this and
+   makes the 2 dB and 1 dB marks look like one class. There are three classes.
+2. **Ticks run inward only.** Ticks that overhang the arc read heavier at any length.
+3. **Numerals are weight 500, not 700.** At the same cap height a 700 cut carries **496 ink px²
+   against the original's 341** — 45 % more. **Weight at matched cap height reads as size**, so a
+   bold cut looks oversized while measuring correct. Cap height alone does not settle it; compare
+   ink area.
+4. **The scale shares the needle's pivot.** An earlier cut placed arc, ticks and numerals 4 px right
+   of and below it, because their containers sat inside the bezel while the needle pivots on the
+   whole face image. A scale that does not share the pivot means the needle does not point at its
+   own marks.
 
-## 5 · KNEE — two lamp lenses, one hue
+**Type is matched at panel scale, not artwork scale.** The prototype's face is drawn 588 wide on its
+panel; this one is drawn 630. Comparing the two bitmaps at their own widths reads correct while the
+panel reads too large — the trap that produced one wrong pass. Render each face at its panel width
+and measure there.
 
-180 px pair at (1100, 266), two 34 px lenses with a 12 px gap, legend `KNEE` centred
-below at (1100, 334).
+### 4.2 The face numerals sit hard against their majors — measured, outstanding
 
-| State | Face | Legend | Measured |
+**This is a stated figure, not a defect to nudge by eye.** The face's numerals are placed on a
+**fixed centre radius (~156)**, so their gap to the tick's outer end swings with string length and
+angle — the same defect §3.2 fixes for the knobs, but **baked into the bitmap**. Measured on the
+delivered face, nearest-point gap in drawn px from each major tick's outer end:
+
+| dB | Angle | Numeral box | Gap to tick end |
 |---|---|---|---|
-| Lit | `linear-gradient(#7a1244, #4d0a2b)` + `inset 0 0 12px 2px rgba(213,37,122,.45)` | `#ffe9f3` + 7 px bloom | **9.11:1** light end · **13.06:1** dark end |
-| Unlit | `linear-gradient(#d2b9c6, #b79dab)` | `#150a0f`, flat | **10.62:1** light end · **7.78:1** dark end |
+| 0 | +63.0° | 9.4 × 8.1 | 2.17 |
+| 4 | +37.8° | 8.7 × 8.4 | 3.44 |
+| 8 | +12.6° | 7.1 × 9.8 | 3.33 |
+| 12 | −12.6° | 15.5 × 11.4 | 2.66 |
+| **16** | **−37.8°** | 14.5 × 14.8 | **tick end falls inside the numeral box** |
+| **20** | **−63.0°** | 12.8 × 15.8 | **0.14** |
 
-**A lamp darkens its own lens when it lights, so the legend is the bright thing.** Lit and
-unlit are separated by brightness *within the DETECTION magenta*, never by a change of
-hue — the unlit lens is a pale magenta lens, not a grey one. Light stops at the lens edge:
-no halo on the fascia.
+So the gap runs from 3.44 down to overlap. **The two-digit numerals at the negative end are the
+failures** — 16 and 20 — because a wide box at a steep angle presents its long edge to the dial, and
+a fixed centre radius does not account for that.
 
-Both legends are printed permanently. The lens indicates state; it does not relabel the
-control.
+**The fix is the elliptical anchor from §3.2 applied to the cutting sheet, then a re-cut:**
 
----
+```
+ri = 178 − 13.7 − 3 − support     (support = |w/2·sin a| + |h/2·cos a|, measured off the rendered box)
+```
 
-## 6 · Palette and measured contrast
+**It is not applied.** The suite's clearance chain states the rule — the numeral sits clear of the
+tick's outer end, anchored by the box edge facing the dial — and this face does not meet it. Raised
+as an ask rather than fixed by eye, because nudging a baked bitmap by feel is how the three wrong
+lamp readings happened. **Not blocking:** the meter reads correctly and the overlap is 0–1 px at
+panel scale.
 
-Computed in one pass from this panel's own hexes against each ground **by name**, worst
-case quoted where a ground is a gradient. Functional 7:1, flavour 4.5:1, state 3:1.
-Re-measure rather than transcribe; if a figure here disagrees with yours, yours wins.
+### 4.3 The lamp — three wrong readings before it was right
 
-### On fascia (worst `#aca596`) and header block (worst `#ada697`)
+**The face is lamplit, and the lamp lives in the bitmap.** Never in code: §0 makes the meter the
+only baked element on the panel, so a runtime gradient over the face would be a second source for
+one lighting decision.
 
-| Ink | Role | Ratio | Class |
+Fitted to the prototype by least-squares over a 42-point grid — **centre (50 %, 40 %), radii 35 % ×
+80 % of the card**, residual scatter 3.7 luma:
+
+```css
+background: radial-gradient(49% 112% at 50% 40%,
+  #fffcef 0 7%, #fffbed 14%, #fdf9e9 21%, #fdf8e8 29%, #fcf6e4 36%, #faf4e1 43%,
+  #f9f2df 50%, #f6eed9 57%, #f1e9d3 64%, #ebe2cc 71%, #e3dbc4 79%, #ddd4bc 86%,
+  #d7ceb6 93%, #d1c7ad 100%);
+```
+
+Match to the prototype: **mean 1.4 luma, worst 7.2** across the grid.
+
+**Reference luma, and this is the part to check a re-cut against:**
+
+| Point | Luma | Hex |
+|---|---|---|
+| Centre | **250.7** | `#FFFBEE` |
+| Top centre | 243.8 | `#F9F4E5` |
+| Mid left · mid right | 208.7 · 202.8 | `#D9D1B9` · `#D4CBB2` |
+| Top corners | 211.8 · 200.1 | `#DBD4C0` · `#D2C8AF` |
+| Bottom corners | 196.0 · 195.1 | `#CEC4AA` · `#CDC3AA` |
+
+**The three wrong readings, because the shape of the error matters more than the fix:**
+
+1. **"No lamp — it's flat."** Sampled down the centre line only: 229 → 242, brightening downward,
+   which is front light. **The centre line is the one place a bloom and a flat card agree.**
+2. **"A vertical wash, brightest at the top."** Still one axis. A vertical wash leaves the top two
+   corners as bright as the middle; **a lamp never does.**
+3. **"Radial, but too tight and off-centre."** Fitted at 47 % / 54 % × 132 %, which dropped the
+   right flank 11 luma early.
+
+**The corners carry the evidence.** Centre-to-corner drop is **~55 luma**. If a re-cut's corners
+measure within a few luma of its top centre, the lamp has been lost. Sample **both axes**.
+
+### 4.4 Bezel
+
+A flat frame with a **raised outer lip**, and the lip is what a redraw loses:
+
+| Part | Top | Sides | Bottom |
 |---|---|---|---|
-| `#0e0d08` | section headings, control labels, units, header captions, KNEE label, meter caption | **7.94** fascia · **8.04** block | functional |
-| `#16150f` | tick marks | **7.47** fascia | functional |
-| `#0f0f0c` | model line | **7.93** block | functional |
-| `#26221a` | wordmark (31 px, moulded relief) | **6.54** block | large-text role — see below |
-| `#2d2b24` | meter sub-caption | **5.78** fascia | flavour |
-| `#34322a` | serial `GL-87 · SN 0042`, version stamp | **5.24** fascia | flavour |
+| Outer lip, 1 px | `#918E87` | `#7B7871` | `#8C8982` |
+| Body, 3 px | `#6E6A61` | `#514D45` | `#68645B` |
 
-**The model line was `#2d2b24` at 5.85 on the block's dark end — under the functional
-floor — and is now `#0f0f0c`, 7.93.** It was briefly `#16150f` (7.56) in this round: the
-six-material header strip had already fixed the same role to `#0f0f0c` and the body had not
-inherited it, so two artefacts held two right answers. Reconciled to the strip's. Same defect and same third-of-a-stop as Gatecrasher's, on
-a different fascia; per-role figures against each named ground are what surfaced both.
+Darkest at the sides, lightest along the bottom lip. **No white inner rule** — a white highlight
+inside the card edge is the inverse of this frame and turns the meter into a raised shape rather
+than a recessed instrument behind glass.
 
-**The wordmark is a moulded relief, not flat ink.** At 31 px / 700 it is large text, where
-the floor is 3:1, and its paint fill measures 6.54 against the block's dark end with the
-relief's own highlight (`0 1px 0 rgba(255,255,255,.55)`) adding separation above that. It
-is recessed and paint-filled with no outer cast shadow — the shadow pair is *inside* the
-letterform.
+### 4.5 Needle
 
-### On LCD glass (`#1b1a16 → #242219`)
-
-| Ink | Role | Ratio |
-|---|---|---|
-| `#e6dcae` | program name, bank tag, live readout, meter values, chevron | **12.62** light end · **11.54** dark end |
-
-### On the Program cap (`#23282c → #14181b`)
-
-| Ink | State | Ratio |
-|---|---|---|
-| `#f4f8fa` | lit | **13.93** light end · **16.71** dark end |
-| `#9aa1a6` | idle | **5.68** light end · **6.82** dark end |
-
-### Pointer against its cap — a graphic, and the one thin figure
-
-| Cap | Ratio |
+| Figure | Value |
 |---|---|
-| DETECTION `#D5257A` | 4.26 |
-| OUTPUT `#3A6FD0` | 4.27 |
-| TIMING `#17825F` | **4.24** |
+| Delivered | **18 × 525** |
+| Drawn on the 396 face | length **175.4**, tip **1.6** wide, base **4.4**, hub **6.3** |
+| Tip radius | **171.7 — 6.3 short of the arc**, just past the inner ends of the majors |
+| Ink | `linear-gradient(90deg, #24211a, #14120d 45%, #24211a)`, hub `radial-gradient(circle at 36% 30%, #2b2820, #15130e 60%, #0d0c08)` |
 
-**The TIMING base was `#1B9E74` and measured 3.01** — a one-of-three rather than a floor
-breach, since the pointer is a graphic with no text floor and carries a
-`0 0 2px rgba(0,0,0,.45)` halo the ratio does not capture. It is now **`#17825F`, 4.24**,
-in parity with its two siblings. `#146B4F` (5.74) was rejected: it would have made TIMING
-the *brightest*-separated pointer on the panel, trading one inconsistency for another.
-Neither option changes the hue, so the group coding survives either way. **Whether 4.26 is
-itself thin is a suite question about pointer contrast, not a Chorus-60 or Elmer question**,
-and belongs in the catalogue.
-
-### Accent
-
-Elmer's live-state indication is the KNEE lens and the meter needle. No separate accent
-colour is used anywhere on this panel.
+**Measure the old needle's ink, not its image box.** The prototype's image is 60 × 510 with **67
+rows of transparent padding**; cutting to the image box makes a needle 15 % too long.
 
 ---
 
-## 7 · State matrices
+## 5 · The scribble strip
 
-### 7.1 Program legends — shared part
+`CH 24 — MIX BUS / GLUE` — Permanent Marker **28.5 px**, `#2b2a26`, on torn cream tape, rotated
+**−2.4°**, at **(396, 566)** in the centre column, about 45 px left of its centre line. Tape:
+`linear-gradient(178deg,#efe9d6,#ded7c0 55%,#e6dfca)`, torn edge by `clip-path`, padding
+10.5 / 39 / 13.5 / 42.
 
-| Panel state | SAVE | STORE | DELETE | CANCEL |
-|---|---|---|---|---|
-| Factory Program, unmodified | idle | idle | idle | idle |
-| Factory Program, edited | **lit** | idle | idle | idle |
-| User Program, unmodified | idle | idle | **lit** | idle |
-| User Program, edited | **lit** | idle | **lit** | idle |
-| Naming a Program | idle | **lit** | idle | **lit** |
+**It is one of this casting's identity marks** and the thing that reads console module rather than
+rack unit. **It was never retired**: it existed in the 1120 × 776 prototype's footer and fell out of
+a re-layout unrecorded. Scaled 1.5× from its original 19 px this round — padding and tracking scaled
+with the type so the tape grows proportionally rather than the type outgrowing it.
 
-Weight 600 in all twenty cells; only illumination changes. No disabled face.
+The serial and version consolidate into **one right-aligned footer line** at (924, 640) —
+`GL-87 · SN 0042 · v1.0`, IBM Plex Mono 500, 10 px / .18 em, `#34322a`.
 
-### 7.2 KNEE
+---
 
-| Knee | SOFT lens | HARD lens |
+## 6 · Type and contrast
+
+| Role | Face | Size / tracking |
 |---|---|---|
-| Soft | **lit** | unlit |
-| Hard | unlit | **lit** |
+| Wordmark | Archivo 700, width 125 % | 31 / line 34 / .10 em |
+| Model line | Barlow Condensed 600 | 14 / 17 / .26 em |
+| Model number | IBM Plex Mono 500 | 11 / 14 / .20 em |
+| Group headings | Barlow Condensed 600 | 12 / 15 / .28 em |
+| Knob legends | Barlow Condensed 600 | 12 / 15 / .18 em |
+| Knob units | IBM Plex Mono 500 | 10 / 13 / .10 em |
+| Knob numerals | IBM Plex Mono 500 | 11 / 11 |
+| Meter label + caption | IBM Plex Mono 500 | 11 / 14 / .14 em |
+| Readouts | Share Tech Mono | 17 / 22 / .10 em |
+| Button lamps | Barlow Condensed 600 | 11 / 13 / .12 em |
+| Footer | IBM Plex Mono 500 | 10 / 13 / .18 em |
+| Scribble strip | Permanent Marker | 28.5 / 1 |
 
-Both legends printed in both states. The pair is exclusive — there is no third state and
-no "neither".
+### Contrast, computed against this casting's own grounds
 
-### 7.3 Meter
+| Ink | Ground | Ratio |
+|---|---|---|
+| `#0e0d08` knob legends, headings | fascia `#aca596` (darkest) | **7.94:1** |
+| `#0e0d08` | fascia `#b3ac9d` (lightest) | **8.62:1** |
+| `#0e0d08` meter label, left | fascia at y 179 | **8.32:1** |
+| `#2d2b24` meter caption, right label | fascia | **6.06:1** |
+| `#34322a` footer | fascia foot | **5.24:1** |
+| `#16150f` face scale ink | lamp centre `#fffcef` | **17.79:1** |
+| `#16150f` face scale ink | lamp corner `#d1c7ad` | **10.87:1** |
+| `#e6dcae` readouts | LCD well `#1b1a16` | **12.62:1** |
+| `#ffe9f3` KNEE legend, lit | lit lens | **11.52:1** |
+| `#150a0f` KNEE legend, unlit | unlit lens | **9.07:1** |
+| `#9aa1a6` header lamp, idle | button face | **6.34:1** |
+| `#f4f8fa` header lamp, lit | button face | **15.53:1** |
+| `#2b2a26` scribble strip | tape | **9.98:1** |
 
-| Reduction | Needle |
-|---|---|
-| 0 dB | **+63°** (rest, right end stop) |
-| 10 dB | 0° |
-| 20 dB | **−63°** |
-
-Clamped at both ends; values beyond 20 dB hold the end stop rather than over-swinging.
-
-### 7.4 Bypass
-
-Host-driven, no on-panel control. **A 0.50 `#808080` multiply over the body only** — the
-header stays lit, which is this casting's one departure from the suite's full-bleed
-multiply and is deliberate: Elmer's header is a raised sub-panel with its own material, and
-darkening it reads as a second unit rather than as one unlit one. Pointers do not move, the
-needle holds, no caption, no desaturation. The legibility floors do not apply in this state.
-
----
-
-## 8 · Type
-
-Every size is a CSS px em size with a pinned line box (call 4).
-
-| Role | Face | Size / line box | Tracking | Ink |
-|---|---|---|---|---|
-| Wordmark | Archivo 700, stretch 125 % | 31 / 34 | .10 em | `#26221a` |
-| Function descriptor | Barlow Condensed 600 | 14 / 17 | .26 em | `#0e0d08` |
-| Model line | IBM Plex Mono 500 | 11 / 14 | .20 em | `#0f0f0c` |
-| Section heading | Barlow Condensed 600 | 12 / 15 | .28 em | `#0e0d08` |
-| Control label · KNEE label | Barlow Condensed 600 | 12 / 15 | .18 em | `#0e0d08` |
-| Unit | IBM Plex Mono 500 | 10 / 13 | .10 em | `#0e0d08` |
-| Scale numeral | IBM Plex Mono 500 | 11 / 13 | 0 | `#0e0d08` |
-| Meter caption | IBM Plex Mono 500 | 11 / 14 | .14 em | `#0e0d08` |
-| Meter sub-caption | IBM Plex Mono 500 | 11 / 14 | .14 em | `#2d2b24` |
-| KNEE lens legend | Barlow Condensed 600 | 11 / 13 | .14 em | see 7.2 |
-| LCD / meter value | Share Tech Mono | 17 / 22 | .10 em | `#e6dcae` |
-| Program legend | Barlow Condensed 600 | 11 / 13 | .12 em | see 7.1 |
-| Serial · version | IBM Plex Mono 500 | 10 / 13 | .18 em | `#34322a` |
-
-**Elmer paid the whole cost of call 7.** Its printed knob legends, lamp legends, meter
-header and serial line were IBM Plex Mono; panel lettering is now Barlow Condensed 600
-throughout. **Numerals, units and the model line stay in IBM Plex Mono** — the casting's
-own mono, per call 7's split — and the wordmark is the nameplate metaphor, outside the call.
+**Everything clears 4.5:1, and the floor is the footer at 5.24.** The face's scale ink is checked at
+the lamp's **corner** as well as its centre, because the lamp is a bloom and the corner is the dim
+end of its own ground.
 
 ---
 
-## 9 · Conformance — calls this casting already satisfied
+## 7 · Changelog — what moved and why
 
-**§9 and §10 together account for every call.** A call appearing in neither this section
-nor the changelog is a gap by construction, not an omission.
-
-| Call | State |
-|---|---|
-| **3's signature class** | **checked, and Elmer takes no Ø104.** It has no MODEL control; the KNEE pair is a lamp switch, not a detented selector, so the signature diameter would land on nothing that earned it. Two classes is the intended reading, not a shortfall. |
-| **5** — code-drawn, cached, no filmstrips | **already conformed** in artwork: rings, ticks, numerals and pointer were always drawn from rotation fractions. Its filmstrip sheets are retired by the call; `setBufferedToImage` is the build's to add. |
-| **§4B shoes** | **not applicable, checked.** Elmer has no two- or three-state shoe — its only multi-state control is the KNEE lamp pair, which is the lamp part rather than the shoe part. |
-| **Lamps** — light stops at the lens edge, lit darkens the lens, unlit stays in its own hue | **already conformed** on the KNEE lenses, and this casting is where the rule was derived. |
-| **Baseline rule** — labels of different size classes on a shared line | **already conformed**, and it is the half of §3.1 this panel had right. The pivot half is the correction. |
+0. **Quadrant grid retired, canvas unchanged at 660** — meter well 396 × 159 → **630 × 254**, from
+   30 % of the usable width to 48 % and from 0.33× the cut face to 0.53×. Controls in two flanking
+   columns; dividers at 324 / 1010.
+0a. **A band layout at 992 × 399 was built and reverted.** It grew the panel to 812 on the argument
+   that TapeRot and Chorus-60 give their signature displays most of the panel width. **That
+   comparison does not hold:** those are wide thin strips — TapeRot's scope 1308 × 164, Chorus-60's
+   1039 × 120 — where width costs almost no height. **A VU face is 2.4854:1**, so 1039 wide forces
+   418 tall, half the panel. Width and height are not independent for this part, and a strip's width
+   cannot be compared with a rectangle's.
+0b. **Scribble strip restored, then moved and scaled** — see §5. It was never retired; it fell out
+   of a re-layout unrecorded.
+1. **Canvas 1120 → 1340** (call 1), four sections re-spaced.
+2. **Sprite constants corrected** — the panel described a superseded asset pair (1000 px face, 60 px
+   needle) against real assets of 1188 × 478 and, then, 71 × 607, which put the needle off the face.
+3. **Knobs grew** into the wider canvas; registration box introduced so two diameter classes share
+   one legend baseline.
+4. **Readout stopped printing a minus on zero**; footer stopped running through OUTPUT's scale.
+5. **Face lamp and bezel refitted** to the prototype — see §4.3 and §4.4.
+6. **Dial re-cut to measured figures** — 41 ticks in three classes, numerals to weight 500, needle
+   re-cut from ink rather than image box. Thirteen figures within 1.6 drawn px.
+7. **Knob numerals re-anchored** to the box edge facing the dial (§3.2), removing an 11 px swing.
+8. **Heading clearance bought twice** out of the knob cell, 161 → 144; MAKEUP centred on its column
+   and raised; KNEE lowered 12; dividers matched; meter aligned to the Ø76 knob tops and reduced
+   10 % to 630 × 254.
 
 ---
 
-## 10 · Changelog and outstanding
+## 8 · Conformance
 
-### This round
+| Call | Requirement | State |
+|---|---|---|
+| 1 | Canvas 1340, four sections at full width | **Met** — superseded by the three-column layout, which keeps the four section labels |
+| 2 | Sprite constants match delivered assets | **Met** — face 1188 × 478, needle 18 × 525, both verified against the files the panel loads |
+| 3 | Knob geometry, registration, two diameter classes | **Met** — §3; two classes only, verified after MIX and MAKEUP were repositioned |
+| 4 | No minus on zero; footer clear of scale | **Met** — §4, §5 |
+| 4B | Indicating mechanism stays live, not pre-baked | **Met** — the needle is a live rotation over a baked face; only the face is a bitmap |
+| 5 | Lamp lives in artwork, not code | **Met** — §4.3; one sheen gradient at runtime, nothing else |
+| 6 | Meter carries the panel | **Met** — 48 % of usable width, 0.53× the cut face, top aligned to the Ø76 knob tops |
+| — | Clearance chain: numeral clear of tick's outer end, anchored by the box edge facing the dial | **Met for the knobs** (§3.2). **NOT met for the face bitmap** (§4.2) — 16 dB overlaps, 20 dB clears by 0.14. Raised as an ask; not blocking |
+| — | Contrast ≥ 4.5:1 on this casting's own grounds | **Met** — §6, floor 5.24:1 |
+| — | Both copies of every bitmap written | **Met** — checksum-identical, §4 |
 
-1. **Canvas 1120 → 1340** (call 1), four sections re-spaced with dividers at 500 / 386 / 700.
-2. **Ø84 → Ø76 primary and Ø74 → Ø56 standard** (call 3); standard-class numeral counts cut
-   to three with the demoted values kept as minors at their real angles.
-3. **Panel lettering to Barlow Condensed 600** (call 7) — the largest visible change after
-   the canvas: knob legends, lamp legends, meter header and serial line all moved off
-   IBM Plex Mono.
-4. **LCD face to Share Tech Mono 17 / .10 em** (call 2); cap **22 → 47**, the largest rise
-   in the suite.
-5. **Sizes resolved to whole pixels with pinned line boxes** (call 4) — the 10.5 / 11.5
-   pairs became 11 and 12.
-6. **Both bands re-registered** (§3.1): four standard pivots onto their band's Y, no label
-   moved.
-7. **Wordmark re-cut as paint-filled relief** — moulded and recessed, no outer cast shadow.
-8. **KNEE lamp inverted**: it now darkens its lens when lit, with lit and unlit separated
-   by brightness inside the DETECTION hue.
-9. **LCD chevron re-drawn** as the shared 14 × 8 stroked path, replacing a 9 × 9 rotated box.
-10. **Model line `#2d2b24` → `#0f0f0c`**, 5.85 → 7.93 on the block's dark end, reconciled
-   with the six-material strip which had already carried this fix.
-11. **TIMING cap base `#1B9E74` → `#17825F`** for pointer parity, 3.01 → 4.24.
-
-### Outstanding
-
-- **Both meter assets need re-cutting at 3×** per call 6, and §4 now states each asset's
-  delivered pixels beside its drawn size so the ratio is re-derived rather than transcribed.
-  The current cuts are **2.525×** (face, 1000 × 402) and **2.522×** (needle, 60 × 510) —
-  *not* 2×, which an earlier draft of this section stated. Targets: `meter-face.png`
-  **1188 × 478** (3 × 396 × 159.2 = 1188 × 477.6, rounded up so the face never falls short
-  of its well) and `meter-needle.png` **71.4 × 607** (3 × 23.8 × 202.3). An earlier
-  draft gave the needle as 71.4 × 593, taking its height from the panel's `top: −197.6px`
-  placement offset instead of the image's own 202.3 px — the fourth wrong figure recorded
-  against this needle, which is why both assets now carry their delivered pixels.
-- **The TIMING cap's pointer contrast**, §6 — 3.01 measured, two costed alternates, your call.
-- Wire both meter wells and the gain-reduction meter to real metering; the render shows
-  `−8.4` / `−6.1` and a 5 dB needle as sample values.
-- Confirm ATTACK's skew against the build's `NormalisableRange` before the marks are final.
-- **`shared/HEADER-PART.md` revision 3 is pending three build answers** — the meter's
-  display clamp, its format at both ends, and the sign convention. Nothing on this panel
-  changes either way.
+**One item outstanding: §4.2.** It needs a design decision and a re-cut, not a nudge.
