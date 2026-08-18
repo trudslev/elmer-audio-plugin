@@ -1,3 +1,4 @@
+#include <nf/HeaderPart.h>
 #include "DSP/FactoryPrograms.h"
 #include "DSP/ProgramManager.h"
 #include "GUI/ElmerTheme.h"
@@ -81,8 +82,34 @@ public:
                                        + lcdNameCellW + lcdCellHairline + lcdChevronCellW,
                                    programW, 0.01f);
 
-        beginTest ("The header row is centred against the full 112px header block");
-        expectWithinAbsoluteError (lcdRowY, contentY + (headerHeight - lcdRowH) * 0.5f, 0.01f);
+        beginTest ("The band is the SHARED PART's, and its own centring rule is superseded");
+        {
+            /*  **This arm asserted a relationship that no longer governs, and it was right to.**
+                It read `lcdRowY == contentY + (headerHeight - lcdRowH) / 2` — the row centred in
+                this casting's own 112 px header block from its 20 px content inset, which gives 59.
+                That was this panel's rule and this file's comment recorded why: the height could not
+                move without its Y, and the half-update was exactly what would otherwise ship.
+
+                The shared part does not centre the band. It places a caption row at y 41 and the
+                band at **61**, with 25 px below it to the block's bottom at 120 — an asymmetry that
+                belongs to the part, not to any casting. So the old relationship is not merely a
+                different number, it is a different rule, and keeping it would have pinned this
+                casting to a centring the suite abandoned.
+
+                **Read this as catching divergence, not asserting provenance**: an aliased 61 and a
+                re-typed 61 are indistinguishable while they agree. What it buys is the moment §2
+                moves the band and this casting does not follow. */
+            expectEquals ((int) lcdRowY, nf::HeaderGeometry::bandY);
+            expectEquals ((int) lcdRowH, nf::HeaderGeometry::bandH);
+            expectEquals ((int) captionY, nf::HeaderGeometry::captionY);
+
+            // The band is NOT centred in the block, which is the property the old arm assumed.
+            const float centred = (float) nf::HeaderGeometry::blockY
+                                + ((float) nf::HeaderGeometry::blockH - lcdRowH) * 0.5f;
+            expect (std::abs (lcdRowY - centred) > 1.0f,
+                    "the shared band has become centred in its block, which would make the rule "
+                    "this arm replaced correct again — check §2 before relaxing this");
+        }
     }
 };
 

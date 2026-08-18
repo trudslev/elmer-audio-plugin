@@ -4,7 +4,7 @@
 #include "GUI/ElmerEditorContent.h"
 
 /**
-    Thin shell: owns the fixed 1120 x 776 reference canvas and applies one uniform scale transform,
+    Thin shell: owns the fixed 1340 x 660 reference canvas and applies one uniform scale transform,
     with the aspect ratio locked. Every child paints in design coordinates and never sees the scale.
 */
 class ElmerAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -17,8 +17,8 @@ public:
     void resized() override;
 
 private:
-    static constexpr int canvasWidth  = 1120;
-    static constexpr int canvasHeight = 776;
+    static constexpr int canvasWidth  = 1340;
+    static constexpr int canvasHeight = 660;
 
     ElmerAudioProcessor& processorRef;
     ElmerEditorContent content;

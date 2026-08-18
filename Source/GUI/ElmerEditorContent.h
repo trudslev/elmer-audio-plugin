@@ -10,7 +10,7 @@
 class ElmerAudioProcessor;
 
 /**
-    The fixed 1120 x 776 reference canvas. Every child paints in design coordinates; the editor
+    The fixed 1340 x 660 reference canvas. Every child paints in design coordinates; the editor
     shell applies one uniform scale transform above this and nothing here ever sees it.
 */
 class ElmerEditorContent final : public juce::Component,

@@ -8,7 +8,11 @@ sibling casting under the shared [Neon Foundry](../BRAND.md) umbrella, and those
 purely as structural reference. Read `../BRAND.md` first for the cross-plugin design system, then
 this file.
 
-`design/GUI-SPEC.md` is the authoritative GUI spec and `design/Elmer.dc.html` is the live prototype.
+`design/GUI-SPEC.md` is the authoritative GUI spec and **`design/Elmer GL-87 Panel.dc.html`** is the
+live prototype. **`design/Elmer.dc.html` is the SUPERSEDED one** and this line named it as live
+until 2026-08-18 — it is still the old 1120 x 776 canvas, so measuring a position off it silently
+returns the previous revision's layout. Same two-prototype trap Chorus-60 had, and the tell is the
+same: the current cut is named for the model.
 `design/screenshots/panel.png` is the acceptance target — this casting ships one, so there is no
 need to drive the prototype in a browser. The bundle also carries `panel-menu-open.png`,
 `panel-naming.png`, `header-naming.png` and `header-dirty.png`, which are the states this suite has

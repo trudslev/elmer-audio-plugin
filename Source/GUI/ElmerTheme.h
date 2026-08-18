@@ -10,7 +10,7 @@
 /**
     Elmer's design tokens: every colour, coordinate, size and typographic constant.
 
-    All coordinates are ABSOLUTE against the 1120 x 776 canvas. The prototype expresses layout as
+    All coordinates are ABSOLUTE against the 1340 x 660 canvas. The prototype expresses layout as
     CSS flexbox, which cannot be transcribed directly, so the nested boxes were resolved by hand and
     then checked against `design/screenshots/panel.png`: all eight knob centres, the header divider
     and the top row's origin land on the measured render exactly.
@@ -19,6 +19,7 @@
     top. There is deliberately no dressed-panel render in BinaryData: Gatecrasher used one as its
     background and every live control ended up sitting over a baked copy of itself.
 */
+#include <nf/HeaderPart.h>
 #include <nf/ParameterReadout.h>
 
 namespace ElmerTheme
@@ -277,20 +278,48 @@ namespace Text
 //==============================================================================
 namespace Layout
 {
-    inline constexpr float canvasWidth  = 1120.0f;
-    inline constexpr float canvasHeight = 776.0f;
+    /*  **1340 x 660, AND THIS IS THE ONLY CASTING WHOSE HEIGHT DROPS.** Call 1 brought +220 of
+        width (1120 -> 1340); the height comes DOWN, 776 -> 660, because the four-section layout at
+        full width no longer needs the depth.
+
+        **That inverts the usual check.** Everywhere else in the suite a body figure moved down the
+        panel; here anything positioned from the BOTTOM moves UP by 116, while anything positioned
+        from the top does not move at all. So a figure that looks wrong is right and vice versa, and
+        the constants below were checked ONE AT A TIME rather than by pattern — which is the lesson
+        Chorus-60's knob row taught, where three of five stayed put and the two that moved read as
+        transcription slips when the row was checked as a group. */
+    inline constexpr float canvasWidth  = 1340.0f;
+    inline constexpr float canvasHeight = 660.0f;
     inline constexpr float cornerRadius = 5.0f;
 
+    /*  **The chassis rails and screws, moved rather than retired — and neither prototype has
+        them.** Grepped both: the superseded `Elmer.dc.html` and the delivered
+        `Elmer GL-87 Panel.dc.html` contain no screw, no rail and no circular-highlight gradient.
+        They are this build's own chassis metaphor in both revisions, not a delivered element.
+
+        That makes their fate a design question rather than a refactor's, so they keep their
+        relationship to the panel: 11 px in from each corner. The two BOTTOM screws are exactly the
+        case this canvas inverts — they were 765 against a 776 panel and are **649** against a 660
+        one, which is 116 px UP where every other casting's move went down. */
     inline constexpr float railWidth = 15.0f;
     inline constexpr float screwDiameter = 6.0f;
+    inline constexpr float screwInset = 11.0f;
     inline constexpr std::array<juce::Point<float>, 4> screwCentres { {
-        { 8.0f, 11.0f }, { 1112.0f, 11.0f }, { 8.0f, 765.0f }, { 1112.0f, 765.0f } } };
+        { 8.0f, screwInset }, { canvasWidth - 8.0f, screwInset },
+        { 8.0f, canvasHeight - screwInset }, { canvasWidth - 8.0f, canvasHeight - screwInset } } };
 
-    // Content inset: 22 left/right, 20 top/bottom.
+    /*  **`contentBottom` is DELETED, not moved, and the rule says which.** It was 756 — the old
+        canvas less its 20 px inset — and it had exactly **one** appearance in this repo: its own
+        declaration. A value nothing reads cannot be checked by anything and drifts silently, which
+        root CLAUDE.md rules is a derive-or-delete, never a keep-and-correct. Nothing derives from
+        it, so it goes.
+
+        The other three inset figures are read (`contentX` 8 sites, `contentRight` 3, `contentY` 5)
+        and are left standing for the body pass, which re-lays them against §1's body origin at
+        y 120 and its dividers at x 16..1324. */
     inline constexpr float contentX = 22.0f;
     inline constexpr float contentY = 20.0f;
     inline constexpr float contentRight = 1098.0f;
-    inline constexpr float contentBottom = 756.0f;
     inline constexpr float contentWidth = contentRight - contentX;   // 1076
 
     // --- header (112 tall, 13px right padding) --------------------------------
@@ -322,7 +351,7 @@ namespace Layout
 
         They used to sit at contentY, which was right for a row that began at 37 and is 24px too
         high for one that begins at 59. */
-    inline constexpr float captionY = 43.0f;
+    inline constexpr float captionY = (float) nf::HeaderGeometry::captionY;
 
     /** **The header row: 34px tall, at y 59.** Every element in it - display, SAVE, DELETE, IN and
         OUT - is the same height and shares this Y, so the band reads as one instrument; the display
@@ -346,21 +375,65 @@ namespace Layout
 
         The display was 364 x 38 and held 21 characters. At 361 with 14px type it holds 24: the
         weight comes off and three characters come back. */
-    inline constexpr float lcdRowY = 59.0f;
-    inline constexpr float lcdRowH = 34.0f;
-    inline constexpr float programX = 403.0f;
+    /*  **THE BAND IS `nf::HeaderGeometry` NOW, AND THESE ARE ALIASES — one edit with the canvas,
+        because they cannot be separated.**
+
+        The shared band puts the LCD at 357..998 and the meter wells out to 1302. This casting's
+        canvas was 1120 wide, so aliasing before the canvas move would have placed SAVE, DELETE and
+        both meters past the right edge of the panel; moving the canvas first would have left the
+        header cluster bunched into the left two-thirds of a 1340 panel. Neither is a state worth
+        committing, and neither would have failed a build.
+
+        **Every figure moved, and by different amounts** — which is why they are aliased in one go
+        rather than nudged: the LCD's x by -46, its width by +280, SAVE by +235 and 0 width, DELETE
+        by +236 and +8, the meter wells by +236 and +246 with widths -10. A row where every member
+        moves differently is exactly the row a diff cannot check. */
+    inline constexpr float lcdRowY = (float) nf::HeaderGeometry::bandY;
+    inline constexpr float lcdRowH = (float) nf::HeaderGeometry::bandH;
+    inline constexpr float programX = (float) nf::HeaderGeometry::lcdX;
 
     /** 361, not the 359 the cell widths alone give: 56 + 269 + 28 is 353, plus TWO 1px hairlines
         between the three cells, plus the 3px frame on each side. Measured 403..764 in the reference
         render, which agrees exactly. */
-    inline constexpr float programW = 361.0f;
+    /*  **641, and this is the width the first pass MISSED.** `programX` was aliased and this was
+        not, so the display started on core's x and ended on this casting's own 361 — a rect with one
+        edge moved and one edge not, which a diff cannot see and a capture shows immediately. It was
+        found exactly that way: the band measured 360..714.5 against core's 357..998.
+
+        Its cell widths (56 / 269 / 28) are this casting's and are re-laid by the LCD pass; what is
+        shared is the outer box. */
+    inline constexpr float programW = (float) nf::HeaderGeometry::lcdW;
 
     /** The display's three cells, inside the 3px metal frame. Bank 56 + name 269 + chevron 28.
         The name cell's 11px horizontal padding leaves 247px of text, which at IBM Plex Mono 14px
         with 1.7px tracking (10.1px per character) is the 24-character budget the spec cites. */
     inline constexpr float lcdFrameThickness = 3.0f;
     inline constexpr float lcdBankCellW = 56.0f;
-    inline constexpr float lcdNameCellW = 269.0f;
+    /*  **549, ABSORBING THE NEW OUTER WIDTH — and the budget and the cap are deliberately NOT
+        touched in this commit.**
+
+        The display's outer box is the shared part's 641 now. Its cells are still this casting's, so
+        the name cell takes the difference: 641 = 3 frame + 56 bank + 1 + **549** + 1 + 28 chevron +
+        3 frame. That figure is forced by the arm below rather than chosen — it is the only value
+        that keeps the cells summing to the box.
+
+        **It was typed as 533 first and the arm rejected it at 625 against 641** — a sixteen-pixel
+        subtraction slip caught in seconds by the one assertion here whose whole job is that the
+        parts add up. That is the argument for the arm existing rather than for computing carefully.
+
+        **What is NOT done here is the LCD's own pass, and the reason is §11.** The part makes the
+        LCD cell *with its budget and cap* shared — 49 and 47 against `nf::LcdCell::nameAreaW` —
+        and §11 gates adopting them on the casting holding Share Tech Mono. The face is delivered
+        (`design/fonts/ShareTechMono-Regular.ttf`) but is **not in BinaryData**, and this casting's
+        LCD is still IBM Plex Mono at 14 px. Adopting a budget measured on a face the build does not
+        embed is adopting a measurement nobody can reproduce, which is the thing §11 forbids.
+
+        **A cap may never shrink, so it is the one figure that cannot be corrected afterwards.**
+        Growing the cell while leaving the cap at 22 is safe in the only direction that matters: 533
+        px holds far more than 24 characters, so nothing a user has typed becomes untypable. The
+        rise from 22 to 47 — §11 names it as the largest in the suite — belongs in the commit that
+        embeds the face and re-measures the advance. */
+    inline constexpr float lcdNameCellW = 549.0f;
     inline constexpr float lcdChevronCellW = 28.0f;
 
     /** The chevron, drawn as a stroked path in an 11 x 7 box so it renders identically whatever the
@@ -398,9 +471,14 @@ namespace Layout
     inline constexpr float lcdTextTracking = 1.7f;
     inline constexpr float lcdNamePadX = 11.0f;
 
-    inline constexpr float saveX = 771.0f;
-    inline constexpr float deleteX = 840.0f;
-    inline constexpr float headerButtonW = 62.0f;
+    /** The Program buttons. **SAVE and DELETE are no longer the same width** — the part gives
+        SAVE 62 and DELETE 70, because DELETE/CANCEL is the longer legend pair. This casting had
+        both at 62, so `headerButtonW` splits in two. */
+    inline constexpr float saveX = (float) nf::HeaderGeometry::saveX;
+    inline constexpr float saveW = (float) nf::HeaderGeometry::saveW;
+    inline constexpr float deleteX = (float) nf::HeaderGeometry::deleteX;
+    inline constexpr float deleteW = (float) nf::HeaderGeometry::deleteW;
+    inline constexpr float headerButtonW = saveW;   // retained: existing call sites read this
     /** 10px is BRAND.md's floor for functional text and **both** legends are functional, so
         neither is set smaller than the other to make the pair fit. Tracking came in from 2.0 to
         1.4 because two stacked legends at 2.0 crowd DELETE/CANCEL against the 62px cap. */
@@ -417,9 +495,14 @@ namespace Layout
     inline constexpr float legendWindowH = 15.0f;
     inline constexpr float windowRadius = 2.0f;
 
-    inline constexpr float meterInX = 928.0f;
-    inline constexpr float meterOutX = 1011.0f;
-    inline constexpr float levelBoxW = 74.0f;
+    inline constexpr float meterInX = (float) nf::HeaderGeometry::inWellX;
+    inline constexpr float meterOutX = (float) nf::HeaderGeometry::outWellX;
+    inline constexpr float meterWellW = (float) nf::HeaderGeometry::meterWellW;
+    /** **64, from the part.** Same miss as `programW`: `meterInX` and `meterOutX` were aliased
+        while the width stayed at this casting's 74, so both wells measured 1164..1236.5 and
+        1238..1310.5 where the part gives 1164..1228 and 1238..1302 — the second overrunning the
+        band's own right edge at 1302. */
+    inline constexpr float levelBoxW = meterWellW;
     inline constexpr float levelTextSize = 14.0f;
 
     // --- divider --------------------------------------------------------------
@@ -463,8 +546,13 @@ namespace Layout
     inline constexpr float outputX = 758.0f;
     inline constexpr float outputW = 340.0f;
 
-    // --- footer ---------------------------------------------------------------
-    inline constexpr float footerY = 725.0f;
+    /*  --- footer -------------------------------------------------------------------------
+        **725 -> 634, and this is a bottom-derived figure that moved UP.** It sat 51 px above the
+        old 776 panel bottom; the delivered prototype puts both footer strings on **y 634**, which
+        is 26 above a 660 panel. So it is not the old figure shifted by the canvas delta — it is a
+        measured position from the new cut, and checking it as "776 - 51 -> 660 - 51 = 609" would
+        have been wrong by 25. Bottom-derived does not mean bottom-relative. */
+    inline constexpr float footerY = 634.0f;
     inline constexpr float footerTextSize = 11.5f;
     inline constexpr float footerTracking = 1.8f;
     inline constexpr float scribbleSize = 21.0f;
