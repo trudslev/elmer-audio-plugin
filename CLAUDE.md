@@ -49,6 +49,29 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## THE IN-SITU KNOB COMPARISON CANNOT BE RUN — the only prototype is the superseded layout
+
+Attempted 2026-08-19 and stopped before capturing, which is the point of the entry.
+
+`design/Elmer GL-87 Panel.dc.html` is on the **1340 × 660 canvas**, so it reads as current. Its body
+is the **four-section** layout: dividers at 500 / 386 / 700 against §2's 324 and 1010, and THRESHOLD
+at cx 618 / cy 262 against §3's cx 83 / cy 243. Bundles 3, 4 and 5 delivered **no `.dc.html` at
+all**, so it is bundle 2's cut — and the matching canvas is what makes that easy to miss.
+
+**The comparison exists to control for the surround, and against this prototype there is no same
+surround to compare in.** THRESHOLD sits in a different column with different neighbours; a capture
+would show a difference and the difference would be the layout. Running it would have produced a
+confident, precisely-measured answer to a question nobody asked.
+
+Two controls were prepared and are recorded for whenever the cut arrives: **match the pointer
+angles** — the prototype puts THRESHOLD at fraction **0.56**, and one pointer crossing the bright
+lobe while the other does not is a difference in the capture that survives into a conclusion — and
+**capture at the same device scale**, `--force-device-scale-factor=2`, as the isolated run did.
+
+Raised as `design-asks/elmer-prototype-for-current-layout.md`.
+
+---
+
 ## THE KNOB CONSTRUCTION REPRODUCES THE PROTOTYPE — measured 2026-08-19, both hypotheses refuted
 
 **Reported by eye as "a smooth glossy bead rather than the turned skirt with a matte cap".** Two
