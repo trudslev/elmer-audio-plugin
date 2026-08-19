@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,600;125,700&family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Share+Tech+Mono&family=Archivo+Black&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700&family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Share+Tech+Mono&family=Archivo+Black&family=Permanent+Marker&display=swap" rel="stylesheet" />
 <style>
   body { margin: 0; background: #6f6d63; }
   a { color: #4a3f22; }
@@ -28,7 +28,7 @@
     <div style="position:absolute;left:341px;top:25px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;line-height:13px;letter-spacing:.24em;color:#0e0d08;">{{ caption }}</div>
     <div style="position:absolute;left:341px;top:45px;width:641px;height:34px;box-sizing:border-box;display:flex;align-items:stretch;background:linear-gradient(180deg,#1b1a16,#242219);box-shadow:inset 0 0 0 1px #6c665a, inset 0 2px 6px rgba(0,0,0,.7);border-radius:3px;overflow:hidden;">
       <div style="width:72px;display:flex;align-items:center;justify-content:center;border-right:1px solid #46402f;font-family:'Share Tech Mono',monospace;font-size:17px;line-height:22px;letter-spacing:.10em;color:#e6dcae;">{{ bankTag }}</div>
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:17px;line-height:22px;letter-spacing:.10em;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45);">{{ programName }}</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:17px;line-height:22px;letter-spacing:.10em;color:#e6dcae;text-shadow:0 0 8px rgba(214,196,124,.45);">{{ programName }}<sc-if value="{{ naming }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:14px;height:17px;margin-left:2px;background:currentColor;box-shadow:0 0 6px currentColor;"></span></sc-if></div>
       <div style="width:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;padding-right:16px;"><svg viewBox="0 0 14 8" style="width:14px;height:8px;flex:0 0 14px;"><path d="M1 1.6 L7 6.4 L13 1.6" fill="none" stroke="#e6dcae" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
     </div>
     <div style="position:absolute;left:990px;top:45px;width:62px;height:34px;box-sizing:border-box;border-radius:4px;background:linear-gradient(180deg,#23282c,#14181b);box-shadow:inset 0 0 0 1px #0b0d0f, inset 0 1px 0 rgba(255,255,255,.10), inset 0 -2px 5px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;">
@@ -45,24 +45,28 @@
     <div style="position:absolute;left:1222px;top:45px;width:64px;height:34px;box-sizing:border-box;background:linear-gradient(180deg,#1b1a16,#242219);box-shadow:inset 0 0 0 1px #6c665a, inset 0 2px 6px rgba(0,0,0,.7);border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:17px;line-height:22px;color:#e6dcae;">−6.1</div>
   </div>
 
-  <div style="position:absolute;left:500px;top:136px;width:1px;height:244px;background:rgba(255,255,255,.5);"></div>
-  <div style="position:absolute;left:16px;top:386px;width:1308px;height:1px;background:rgba(255,255,255,.5);"></div>
-  <div style="position:absolute;left:700px;top:396px;width:1px;height:248px;background:rgba(255,255,255,.5);"></div>
+  <div style="position:absolute;left:324px;top:156px;width:1px;height:474px;background:rgba(255,255,255,.5);"></div>
+  <div style="position:absolute;left:1010px;top:156px;width:1px;height:474px;background:rgba(255,255,255,.5);"></div>
 
-  <div style="position:absolute;left:510px;top:150px;width:804px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">DETECTOR</div>
-  <div style="position:absolute;left:26px;top:412px;width:664px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">TIMING</div>
-  <div style="position:absolute;left:710px;top:412px;width:604px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">OUTPUT</div>
+  <div style="position:absolute;left:16px;top:156px;width:294px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">DETECTOR</div>
+  <div style="position:absolute;left:1040px;top:156px;width:268px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">TIMING</div>
+  <div style="position:absolute;left:1040px;top:339px;width:268px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.28em;color:#0e0d08;">OUTPUT</div>
 
-  <div style="position:absolute;left:60px;top:150px;width:396px;text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:14px;letter-spacing:.14em;color:#0e0d08;">GAIN REDUCTION METER</div>
-  <div style="position:absolute;left:60px;top:176px;width:396px;height:159px;border-radius:4px;overflow:hidden;box-shadow:0 4px 12px rgba(35,30,22,.45), 0 1px 0 rgba(255,255,255,.34);">
-    <img src="assets/elmer/meter-face.png" width="396" height="159.2" style="position:absolute;left:0;top:0;" />
-    <div style="position:absolute;left:198px;top:198px;width:0;height:0;transform:rotate({{ needleDeg }}deg);">
-      <img src="assets/elmer/meter-needle.png" width="23.8" height="202.3" style="position:absolute;left:-11.9px;top:-197.6px;" />
-    </div>
-
-    <div style="position:absolute;left:0;top:0;width:396px;height:159px;background:linear-gradient(118deg,rgba(255,255,255,.10) 0 22%,rgba(255,255,255,0) 40%);"></div>
+  <div style="position:absolute;left:355px;top:179px;width:630px;display:flex;align-items:baseline;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:14px;letter-spacing:.14em;">
+    <span style="color:#0e0d08;">GAIN REDUCTION METER</span>
+    <span style="color:#2d2b24;">MOVING COIL · 300 ms BALLISTIC</span>
   </div>
-  <div style="position:absolute;left:60px;top:342px;width:396px;text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:14px;letter-spacing:.14em;color:#2d2b24;">STEREO LINKED · ONE DETECTOR</div>
+  <div style="position:absolute;left:355px;top:199px;width:630px;height:254px;border-radius:4px;overflow:hidden;box-shadow:0 4px 12px rgba(35,30,22,.45), 0 1px 0 rgba(255,255,255,.34);">
+    <img src="assets/elmer/meter-face.png" width="630" height="253.5" style="position:absolute;left:0;top:0;" />
+    <div style="position:absolute;left:315px;top:315px;width:0;height:0;transform:rotate({{ needleDeg }}deg);">
+      <img src="assets/elmer/meter-needle.png" width="9.55" height="278.4" style="position:absolute;left:-4.77px;top:-273.2px;" />
+    </div>
+    <div style="position:absolute;left:0;top:0;width:630px;height:254px;background:linear-gradient(118deg,rgba(255,255,255,.10) 0 22%,rgba(255,255,255,0) 40%);"></div>
+  </div>
+  <div style="position:absolute;left:355px;top:457px;width:630px;display:flex;align-items:baseline;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:14px;letter-spacing:.14em;color:#2d2b24;">
+    <span>STEREO LINKED · ONE DETECTOR</span>
+    <span>{{ grText }}</span>
+  </div>
 
   <sc-for list="{{ knobs }}" as="k" hint-placeholder-count="8">
     <div style="position:absolute;left:{{ k.left }}px;top:{{ k.top }}px;width:{{ k.d }}px;height:{{ k.d }}px;">
@@ -71,7 +75,7 @@
         <div style="position:absolute;left:50%;bottom:50%;width:{{ t.w }}px;height:{{ t.h }}px;margin-left:-1px;transform-origin:bottom center;transform:rotate({{ t.a }}deg);background:linear-gradient(180deg,#16150f 0 {{ t.ink }}px,rgba(0,0,0,0) {{ t.ink }}px);"></div>
       </sc-for>
       <sc-for list="{{ k.nums }}" as="n" hint-placeholder-count="5">
-        <div style="position:absolute;left:50%;top:50%;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:13px;color:#0e0d08;white-space:nowrap;transform:{{ n.tf }};">{{ n.t }}</div>
+        <div style="position:absolute;left:50%;top:50%;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:11px;color:#0e0d08;white-space:nowrap;transform:{{ n.tf }};">{{ n.t }}</div>
       </sc-for>
       <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 200deg,#e8e3da,#b6afa5 18%,#efeae1 34%,#a8a199 52%,#e6e1d8 70%,#b0a9a0 86%,#e8e3da);box-shadow:inset 0 0 0 1px rgba(255,255,255,.55), inset 0 -2px 4px rgba(0,0,0,.30), 0 3px 7px rgba(0,0,0,.34);"></div>
       <div style="position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 34% 24%,{{ k.capHi }},{{ k.capBase }} 52%,{{ k.capLo }} 100%);box-shadow:inset 0 -7px 12px rgba(0,0,0,.42), inset 0 2px 3px rgba(255,255,255,.22), 0 1px 2px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.35);"></div>
@@ -82,17 +86,18 @@
     </div>
   </sc-for>
 
-  <div style="position:absolute;left:1100px;top:266px;width:180px;display:flex;gap:12px;">
-    <div style="flex:1;height:34px;box-sizing:border-box;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:{{ softFace }};box-shadow:{{ softShadow }};">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px;line-height:13px;letter-spacing:.14em;color:{{ softInk }};text-shadow:{{ softGlow }};">SOFT</span>
-    </div>
-    <div style="flex:1;height:34px;box-sizing:border-box;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:{{ hardFace }};box-shadow:{{ hardShadow }};">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:11px;line-height:13px;letter-spacing:.14em;color:{{ hardInk }};text-shadow:{{ hardGlow }};">HARD</span>
-    </div>
+  <div style="position:absolute;left:73px;top:489px;width:180px;height:32px;box-sizing:border-box;display:flex;border-radius:3px;overflow:hidden;box-shadow:inset 0 0 0 1px #6d6759, inset 0 2px 6px rgba(40,34,26,.42), 0 1px 0 rgba(255,255,255,.28);">
+    <div style="flex:1;background:{{ softFace }};box-shadow:{{ softShadow }};"></div>
+    <div style="flex:1;background:{{ hardFace }};box-shadow:{{ hardShadow }};"></div>
   </div>
-  <div style="position:absolute;left:1100px;top:334px;width:180px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.18em;color:#0e0d08;">KNEE</div>
-  <div style="position:absolute;left:26px;top:634px;width:400px;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;line-height:13px;letter-spacing:.18em;color:#34322a;">GL-87 · SN 0042</div>
-  <div style="position:absolute;left:914px;top:634px;width:400px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;line-height:13px;letter-spacing:.18em;color:#34322a;">v1.0</div>
+  <div style="position:absolute;left:73px;top:525px;width:180px;display:flex;">
+    <div style="flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;line-height:13px;letter-spacing:.16em;color:#0e0d08;">SOFT</div>
+    <div style="flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;line-height:13px;letter-spacing:.16em;color:#0e0d08;">HARD</div>
+  </div>
+  <div style="position:absolute;left:73px;top:543px;width:180px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.18em;color:#0e0d08;">KNEE</div>
+
+  <div style="position:absolute;left:396px;top:566px;transform:rotate(-2.4deg);transform-origin:center;padding:10.5px 39px 13.5px 42px;background:linear-gradient(178deg,#efe9d6,#ded7c0 55%,#e6dfca);clip-path:polygon(1.6% 0%, 98.6% 0%, 99.4% 17%, 97.6% 33%, 100% 52%, 98% 70%, 99.2% 86%, 97.8% 100%, 2.2% 100%, 0.8% 84%, 2.6% 66%, 0% 49%, 1.8% 31%, 0.6% 15%);font-family:'Permanent Marker',cursive;font-size:28.5px;line-height:1;letter-spacing:.75px;color:#2b2a26;text-shadow:0 1px 0 rgba(255,255,255,.5);">CH 24 — MIX BUS / GLUE</div>
+  <div style="position:absolute;left:924px;top:640px;width:400px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;line-height:13px;letter-spacing:.18em;color:#34322a;">GL-87 · SN 0042 &nbsp;·&nbsp; v1.0</div>
 
 </div>
 </div>
@@ -110,23 +115,30 @@ class Component extends DCLogic {
     const DET = ['#EE5C9C', '#D5257A', '#8E1152'];
     const TIM = ['#4FC79C', '#17825F', '#0C6247'];
     const OUT = ['#6E9CE8', '#3A6FD0', '#1E4189'];
+    // Meter centred, controls in two flanking columns: DETECTOR left, TIMING then OUTPUT right —
+    // signal-path order left to right. Cell pitch 134, two cells per column, column centre 163 / 1177.
     // [name, unit, cx, cy, d, pointer fraction, marks[[fraction, numeral, numbered]], group]
     return [
-      ['THRESHOLD', 'dB', 618, 262, 76, 0.56, [
+      ['THRESHOLD', 'dB', 83, 243, 76, 0.56, [
         [0, '−40', 1], [0.2, '−30', 0], [0.4, '−20', 1], [0.6, '−10', 0], [0.8, '0', 1], [1, '+10', 1]], DET],
-      ['SIDECHAIN HP', 'Hz', 800, 262, 56, 0, [
+      ['SIDECHAIN HP', 'Hz', 163, 383, 56, 0, [
         [0, 'OFF', 1], [0.2, '40', 0], [0.4, '75', 0], [0.6, '140', 1], [0.8, '265', 0], [1, '500', 1]], DET],
-      ['RATIO', '', 982, 262, 76, 0.5, [
+      // Row 1 now carries two Ø76 knobs. At the 134 pitch their numeral rings clear by 2 px, so
+      // this cell sits at 226: THRESHOLD's widest numeral reaches 148 and RATIO's starts at 159.
+      ['RATIO', '', 226, 243, 76, 0.5, [
         [0, '1.5:1', 1], [0.25, '2:1', 1], [0.5, '4:1', 1], [0.75, '10:1', 1], [1, '20:1', 1]], DET],
-      ['ATTACK', 'ms', 253, 524, 56, 0.807388, [
+      ['ATTACK', 'ms', 1107, 243, 56, 0.807388, [
         [0, '0.1', 1], [0.192612, '0.3', 0], [0.403694, '1', 1], [0.596306, '3', 0], [0.807388, '10', 0], [1, '30', 1]], TIM],
-      ['RELEASE', '', 453, 524, 76, 0.25, [
+      ['RELEASE', '', 1241, 243, 76, 0.25, [
         [0, '0.1 s', 1], [0.25, '0.3 s', 1], [0.5, '0.6 s', 1], [0.75, '1.2 s', 1], [1, 'AUTO', 1]], TIM],
-      ['IRON', '%', 822, 524, 56, 0.2, [
+      ['IRON', '%', 1107, 418, 56, 0.2, [
         [0, '0', 1], [0.25, '25', 0], [0.5, '50', 1], [0.75, '75', 0], [1, '100', 1]], OUT],
-      ['MAKEUP', 'dB', 1012, 524, 76, 0, [
+      // Alone in its row and centred on the column at 1174, under the OUTPUT heading's own centre.
+      // Centring is safe for Ø76 but not for Ø56: a lone knob of the smaller class parked between
+      // the two cell centres reads as a third diameter, which is why MIX sits on a cell centre.
+      ['MAKEUP', 'dB', 1174, 546, 76, 0, [
         [0, '0', 1], [0.25, '5', 1], [0.5, '10', 1], [0.75, '15', 1], [1, '20', 1]], OUT],
-      ['MIX', '%', 1202, 524, 56, 1, [
+      ['MIX', '%', 1241, 418, 56, 1, [
         [0, '0', 1], [0.25, '25', 0], [0.5, '50', 1], [0.75, '75', 0], [1, '100', 1]], OUT]
     ].map(([name, unit, cx, cy, d, pf, marks, group]) => ({
       name, unit, cx, cy, d, ang: A(pf), group,
@@ -149,13 +161,17 @@ class Component extends DCLogic {
       'factory-edited': ['FACT', '01 BUS GLUE 4:1 *'],
       'user': ['USER', 'DRUM BUS SLOW'],
       'user-edited': ['USER', 'DRUM BUS SLOW *'],
-      'naming': ['NAME', 'DRUM BUS SLOW▮']
+      'naming': ['NAME', 'DRUM BUS SLOW']
     };
     const [bankTag, programName] = names[state] || names['factory'];
 
     const knobs = this.knobSpec().map((k) => {
       const r = k.d / 2;
-      const numR = r + 8 + 9 + 6 + 6.5;
+      // Knob cell height governs whether three rows and two headings fit a 508 px column, so the
+      // ring is measured, not eyeballed: tick gap 5 + tick 9 + numeral gap 3 + half the 11 px
+      // numeral line box. Above cy that is 66 for Ø76; below cy the label bottom lands at +78.
+      // Cell 144 — trimmed twice to buy clearance under the header for the group headings.
+      const numR = r + 5 + 9 + 3 + 5.5;
       return {
         name: k.name, unit: k.unit, d: k.d, ang: k.ang,
         capHi: k.group[0], capBase: k.group[1], capLo: k.group[2],
@@ -164,53 +180,63 @@ class Component extends DCLogic {
         // The sweep arc is a 280° wedge, so it is rotated 10° off the 270° default's 225° start.
         arcRotate: 0,
         pointerH: r - 7,
-        // Registration box: both rows lead with Ø76, so the unit and label are
+        // Registration box: both size classes lead with Ø76, so the unit and label are
         // positioned off a 76 box for every class — dy = (76 − d) / 2 = REG − r.
         // Pivots register on the row's Y and labels still land on one line.
-        unitTop: k.d + 20 + (38 - r),
-        labelTop: k.d + 34 + (38 - r),
+        unitTop: k.d + 12 + (38 - r),
+        labelTop: k.d + 25 + (38 - r),
         ticks: k.marks.map(([a, , numbered]) => numbered
-          ? { a, h: r + 8 + 9, ink: 9, w: 2 }
-          : { a, h: r + 8 + 5, ink: 5, w: 1.5 }),
-        nums: k.marks.filter(([, t, numbered]) => numbered).map(([a, t]) => ({
-          t,
-          tf: 'translate(-50%,-50%) rotate(' + a + 'deg) translate(0,-' + numR + 'px) rotate(' + (-a) + 'deg)'
-        }))
+          ? { a, h: r + 5 + 9, ink: 9, w: 2 }
+          : { a, h: r + 5 + 5, ink: 5, w: 1.5 }),
+        // A numeral clears the numbered tick's outer end (r + 14) by a constant 3, measured to the
+        // box edge FACING THE DIAL — not to the box centre. At a fixed centre radius the gap swings
+        // with string length and angle: "1.5:1" at −140° overlapped its tick by 6 while "0" near
+        // 3 o'clock cleared by 4.6. The radial support of an upright w × h box along the mark's
+        // direction is |w/2·sin a| + |h/2·cos a|, so the ring is elliptical, not circular.
+        nums: k.marks.filter(([, t, numbered]) => numbered).map(([a, t]) => {
+          const rad = a * Math.PI / 180;
+          const support = Math.abs((t.length * 6.6) / 2 * Math.sin(rad)) + Math.abs(5.5 * Math.cos(rad));
+          const ri = (r + 14 + 3 + support).toFixed(2);
+          return { t, tf: 'translate(-50%,-50%) rotate(' + a + 'deg) translate(0,-' + ri + 'px) rotate(' + (-a) + 'deg)' };
+        })
       };
     });
 
     // Gain-reduction meter, carried forward from Elmer's current panel: 0 at the right end stop,
     // reduction swinging anticlockwise, needle resting at zero reduction. Its own geometry —
     // pivot at 0.5 x face width below the top edge, +63deg at 0 dB to -63deg at 20 dB.
-    const gr = this.props.grDb ?? 5;
-    const needleDeg = 63 - (Math.max(0, Math.min(20, gr)) / 20) * 126;
+    // The well is 700 x 282, so the pivot is at (350, 350) and the needle scales 700/396.
+    const gr = Math.max(0, Math.min(20, this.props.grDb ?? 5));
+    const needleDeg = 63 - (gr / 20) * 126;
+    // No minus on zero — reduction of nothing is 0.0, not −0.0.
+    const grText = 'GR ' + (gr === 0 ? '0.0' : '−' + gr.toFixed(1)) + ' dB';
 
-    // KNEE lamp lenses in the DETECTION group's magenta - lit and unlit separated by brightness
-    // within that hue, not by a change of hue. A lamp darkens its own face when it lights, so the
-    // legend is the bright thing.
-    const lensLit = {
-      face: 'linear-gradient(180deg,#7a1244,#4d0a2b)',
-      shadow: 'inset 0 0 0 1px #2c0618, inset 0 1px 0 rgba(255,255,255,.14), inset 0 -2px 5px rgba(0,0,0,.5), inset 0 0 12px 2px rgba(213,37,122,.45)',
-      ink: '#ffe9f3', glow: '0 0 7px rgba(255,233,243,.6)'
+    // KNEE is a two-position shoe (catalogue 4B), not a lamp pair. The shoe carries the state:
+    // live half pale metal, idle half dark. Both legends print permanently, one weight and one
+    // ink, on the fascia beneath their own half - so there is no unlit-legend role to give a
+    // floor to. The previous construction re-inked SOFT/HARD by selection, which is the
+    // mechanism 4B withdrew.
+    const shoeLive = {
+      face: 'linear-gradient(180deg,#dcd6c6,#bdb6a4)',
+      shadow: 'inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 4px rgba(40,34,26,.18)'
     };
-    const lensUnlit = {
-      face: 'linear-gradient(180deg,#d2b9c6,#b79dab)',
-      shadow: 'inset 0 0 0 1px #7d6470, inset 0 1px 0 rgba(255,255,255,.5), 0 1px 2px rgba(0,0,0,.22)',
-      ink: '#150a0f', glow: 'none'
+    const shoeIdle = {
+      face: 'linear-gradient(180deg,#413b31,#2e2921)',
+      shadow: 'inset 0 2px 5px rgba(0,0,0,.5)'
     };
-    const soft = kneeSoft ? lensLit : lensUnlit;
-    const hard = kneeSoft ? lensUnlit : lensLit;
+    const soft = kneeSoft ? shoeLive : shoeIdle;
+    const hard = kneeSoft ? shoeIdle : shoeLive;
 
     return {
       caption: naming ? 'NAME PROGRAM' : 'PROGRAM',
-      bankTag, programName,
+      bankTag, programName, naming,
       saveInk: (!naming && edited ? lit : idle).ink, saveGlow: (!naming && edited ? lit : idle).glow,
       storeInk: (naming ? lit : idle).ink, storeGlow: (naming ? lit : idle).glow,
       deleteInk: (!naming && user ? lit : idle).ink, deleteGlow: (!naming && user ? lit : idle).glow,
       cancelInk: (naming ? lit : idle).ink, cancelGlow: (naming ? lit : idle).glow,
-      knobs, needleDeg,
-      softFace: soft.face, softShadow: soft.shadow, softInk: soft.ink, softGlow: soft.glow,
-      hardFace: hard.face, hardShadow: hard.shadow, hardInk: hard.ink, hardGlow: hard.glow
+      knobs, needleDeg, grText,
+      softFace: soft.face, softShadow: soft.shadow,
+      hardFace: hard.face, hardShadow: hard.shadow
     };
   }
 }

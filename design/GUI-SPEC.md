@@ -152,18 +152,42 @@ numeral still sits at r + 28 and **above cy stays 66**.
 **Colour is organisation, not information.** Every legend reads without it, and the one-accent rule
 governs live-state indicators, which a cap colour is not.
 
-### 3.4 KNEE
+### 3.4 KNEE — a two-position shoe, not a lamp pair
 
-180 px pair at **(73, 489)** — two 34 px lenses with a 12 px gap, legend `KNEE` centred at y **529**.
-Inside the DETECTOR column, directly beneath RATIO: it is the detector's knee, and the column keeps
-it with its group rather than exiling it to a row of its own.
+**180 × 32 shoe at (73, 489)**, two 90 px halves, no gap — one track, 3 px radius, inset ring
+`inset 0 0 0 1px #6d6759`. Legends `SOFT` / `HARD` on the fascia **beneath their own half** at
+**10 px / line box 13 / .16 em**, `#0e0d08`; heading `KNEE` centred at y **543**. Inside the DETECTOR
+column, directly beneath RATIO: it is the detector's knee, and the column keeps it with its group
+rather than exiling it to a row of its own.
 
-Lit and unlit are separated by **brightness within the DETECTOR magenta**, not by a change of hue:
+**The shoe carries the state. The legends never change.** Both position names print permanently, at
+one weight and one ink, and neither is re-inked, re-weighted or dimmed when the shoe moves:
 
-| State | Face | Ink |
+| Half | Face | Shadow |
 |---|---|---|
-| Lit | `linear-gradient(180deg,#7a1244,#4d0a2b)` + `inset 0 0 12px 2px rgba(213,37,122,.45)` | `#ffe9f3`, glow `0 0 7px rgba(255,233,243,.6)` |
-| Unlit | `linear-gradient(180deg,#d2b9c6,#b79dab)` | `#150a0f` |
+| Live | `linear-gradient(180deg,#dcd6c6,#bdb6a4)` | `inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 4px rgba(40,34,26,.18)` |
+| Idle | `linear-gradient(180deg,#413b31,#2e2921)` | `inset 0 2px 5px rgba(0,0,0,.5)` |
+
+**This replaces the lamp-lens pair, and the replacement is a conformance fix rather than a redesign.**
+The catalogue's §4B names Elmer's KNEE among the controls the two-position shoe applies to, and the
+previous construction instead drew two lenses whose `SOFT` / `HARD` legends were re-inked by
+selection — `#ffe9f3` lit against `#150a0f` unlit. That is the panel relabelling itself to show
+state: the mechanism withdrawn from the Program buttons after three rounds. The pale-metal / dark
+shoe is the suite's one construction for this part, as with the Program buttons, and the group's
+magenta stays where it belongs, on the knob caps.
+
+**It also disposes of the contrast finding rather than answering it.** The unlit legend measured
+4.94–6.86 against a 7.0 functional floor, and the question raised was whether to reclassify it as a
+state at a 3.0 allowance or lift it off the lamp face. Neither: §4B's last clause is that **there is
+no "unselected label" role in this suite — any spec carrying one is describing the withdrawn
+mechanism, and the role should be deleted rather than given a floor.** Both legends now sit on the
+fascia at `#0e0d08`, 7.94:1 at the fascia's darkest, and there is no unlit-legend row left to fail.
+The same clause applies to Chorus-60's `legendUnlit` at 3.0, which should be deleted from its spec
+rather than matched here — its `imageSwitch` already draws the shoe correctly, so only the spec row
+is stale.
+
+*(The stated range for the unlit legend was also written backwards in the source, `6.90-4.90`, high
+end first, so it had never reproduced. The row is gone rather than corrected.)*
 
 **A lamp darkens its own face when it lights**, so the legend is the bright thing, not the lens.
 
@@ -266,7 +290,37 @@ a fixed centre radius does not account for that.
 ri = 178 − 13.7 − 3 − support     (support = |w/2·sin a| + |h/2·cos a|, measured off the rendered box)
 ```
 
-**It is not applied.** The suite's clearance chain states the rule — the numeral sits clear of the
+**Applied, as six numbers rather than a rule.** The formula is evaluated below against the measured
+boxes, so the re-cut places each numeral at a stated radius and nothing is applied by eye at cut
+time. `support = |w/2·sin a| + |h/2·cos a|`; `ri = 164.3 − 3 − support`, where 164.3 is the tick's
+inner end (178 − 13.7) and 3 is the clearance the chain asks for.
+
+| dB | Angle | Box | support | **ri (drawn px)** | Move from 156 |
+|---|---|---|---|---|---|
+| 0 | +63.0° | 9.4 × 8.1 | 6.03 | **155.3** | −0.7 |
+| 4 | +37.8° | 8.7 × 8.4 | 5.98 | **155.3** | −0.7 |
+| 8 | +12.6° | 7.1 × 9.8 | 5.56 | **155.7** | −0.3 |
+| 12 | −12.6° | 15.5 × 11.4 | 7.25 | **154.0** | −2.0 |
+| 16 | −37.8° | 14.5 × 14.8 | 10.29 | **151.0** | −5.0 |
+| 20 | −63.0° | 12.8 × 15.8 | 9.29 | **152.0** | −4.0 |
+
+**The model was checked against the measurements before being trusted.** Running it at the delivered
+radius of 156 predicts the gaps as 2.27 / 2.32 / 2.74 / 1.05 / −1.99 / −0.99 against the measured
+2.17 / 3.44 / 3.33 / 2.66 / overlap / 0.14 — right sign everywhere, right rank order, worst
+disagreement 1.6 px, and it reproduces the 16 dB overlap and the 0.14 at 20 dB that are the actual
+failures. A box-edge model against a nearest-point measurement will not agree exactly; it agrees
+where it has to.
+
+**Every correction is inward and the largest is 5 px**, so the re-cut is small and the ring's inner
+extent grows by at most 5 px. **That is the one thing to check on the re-cut** rather than the
+clearance: the numerals move toward the needle pivot and the `GR −n.n dB` string, and nothing in
+§4 states what the inner keep-out is. Measure it on the redraw; if 16 dB is tight against the pivot
+at 151, the answer is a smaller numeral at the negative end, not a radius split back out.
+
+**The radii above supersede the fixed 156 and are what the cutting sheet should carry.** The rule
+stays stated in §3.2 for the knobs, which apply it at runtime; the face applies it once, at cut.
+
+**It is not applied *to the bitmap*.** The suite's clearance chain states the rule — the numeral sits clear of the
 tick's outer end, anchored by the box edge facing the dial — and this face does not meet it. Raised
 as an ask rather than fixed by eye, because nudging a baked bitmap by feel is how the three wrong
 lamp readings happened. **Not blocking:** the meter reads correctly and the overlap is 0–1 px at
@@ -395,8 +449,7 @@ renderer. See `shared/FONTS.md`.
 | `#16150f` face scale ink | lamp centre `#fffcef` | **17.79:1** |
 | `#16150f` face scale ink | lamp corner `#d1c7ad` | **10.87:1** |
 | `#e6dcae` readouts | LCD well `#1b1a16` | **12.62:1** |
-| `#ffe9f3` KNEE legend, lit | lit lens | **11.52:1** |
-| `#150a0f` KNEE legend, unlit | unlit lens | **9.07:1** |
+| `#0e0d08` KNEE shoe legends, both | fascia `#aca596` (darkest) | **7.94:1** |
 | `#9aa1a6` header lamp, idle | button face | **6.34:1** |
 | `#f4f8fa` header lamp, lit | button face | **15.53:1** |
 | `#2b2a26` scribble strip | tape | **9.98:1** |

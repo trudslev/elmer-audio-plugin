@@ -28,3 +28,33 @@ let the new files' own rounding — 1188 / 478 and 71 / 607 — set the height, 
 needle's pivot by about a pixel. The placement figures in `GUI-SPEC.md` §4 are unchanged.
 
 Nothing else in this casting is baked. GUI-SPEC §4 states the pivot and travel.
+
+
+---
+
+## Meter face — numeral radii for the next cut (§4.2)
+
+The delivered face places all six scale numerals on **one centre radius, 156**, so clearance to the
+tick swings with string length and angle: 3.44 drawn px at 4 dB down to **0.14 at 20 dB**, and at
+**16 dB the tick's outer end falls inside the numeral box**. Two-digit numerals at the negative end
+are the failures — a wide box at a steep angle presents its long edge to the dial.
+
+**Cut to these radii instead.** Per-numeral, elliptically anchored by the box edge facing the dial,
+3 px clear of the tick's inner end at 164.3:
+
+| dB | Angle | Numeral box | **Centre radius** |
+|---|---|---|---|
+| 0 | +63.0° | 9.4 × 8.1 | **155.3** |
+| 4 | +37.8° | 8.7 × 8.4 | **155.3** |
+| 8 | +12.6° | 7.1 × 9.8 | **155.7** |
+| 12 | −12.6° | 15.5 × 11.4 | **154.0** |
+| 16 | −37.8° | 14.5 × 14.8 | **151.0** |
+| 20 | −63.0° | 12.8 × 15.8 | **152.0** |
+
+Drawn px at 1× on the 396 × 159.2 card; multiply by 3 for the delivered 1188 × 478.
+
+**All six move inward, largest move 5 px, so nothing else on the face shifts** — the lamp fit in
+§4.3 and its reference luma table are unaffected and are still what the re-cut is checked against.
+**Check the inner side instead of the clearance:** the numerals approach the needle pivot and the
+`GR` string, and §4 states no inner keep-out. If 16 dB is tight at 151, reduce that numeral rather
+than pushing the radius back out.
