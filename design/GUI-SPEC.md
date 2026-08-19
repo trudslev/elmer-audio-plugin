@@ -155,7 +155,13 @@ governs live-state indicators, which a cap colour is not.
 ### 3.4 KNEE — a two-position shoe, not a lamp pair
 
 **180 × 32 shoe at (73, 489)**, two 90 px halves, no gap — one track, 3 px radius, inset ring
-`inset 0 0 0 1px #6d6759`. Legends `SOFT` / `HARD` on the fascia **beneath their own half** at
+`inset 0 0 0 1px #6d6759` + recess `inset 0 2px 6px rgba(40,34,26,.42)`. **The ring is drawn as an
+overlay above the halves, not as an inset shadow on the track.** A parent's inset shadow paints with
+the parent's background, beneath its descendants, so two opaque 90 × 32 halves cover it completely —
+authored on the track it renders as nothing, and the shoe reads as two flat swatches with no seated
+edge. The overlay is the track's last child (`position:absolute; inset:0; pointer-events:none`),
+which keeps the 90 px cell width the legends are centred on. The outer
+`0 1px 0 rgba(255,255,255,.28)` highlight stays on the track, where it is not inset and does paint. Legends `SOFT` / `HARD` on the fascia **beneath their own half** at
 **10 px / line box 13 / .16 em**, `#0e0d08`; heading `KNEE` centred at y **543**. Inside the DETECTOR
 column, directly beneath RATIO: it is the detector's knee, and the column keeps it with its group
 rather than exiling it to a row of its own.
@@ -183,8 +189,14 @@ no "unselected label" role in this suite — any spec carrying one is describing
 mechanism, and the role should be deleted rather than given a floor.** Both legends now sit on the
 fascia at `#0e0d08`, 7.94:1 at the fascia's darkest, and there is no unlit-legend row left to fail.
 The same clause applies to Chorus-60's `legendUnlit` at 3.0, which should be deleted from its spec
-rather than matched here — its `imageSwitch` already draws the shoe correctly, so only the spec row
-is stale.
+rather than matched here.
+
+**A correction to how this section was first written:** it cited Chorus-60's `imageSwitch` as the
+shoe already drawn correctly. That array existed in the panel's logic and **nothing in its template
+ever read it** — Chorus-60's IMAGE switch is the sprite part (`switch-stereo@2x` / `switch-mono@2x`),
+which is its own hardware decision. The dead array has been removed: a construction nothing renders
+is not a reference, and citing one is how a spec inherits a bug that was never on screen. The shoe
+here is built from catalogue §4B directly.
 
 *(The stated range for the unlit legend was also written backwards in the source, `6.90-4.90`, high
 end first, so it had never reproduced. The row is gone rather than corrected.)*
@@ -264,7 +276,7 @@ panel; this one is drawn 630. Comparing the two bitmaps at their own widths read
 panel reads too large — the trap that produced one wrong pass. Render each face at its panel width
 and measure there.
 
-### 4.2 The face numerals sit hard against their majors — measured, outstanding
+### 4.2 The face numerals sat hard against their majors — measured, then cut
 
 **This is a stated figure, not a defect to nudge by eye.** The face's numerals are placed on a
 **fixed centre radius (~156)**, so their gap to the tick's outer end swings with string length and
@@ -320,7 +332,21 @@ at 151, the answer is a smaller numeral at the negative end, not a radius split 
 **The radii above supersede the fixed 156 and are what the cutting sheet should carry.** The rule
 stays stated in §3.2 for the knobs, which apply it at runtime; the face applies it once, at cut.
 
-**It is not applied *to the bitmap*.** The suite's clearance chain states the rule — the numeral sits clear of the
+**Cut in export 7.** `assets/meter-face.png` places 12, 16 and 20 at the radii above; 0, 4 and 8 came
+out within half a drawn pixel of where they already were and were left alone. Measured clearance
+gained: **12 +1.27, 16 +3.85, 20 +3.27 drawn px**, which clears the 3 px the chain asks for at every
+major. The dial pivot was recovered from the ink at **(594.0, 592.9)** delivered, numeral radius
+**155.2 drawn** — so the corrections were computed against the measured radius rather than the
+nominal 156. `elmer/RECUT.md` carries the method and the two things to check on the file.
+
+**The face was edited rather than redrawn, and that was the point.** §4.3's lamp took three wrong
+readings to land; a redraw puts it back in play to fix a clearance. The ink was isolated per glyph,
+the glyph pixels alone erased by solving to their surroundings, and the numerals recomposited with
+their antialiasing at the new radius. **The lamp is byte-identical**, so its reference luma table
+still governs.
+
+*(Historical: the rule below is why the numerals were placed by hand-set radius in the first place.)*
+The suite's clearance chain states the rule — the numeral sits clear of the
 tick's outer end, anchored by the box edge facing the dial — and this face does not meet it. Raised
 as an ask rather than fixed by eye, because nudging a baked bitmap by feel is how the three wrong
 lamp readings happened. **Not blocking:** the meter reads correctly and the overlap is 0–1 px at
