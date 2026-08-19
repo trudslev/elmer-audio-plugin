@@ -49,6 +49,45 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+## THE KNOB CONSTRUCTION REPRODUCES THE PROTOTYPE — measured 2026-08-19, both hypotheses refuted
+
+**Reported by eye as "a smooth glossy bead rather than the turned skirt with a matte cap".** Two
+candidate causes were on record, both in the class §3.1's figures do not reach: the specular's
+falloff, and the skirt's seven stops interpolated linearly where the design might have harder
+transitions. **The measurement refutes both.**
+
+§3.1's construction was rebuilt as static CSS and rendered in Chrome at **`--force-device-scale-factor=2`**,
+matching the build's own capture scale — a cached layer rendered for one scale and compared against a
+screenshot at another shows a difference that is the capture rather than the construction.
+
+| | prototype | build |
+|---|---|---|
+| Cap, up-left axis at r 16 | luma **119.9** | **119.0** |
+| Cap, down-right at r 16 | **78.1** | **79.1** |
+| Cap, down-right at r 31 | **63.1** | **64.0** |
+| Skirt banding around r 35 | range **61.5** (164.9–226.4) | range **61.7** (162.9–224.6) |
+
+**Within about one luma level on the cap across nine radii in both directions, and within three on
+the skirt across twelve angles.** The gradient is the CSS gradient; the banding is the CSS banding.
+Neither hypothesis survives, and neither should be acted on.
+
+**So the impression is real and its cause is not in the knob's own drawing.** What differs between
+the two captures is everything around it: the build's knob sits among its ticks, numerals and the
+fascia's vertical grain, the prototype's on a flat field — and the two pointers are at different
+angles, one crossing the bright lobe and one not. Perceived gloss is a contrast judgement and
+contrast is a property of the surround.
+
+**The next step is therefore an in-situ comparison, not a construction change**: drive the full
+prototype and capture the same panel region, so the two knobs are compared in the same company. That
+needs the DC runtime rather than a static page, which is why it was not done here.
+
+**Worth keeping as a method note.** Isolating the construction was the right first move — it is
+cheap, it is decisive, and it converted "the knob looks wrong" into "the knob is drawn right and
+something else is different". Had it matched by eye instead of by measurement, both hypotheses would
+still be live and one of them would probably have been "fixed".
+
+---
+
 ## THE TYPE PASS — swept by shape, and three of four are measured clean
 
 Swept 2026-08-18 against the four shapes Chorus-60's pass produced. **Three came back clean and
