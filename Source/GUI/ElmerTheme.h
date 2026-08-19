@@ -158,6 +158,13 @@ namespace Font
 {
     /** Function-local statics: created once, lazily, thread-safely. JUCE's binary-data name
         mangling STRIPS non-alphanumerics, so IBMPlexMono-SemiBold becomes IBMPlexMonoSemiBold_ttf. */
+    inline juce::Typeface::Ptr shareTechMono()
+    {
+        static const juce::Typeface::Ptr t = juce::Typeface::createSystemTypefaceFor (
+            BinaryData::ShareTechMonoRegular_ttf, (size_t) BinaryData::ShareTechMonoRegular_ttfSize);
+        return t;
+    }
+
     inline juce::Typeface::Ptr archivoBlack()
     {
         static const juce::Typeface::Ptr t = juce::Typeface::createSystemTypefaceFor (
@@ -214,6 +221,11 @@ namespace Font
     inline juce::Font wordmark (float px) { return of (archivoBlack(), px); }
     inline juce::Font label (float px)    { return of (barlowSemiBold(), px); }
     inline juce::Font mono (float px)     { return of (monoRegular(), px); }
+
+    /** §11's shared LCD face. **Everything INSIDE the glass, and nothing outside it** — the Program
+        name, the bank tag, the IN/OUT values. The captions above the wells are Barlow Condensed per
+        `HEADER-PART.md` §7; a caption sits on the block, not in the display. */
+    inline juce::Font lcd (float px)      { return of (shareTechMono(), px); }
     inline juce::Font monoMed (float px)  { return of (monoMedium(), px); }
     inline juce::Font monoBold (float px) { return of (monoSemiBold(), px); }
     inline juce::Font marker (float px)   { return of (permanentMarker(), px); }
@@ -492,8 +504,21 @@ namespace Layout
         The factory side is unchanged and still the tighter case: "03 MINNEAPOLIS SQUEEZE *" is
         3 + 19 + 2 = 24 and fills the cell precisely. That is why the budget test is three separate
         cases rather than one formula - the prefix applies to one bank only. */
-    inline constexpr int maxUserNameLength = 22;
-    inline constexpr int lcdCharacterBudget = 24;
+    inline constexpr int maxUserNameLength = nf::LcdCell::userNameCap();
+/*  **49 AND 47, THE SHARED PART'S — §11's gate is satisfied rather than waived.**
+
+        The rule is that a casting does not adopt the shared budget until its own `fonts/` holds
+        Share Tech Mono, because both figures are measured on that face and on the 538 px name area.
+        The face is in BinaryData as of this commit, so the gate is met by the build rather than by
+        the folder — a measurement against a face the binary does not carry is one nobody can
+        reproduce.
+
+        **The cap rises 22 → 47, which §11 names as the largest in the suite, and the direction is
+        what makes it safe.** A cap may never SHRINK: it limits names already saved as Programs, so
+        lowering one is a data migration rather than a re-export. Raising it can strand nothing —
+        every name a user has typed remains typable. It is the one irreversible figure in the part
+        and this is the reversible direction. */
+    inline constexpr int lcdCharacterBudget = nf::LcdCell::characterBudget();
     inline constexpr float lcdFrameRadius = 3.0f;
     inline constexpr float lcdGlassRadius = 2.0f;
     inline constexpr float lcdCellHairline = 1.0f;

@@ -418,7 +418,11 @@ void ProgramHeader::paint (juce::Graphics& g)
     const auto bankArea = bankCellBounds();
     const auto nameCell = nameCellBounds();
     const auto nameArea = nameCell.reduced (Layout::lcdNamePadX, 0.0f);
-    const auto lcdFont = Font::mono (Layout::lcdTextSize);
+    /*  **The shared LCD face, as of §11's gate being satisfied.** This drew the Program name and
+        bank tag in IBM Plex Mono — this casting's own mono, correct for everything on the block and
+        wrong for everything inside the glass. The budget of 49 and the cap of 47 are measured on
+        Share Tech Mono, so adopting them meant adopting the face with them. */
+    const auto lcdFont = Font::lcd (Layout::lcdTextSize);
 
     // ONE field that switches its text. Never two labels with one greyed out.
     //
@@ -570,7 +574,7 @@ void ProgramHeader::paint (juce::Graphics& g)
         g.setColour (juce::Colours::white.withAlpha (0.32f));
         g.drawLine (r.getX() + 2.0f, r.getBottom() - 0.5f, r.getRight() - 2.0f, r.getBottom() - 0.5f, 1.0f);
 
-        Text::drawTracked (g, juce::String (db, 1), Font::mono (Layout::levelTextSize), 0.0f, r,
+        Text::drawTracked (g, juce::String (db, 1), Font::lcd (Layout::levelTextSize), 0.0f, r,
                            juce::Justification::centred, Colour::phosphor, false);
     };
 

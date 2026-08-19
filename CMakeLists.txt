@@ -64,6 +64,11 @@ juce_add_binary_data(ElmerBinaryData
         # Black". Archivo_Expanded-Bold is that instance cut static, which is what JUCE can use.
         design/fonts/Archivo_Expanded-Bold.ttf
         design/fonts/barlow-condensed/BarlowCondensed-SemiBold.ttf
+        # §11's gate: the shared LCD budget of 49 and cap of 47 are measured on Share Tech Mono
+        # and on the 538 px name area. This casting could not adopt them until the face was in the
+        # BUILD rather than merely in fonts/ — adopting a measurement against a face the binary does
+        # not carry is adopting one nobody can reproduce.
+        design/fonts/ShareTechMono-Regular.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Medium.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-SemiBold.ttf

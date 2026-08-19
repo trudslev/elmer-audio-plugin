@@ -168,7 +168,9 @@ public:
         It is stated here at all because the cap used to be applied by the keystroke filter ALONE,
         so any programmatic save bypassed it - and a name longer than the cell is one the panel
         cannot show. */
-    static constexpr int maxProgramNameLength = 22;
+    /** The shared cap. This cannot include a GUI header, so it carries its own copy and
+        `DisplayBudgetTests` asserts the two are equal — that assertion is the binding. */
+    static constexpr int maxProgramNameLength = 47;
 
 
     std::function<void()> onProgramChanged;
