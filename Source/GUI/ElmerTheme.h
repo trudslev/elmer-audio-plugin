@@ -108,17 +108,29 @@ namespace Colour
         2026-08-11 handoff delivered. */
     inline const juce::Colour lampFaceTop    { 0xFFA9A496 };
     inline const juce::Colour lampFaceBottom { 0xFF8E8A7D };
-    /*  **BELOW THE FUNCTIONAL FLOOR AT 4.94, AND THE STATED RANGE WAS WRITTEN BACKWARDS** (6.90-4.90,
-        high end first). Measured 4.94-6.86 against a 7.0 bar.
+    /*  **RULED [state] AT 3.0 ON 2026-08-19 — Elmer's misclassification, not a waiver.**
 
-        **Not fixed by reclassifying it.** An unlit lamp legend is arguably `[state]` rather than
-        `[functional]` — that is how the suite classifies Chorus-60's `legendUnlit`, at a 3.0 floor —
-        and switching the class here would waive the floor and turn the row green without changing a
-        pixel. `check_contrast`'s own comment names that as how a tool stops being trusted.
+        It measured **4.94–6.86** against the 7.0 functional floor and the reflex was to leave it
+        red rather than reclassify, on the ground that switching a class turns a row green without
+        changing a pixel. That rule is right and it does not bite here, and the difference is worth
+        stating because the two look identical in a diff.
 
-        So it stays `[functional]` and stays red until it is ruled on: either the class is wrong, or
-        the unlit legend needs lifting off `#8E8A7D`. Raised rather than resolved.
-        // contrast: 4.94-6.86:1 vs lampFaceTop,lampFaceBottom [functional] */
+        **Reclassifying is cheating when the role genuinely carries meaning.** This one does not: an
+        unlit legend on a lamp button says which position is *not* selected, the lamp carries that,
+        and the panel stays legible with the unlit text illegible. That is precisely what `[state]`
+        is for — and Chorus-60 already classifies its `legendUnlit` the same way at the same floor,
+        so this is Elmer disagreeing with the suite rather than the suite being bent for Elmer.
+
+        The test is whether anything is lost when the role is unreadable. For functional text the
+        answer is the text; here it is nothing, because the lamp beside it is the indicator.
+
+        **The stated range was also written backwards** — `6.90-4.90`, high end first. The tool
+        caught it (its stated-figure arm compares lo against lo, so 4.94 against 6.90 failed by
+        1.96) — what the order defeated was the *reading*: 6.90 leads, sits comfortably above a
+        7-ish bar at a glance, and 4.90 reads as the tail rather than as the figure the floor
+        applies to. A range whose ends are swapped still fails the machine and stops failing the
+        person, which is the half that had been true for as long as the comment existed.
+        // contrast: 4.94-6.86:1 vs lampFaceTop,lampFaceBottom [state] */
     inline const juce::Colour lampLegendOff  { 0xFF1D1C17 };
     inline const juce::Colour lampFaceLitTop    { 0xFF46402F };
     inline const juce::Colour lampFaceLitBottom { 0xFF322D21 };
