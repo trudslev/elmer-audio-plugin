@@ -15,6 +15,7 @@ target_sources(ElmerTests PRIVATE
     MenuMetricsTests.cpp
     PrintedScaleTests.cpp
     ReadoutConformanceTests.cpp
+    EditorWiringTests.cpp
     CompressorTests.cpp
     FactoryProgramTests.cpp
     DisplayBudgetTests.cpp
