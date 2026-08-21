@@ -49,6 +49,56 @@ least legible label, which is the exact inversion of what an indicator is for �
 change could have fixed it, since lifting `#FFF6C9` off that grey is not possible. It needed the
 face to darken, which is a plate decision, not a code one.
 
+
+## TWO POSITIONAL TABLES AND ONE NAMED LOOKUP — found 2026-08-21 by a suite-wide check
+
+**MIX printed 0 / 5 / 10 / 15 / 20 and "dB". MAKEUP printed 0 / 25 / 50 / 75 / 100 and "%".** They
+had each other's numerals and units, on a 0-100 % control and a 0-20 dB one, and had done since this
+panel's first commit.
+
+`PanelBackground` draws a knob's ring from three sources and they do not agree about how a knob is
+identified:
+
+| | Looked up by | Was |
+|---|---|---|
+| the tick ring | **name** — `marksFor (spec.paramId)` | always right |
+| the printed numerals | **position** — `Layout::legends[k]` | swapped at 6 and 7 |
+| the unit in the arc gap | **position** — `Layout::knobArcUnits[k]` | swapped at 6 and 7 |
+
+Both tables were authored in the order `… IRON, MAKEUP, MIX`; `Layout::knobs` has been
+`… iron, mix, makeup` since it was written. **Nothing inside this file could have caught it**: each
+table was internally consistent, each comment was honest about which row it was, and the ticks — the
+half a printed-scale test checks — came from the correct lookup.
+
+**Both endpoints agreed, which is why it was invisible.** The first mark is 0 on both rings and the
+last is each control's maximum, so the ring looked like a ring; only the numbers in between belonged
+to another knob. At the printed 10 on MIX the pointer was at 50 %; at the printed 50 on MAKEUP it was
+at 10 dB.
+
+`Tests/PrintedScaleTests.cpp` now asserts each knob's largest printed numeral against
+**`param->getText (1.0f)`** — what the parameter itself prints at full deflection — plus the unit
+against its label. That source is outside both tables, which is the whole point: a test comparing
+the two tables with each other would have agreed with itself.
+
+**The first version of that arm compared against `range.end` and reported SIDECHAIN HP broken.** That
+parameter is normalised 0-1 with its law in `Elmer::Law`, so its range maximum is 1.0 while its ring
+prints 500 Hz. The instrument was wrong, in the direction that produces a confident finding.
+
+### And every control label was drawing at y = 0
+
+All eight `KnobSpec::labelY` were `0.0f`, so THRESHOLD, RATIO, SIDECHAIN HP, ATTACK, RELEASE, IRON,
+MIX and MAKEUP all drew at the panel's top edge, overlapping in pairs wherever two knobs share a
+column. Since the first GUI commit.
+
+**It never regressed — it was never filled in**, which is why no history search finds it and why the
+usual provenance questions do not apply. Nothing reads a label's position, so no test could fail; the
+only thing that finds it is opening the panel. The values are the delivered prototype's own label
+line-box tops: **306 / 306 / 446 / 306 / 306 / 481 / 481 / 609** in `knobs` order.
+
+Both defects were found by a check aimed at something else entirely — whether any two controls share
+a printed ring while having different tapers. Elmer shares no ring; it fails the level below, which
+is whether a ring's three parts agree about the knob they belong to.
+
 ## THE IN-SITU KNOB COMPARISON CANNOT BE RUN — the only prototype is the superseded layout
 
 Attempted 2026-08-19 and stopped before capturing, which is the point of the entry.

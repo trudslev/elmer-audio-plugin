@@ -740,7 +740,14 @@ namespace Layout
         float knobSize;                  // the filmstrip's drawn diameter
         Strip strip;
         Ring  ring;
-        float labelY;                    // absolute y of the control label's line box
+        /** Absolute y of the control label's line box.
+
+            **All eight of these were 0.0f until 2026-08-21**, so every control label drew at the
+            panel's top edge, overlapping in pairs wherever two knobs share a column — ATTACK over
+            IRON and RELEASE over MIX. They had been that way since this file's first commit, which
+            is the tell: it never regressed, it was never filled in, and no test reads a label's
+            position. The values are the delivered prototype's own label line-box tops. */
+        float labelY;
     };
 
     /** Legends are drawn at their literal offsets from the scale area's top-left, exactly as the
@@ -777,12 +784,12 @@ namespace Layout
         // IRON
         { { { -5, 85, "0" }, { -21, 26, "25" }, { 30, -10, "50" },
             { 81, 26, "75" }, { 65, 85, "100" }, { 0, 0, nullptr } } },
-        // MAKEUP
-        { { { -5, 85, "0" }, { -21, 26, "5" }, { 30, -10, "10" },
-            { 81, 26, "15" }, { 65, 85, "20" }, { 0, 0, nullptr } } },
-        // MIX
+        // MIX - knobs[6]. Was MAKEUP's 0/5/10/15/20 until 2026-08-21; see knobArcUnits.
         { { { -5, 85, "0" }, { -21, 26, "25" }, { 30, -10, "50" },
-            { 81, 26, "75" }, { 65, 85, "100" }, { 0, 0, nullptr } } } } };
+            { 81, 26, "75" }, { 65, 85, "100" }, { 0, 0, nullptr } } },
+        // MAKEUP - knobs[7]
+        { { { -5, 85, "0" }, { -21, 26, "5" }, { 30, -10, "10" },
+            { 81, 26, "15" }, { 65, 85, "20" }, { 0, 0, nullptr } } } } };
 
     /** Every knob, in the order the `legends` table above uses.
 
@@ -826,25 +833,25 @@ namespace Layout
 
     inline const std::array<KnobSpec, 8> knobs { {
         { "threshold",   "THRESHOLD",    { cellLeftA,  rowOne },       112.0f, 108.0f, knobLarge,
-          Strip::detect, Ring::large11, 0.0f },
+          Strip::detect, Ring::large11, 306.0f },
         // 226, not 217 — see EXCEPTION 1 above. The numeral rings collide at the nominal pitch;
         // the caps do not, so a check on the caps confirms the wrong figure.
         { "ratio",       "RATIO",        { cellLeftB,  rowOne },       112.0f, 108.0f, knobLarge,
-          Strip::detect, Ring::large11, 0.0f },
+          Strip::detect, Ring::large11, 306.0f },
         { "sidechainHp", "SIDECHAIN HP", { 163.0f,     rowSidechain }, 100.0f,  96.0f, knobSmall,
-          Strip::detect, Ring::large11, 0.0f },
+          Strip::detect, Ring::large11, 446.0f },
         { "attack",      "ATTACK",       { cellRightA, rowOne },       100.0f,  96.0f, knobSmall,
-          Strip::timing, Ring::large11, 0.0f },
+          Strip::timing, Ring::large11, 306.0f },
         { "release",     "RELEASE",      { cellRightB, rowOne },       112.0f, 108.0f, knobLarge,
-          Strip::timing, Ring::large11, 0.0f },
+          Strip::timing, Ring::large11, 306.0f },
         { "iron",        "IRON",         { cellRightA, rowIronMix },   100.0f,  96.0f, knobSmall,
-          Strip::output, Ring::large11, 0.0f },
+          Strip::output, Ring::large11, 481.0f },
         { "mix",         "MIX",          { cellRightB, rowIronMix },   100.0f,  96.0f, knobSmall,
-          Strip::output, Ring::large11, 0.0f },
+          Strip::output, Ring::large11, 481.0f },
         // 1174 — centred on the column, NOT on a cell centre. See EXCEPTION 2 above: it is the
         // only knob alone in its row, it is Ø76, and its row height depends on the centring.
         { "makeup",      "MAKEUP",       { makeupCentre, rowMakeup },  112.0f, 108.0f, knobLarge,
-          Strip::output, Ring::large11, 0.0f },
+          Strip::output, Ring::large11, 609.0f },
     } };
 
     /*  §3.1's registration. **Unit and legend are positioned off a Ø76 box for EVERY class**, so the
@@ -1077,6 +1084,20 @@ namespace Layout
         invented for consistency's sake and none is dropped for the sake of the old label text. */
     inline constexpr float unitTracking = 0.6f;
 
+    /*  **INDEXED BY KNOB POSITION, so the order below IS `knobs`' order and nothing checks that.**
+
+        These last two rows were MAKEUP then MIX until 2026-08-21, where `knobs` has been MIX then
+        MAKEUP since its first commit. So MIX drew "dB" and MAKEUP drew "%" — on a 0-100 % control
+        and a 0-20 dB one respectively. Same swap in `legends` below, because both tables were
+        authored in one order and the knob array in another.
+
+        **Nothing could have caught it from inside this file**: both tables were internally
+        consistent, both comments were honest about which row was which, and the tick ring beside
+        them is looked up BY NAME (`marksFor (spec.paramId)`) so the ticks were always right. One
+        ring, two lookups, two different answers about which knob it belongs to.
+
+        `PrintedScaleTests` now asserts each knob's largest printed numeral against its parameter's
+        own range maximum, which is a check sourced from outside these tables. */
     inline const std::array<Legend, 8> knobArcUnits { {
         { 36, 98, "dB" },       // THRESHOLD
         { 0, 0, nullptr },      // RATIO - prints ratios
@@ -1084,8 +1105,8 @@ namespace Layout
         { 30, 87, "ms" },       // ATTACK
         { 0, 0, nullptr },      // RELEASE - values carry their own suffixes
         { 30, 85, "%" },        // IRON
-        { 30, 85, "dB" },       // MAKEUP
-        { 30, 85, "%" } } };    // MIX
+        { 30, 85, "%" },        // MIX     - knobs[6]
+        { 30, 85, "dB" } } };   // MAKEUP  - knobs[7]
 
     /** The KNEE column: 140px wide, centred at the same x as RATIO, in row 2 of DETECTION.
 

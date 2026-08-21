@@ -1,4 +1,5 @@
 #include "Parameters.h"
+#include "../Source/GUI/ElmerTheme.h"
 
 #include <nf/PrintedScale.h>
 
@@ -330,6 +331,96 @@ public:
         expectWithinAbsoluteError (valueAt (ParamIDs::attack, dummy.apvts.getParameter (ParamIDs::attack)->getDefaultValue()),
                       Elmer::Defaults::attackMs, 0.05f, "attack default");
         expect (Elmer::Law::hpIsOff (Elmer::Defaults::sidechainHp), "sidechain HP defaults to OFF");
+
+        /*  **The PRINTED NUMERALS and the UNIT, which nothing here checked until 2026-08-21.**
+
+            Everything above asserts the tick RING, which is looked up by name — `marksFor
+            (spec.paramId)` — and was always right. The numerals beside those ticks and the unit in
+            the arc gap come from two arrays indexed by KNOB POSITION, and their last two rows were
+            ordered MAKEUP then MIX where `Layout::knobs` has been MIX then MAKEUP since its first
+            commit.
+
+            So MIX printed **0 / 5 / 10 / 15 / 20** and "dB" on a 0-100 % control, and MAKEUP printed
+            **0 / 25 / 50 / 75 / 100** and "%" on a 0-20 dB one. At the printed 10 on MIX the pointer
+            was at 50 %; at the printed 50 on MAKEUP it was at 10 dB.
+
+            **Both endpoints agreed**, which is why nothing showed it: the first mark is 0 on both
+            and the last mark is the maximum on both, so the ring looked like a ring and only the
+            numbers in between were another control's.
+
+            This arm is sourced from **the parameter**, which is outside both tables — the same
+            principle as the ring check, one level over. A test comparing the two tables with each
+            other would have agreed with itself: each was internally consistent and each comment was
+            honest about which row it was.  */
+        beginTest ("Every knob's printed numerals and unit belong to ITS parameter");
+        {
+            namespace L = ElmerTheme::Layout;
+
+            const auto largestNumeral = [] (const std::array<L::Legend, 6>& row)
+            {
+                float widest = 0.0f;
+                for (const auto& lg : row)
+                {
+                    if (lg.text == nullptr)
+                        continue;
+
+                    // RATIO and RELEASE print "20:1" and "AUTO"; a leading number is what is
+                    // comparable, and a row with none is skipped by the caller.
+                    const auto v = juce::String (lg.text).getFloatValue();
+                    widest = juce::jmax (widest, v);
+                }
+                return widest;
+            };
+
+            for (size_t k = 0; k < L::knobs.size(); ++k)
+            {
+                const auto& spec = L::knobs[k];
+                auto* param = dynamic_cast<juce::RangedAudioParameter*> (
+                    dummy.apvts.getParameter (spec.paramId));
+
+                if (param == nullptr)
+                    continue;
+
+                const juce::String id { spec.paramId };
+
+                /*  **`getText (1.0f)`, not `range.end`.** The first version of this arm compared
+                    the numeral against the range's maximum and reported SIDECHAIN HP as broken:
+                    that parameter is normalised 0-1 with its law in `Elmer::Law`, so its range
+                    maximum is 1.0 while its ring prints 500 Hz. The instrument was wrong, not the
+                    panel — and it was wrong in the direction that produces a confident finding,
+                    which is why it is recorded here rather than quietly corrected.
+
+                    What the parameter PRINTS at full deflection is the right authority: it is the
+                    parameter's own answer, it is outside both positional tables, and it holds
+                    whether the law lives in the range or beside it. */
+                const float atFullScale = param->getText (1.0f, 0).getFloatValue();
+                const float printed = largestNumeral (L::legends[k]);
+
+                // RELEASE's last position is AUTO, which is a word rather than a value, so its ring
+                // has no numeric maximum to compare. Excluded BY NAME with the reason, never by a
+                // silent zero — a ring that stops being numeric should be a change somebody makes
+                // here rather than one that quietly drops out of the check.
+                if (id == "release")
+                    continue;
+
+                logMessage ("  " + id + ": largest numeral " + juce::String (printed, 1)
+                                + ", parameter prints " + param->getText (1.0f, 0)
+                                + " at full scale");
+
+                expectWithinAbsoluteError (printed, atFullScale, 0.51f,
+                    id + "'s largest printed numeral is not what its parameter reads at full "
+                         "deflection — the legend row and the knob are out of step");
+
+                /*  The unit, from the same positional table. Only asserted where the parameter
+                    carries a label: SIDECHAIN HP prints its unit inside the value text instead, as
+                    the suite's readout rule allows, so an empty label there is correct rather than
+                    missing. */
+                if (const auto* unit = L::knobArcUnits[k].text; unit != nullptr
+                                                             && param->getLabel().isNotEmpty())
+                    expectEquals (juce::String (unit), param->getLabel(),
+                                  id + "'s printed unit is not its parameter's label");
+            }
+        }
     }
 };
 
