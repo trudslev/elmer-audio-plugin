@@ -152,6 +152,24 @@ numeral still sits at r + 28 and **above cy stays 66**.
 **Colour is organisation, not information.** Every legend reads without it, and the one-accent rule
 governs live-state indicators, which a cap colour is not.
 
+**This table has been queried once as a defect and is not one.** A 2026-08-23 review read the nine
+hexes as placeholder or debug fill — saturated candy colours against a cream fascia, absent from the
+suite's palette documents, and **uppercase where the rest of the prototype is lowercase.** Every
+observation was true and the conclusion was wrong:
+
+- **The palette documents cited do not cover knob caps.** `CONTRAST-CEILING.md` §2 enumerates
+  *grounds that carry text*; `ABOUT-PART.md` §9.1 gives the *About box's* inks. **Absence from a
+  document that does not cover the thing is not evidence about the thing** — this table is where cap
+  colour lives, and it is in the casting's own spec.
+- **The casing tell does not hold.** Four of the six prototypes carry uppercase hexes; TapeRot's are
+  cream and beige panel values and Fifth Member and Reflect-84 share four from a common part. Casing
+  in this suite tracks **authoring pass**, not correctness.
+
+**The caps are the SSL-derived look carried forward from Elmer's current panel**, and the reason they
+read as loud is the reason they exist: they are the only saturated colour on a cream instrument, doing
+grouping work that no legend duplicates. **A reviewer meeting them for the first time should meet this
+paragraph in the same breath**, which is why it sits here rather than in a changelog.
+
 ### 3.4 KNEE — a two-position shoe, not a lamp pair
 
 **180 × 32 shoe at (73, 489)**, two 90 px halves, no gap — one track, 3 px radius, inset ring
