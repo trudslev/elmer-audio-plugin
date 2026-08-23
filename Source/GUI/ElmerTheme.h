@@ -51,7 +51,22 @@ namespace Colour
     inline const juce::Colour screwDark      { 0xFF5C574E };
 
     // --- ink -----------------------------------------------------------------
-    // One value for all functional text.
+    /*  **One value for all functional text, and the model line's one-digit difference is RULED
+        NOISE rather than preserved.**
+
+        The delivered prototype draws `MODEL GL-87 · STEREO` in `#0f0f0c` and everything else
+        functional in `#0e0d08` — measured off the rendered DOM, not read from source: one site at
+        `rgb(15,15,12)` against thirty-plus at `rgb(14,13,8)`. It was read and judged.
+
+        **It stays `#0e0d08`.** One site, one digit, and nothing in GUI-SPEC names a model-line ink
+        — so a `modelLineInk` constant would not record a decision, it would create a SECOND COPY
+        of this value differing by a digit nobody can see, which is the two-copies problem with a
+        colour on it. A difference becomes a constant when a spec states it, not when a render
+        happens to contain it.
+
+        Written here so the next reader who diffs the panel against the prototype meets a ruling
+        instead of rediscovering the difference and "fixing" it. If §6 ever states a model-line
+        ink, that is the moment this gets its own constant. */
     // contrast: 7.94-8.62:1 vs fasciaBottom,fasciaTop [functional]
     inline const juce::Colour ink            { 0xFF0E0D08 };
     inline const juce::Colour wordmarkInk    { 0xFF24231F };
