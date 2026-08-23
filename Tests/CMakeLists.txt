@@ -41,7 +41,7 @@ target_sources(ElmerTests PRIVATE
     ../Source/GUI/PanelBackground.cpp
     ../Source/GUI/KnobFilmstrip.cpp
     RotaryArcTests.cpp
-    ../Source/GUI/KneeButtons.cpp
+    ../Source/GUI/KneeSwitch.cpp
     ../Source/GUI/GainReductionMeter.cpp)
 
 # The same identity macros the plugin target gets. This target compiles ProgramManager.cpp

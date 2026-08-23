@@ -372,6 +372,38 @@ void PanelBackground::paintKnobFurniture (juce::Graphics& g)
                            { spec.areaCentre.x - 120.0f, spec.labelY, 240.0f, 14.0f },
                            juce::Justification::centred, Colour::ink);
     }
+
+    paintKneeLegends (g);
+}
+
+/*  KNEE's printed text — the two half legends and the control's own name.
+
+    **This is fascia printing, not part of the switch**, which is why it lives here beside the knob
+    labels rather than inside `KneeSwitch`. §3's shoe carries its state in material: the live half
+    is pale metal and the idle half dark, and both legends print permanently in one weight and one
+    ink. Drawing them from the component would put the panel's name for a control inside the thing
+    that moves, and it is the construction that invites re-inking on selection — which is exactly
+    the mechanism the prototype records catalogue 4B as withdrawing.
+
+    **The name was declared and never drawn.** `kneeLabelY` existed, held a plausible figure, and
+    had no consumer anywhere, so this control shipped unnamed. `tools/check_unused_constants.py`
+    reports it; nothing else could, because there is nothing incorrect in the source to find. */
+void PanelBackground::paintKneeLegends (juce::Graphics& g)
+{
+    const auto legendFont = Font::label (Layout::kneeLegendSize);
+    const float half = Layout::kneeShoeW * 0.5f;
+
+    for (int i = 0; i < 2; ++i)
+        Text::drawTracked (g, i == 0 ? "SOFT" : "HARD", legendFont, Layout::kneeLegendTracking,
+                           { Layout::kneeShoeX + half * (float) i, Layout::kneeLegendY,
+                             half, Layout::kneeLegendLineBox },
+                           juce::Justification::centred, Colour::ink);
+
+    Text::drawTracked (g, "KNEE", Font::label (Layout::controlLabelSize),
+                       Layout::controlLabelTracking,
+                       { Layout::kneeShoeX, Layout::kneeLabelY,
+                         Layout::kneeShoeW, Layout::kneeLabelLineBox },
+                       juce::Justification::centred, Colour::ink);
 }
 
 void PanelBackground::paintMeterChrome (juce::Graphics& g)

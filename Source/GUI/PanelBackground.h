@@ -30,6 +30,7 @@ private:
     void paintHeaderChrome (juce::Graphics&);
     void paintSections (juce::Graphics&);
     void paintKnobFurniture (juce::Graphics&);
+    void paintKneeLegends (juce::Graphics&);
     void paintMeterChrome (juce::Graphics&);
     void paintFooter (juce::Graphics&);
 

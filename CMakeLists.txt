@@ -139,7 +139,7 @@ target_sources(Elmer PRIVATE
     Source/DSP/ProgramManager.cpp
     Source/GUI/KnobFilmstrip.cpp
     Source/GUI/GainReductionMeter.cpp
-    Source/GUI/KneeButtons.cpp
+    Source/GUI/KneeSwitch.cpp
     Source/GUI/PanelBackground.cpp
     Source/GUI/ProgramHeader.cpp
     Source/GUI/ElmerEditorContent.cpp)

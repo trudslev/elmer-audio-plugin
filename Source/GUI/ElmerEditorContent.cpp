@@ -5,7 +5,7 @@ using namespace ElmerTheme;
 
 ElmerEditorContent::ElmerEditorContent (ElmerAudioProcessor& p)
     : processorRef (p),
-      kneeButtons (p.apvts),
+      kneeSwitch (p.apvts),
       header (p.apvts, p.programs)
 {
     setSize ((int) Layout::canvasWidth, (int) Layout::canvasHeight);
@@ -18,10 +18,9 @@ ElmerEditorContent::ElmerEditorContent (ElmerAudioProcessor& p)
                                              Layout::meterW, Layout::meterH)
                          .getSmallestIntegerContainer());
 
-    addAndMakeVisible (kneeButtons);
-    kneeButtons.setTopLeftPosition ((int) Layout::kneeButtonsTopLeft.x,
-                                    (int) Layout::kneeButtonsTopLeft.y);
-    kneeButtons.onInteraction = [this]
+    addAndMakeVisible (kneeSwitch);
+    kneeSwitch.setTopLeftPosition ((int) Layout::kneeShoeX, (int) Layout::kneeShoeY);
+    kneeSwitch.onInteraction = [this]
     {
         header.showParameter (ParamIDs::knee);
         header.releaseParameter();

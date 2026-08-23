@@ -2,7 +2,7 @@
 
 #include "ElmerTheme.h"
 #include "GainReductionMeter.h"
-#include "KneeButtons.h"
+#include "KneeSwitch.h"
 #include "KnobFilmstrip.h"
 #include "PanelBackground.h"
 #include "ProgramHeader.h"
@@ -27,7 +27,7 @@ private:
 
     PanelBackground background;
     GainReductionMeter meter;
-    KneeButtons kneeButtons;
+    KneeSwitch kneeSwitch;
     ProgramHeader header;
 
     /** Paints nothing and takes no clicks of its own; it exists so the Program list has a parent

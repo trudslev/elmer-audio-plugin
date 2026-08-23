@@ -6,6 +6,9 @@
 #include <BinaryData.h>
 
 #include <array>
+#include <cmath>
+#include <initializer_list>
+#include <utility>
 
 /**
     Elmer's design tokens: every colour, coordinate, size and typographic constant.
@@ -97,55 +100,41 @@ namespace Colour
         // contrast: 12.99-15.00:1 vs windowTop,windowBottom [functional] */
     inline const juce::Colour legendLit      { 0xFFFFEFD0 };
 
-    // --- KNEE lamp -----------------------------------------------------------
-    /** **The lit face is DARKER than the unlit one, and that is the fix, not a mistake.**
+    // --- KNEE shoe -----------------------------------------------------------
+    /*  **THE KNEE IS A TWO-POSITION SHOE (catalogue 4B), NOT A LAMP PAIR** — the delivered
+        prototype names the part, and says outright that the lamp construction was withdrawn:
+        *"The previous construction re-inked SOFT/HARD by selection, which is the mechanism 4B
+        withdrew."* The build carried the lamp pair until 2026-08-23.
 
-        This is Elmer's only lit indicator, and it used to be the least legible label on the panel:
-        one face served both states, so the selected legend drew #FFF6C9 on mid-grey at
-        **2.28-3.17:1** while the unselected one sat at 4.94-5.86. The engaged state was harder to
-        read than the disengaged one. No runtime change could fix it - lifting #FFF6C9 off that
-        grey is not possible - so it needed the face itself to darken when lit, which is what the
-        2026-08-11 handoff delivered. */
-    inline const juce::Colour lampFaceTop    { 0xFFA9A496 };
-    inline const juce::Colour lampFaceBottom { 0xFF8E8A7D };
-    /*  **RULED [state] AT 3.0 ON 2026-08-19 — Elmer's misclassification, not a waiver.**
+        **The shoe carries the state in material**: the live half is pale metal, the idle half is
+        dark. Both legends print permanently on the fascia beneath their own half, in one weight and
+        one ink — so there is no lit/unlit legend pair here at all, and nothing selection-dependent
+        to give a contrast floor to. They are `ink`, the same as every other control name.
 
-        It measured **4.94–6.86** against the 7.0 functional floor and the reflex was to leave it
-        red rather than reclassify, on the ground that switching a class turns a row green without
-        changing a pixel. That rule is right and it does not bite here, and the difference is worth
-        stating because the two look identical in a diff.
+        **What that retires, recorded rather than deleted quietly.** The block this replaces held
+        `lampFaceTop/Bottom`, `lampFaceLitTop/Bottom`, `lampLegendOn/Off`, `accent` and five `led*`
+        colours, and carried two long rulings: that the lit face is DARKER than the unlit one
+        (2026-08-11, because #FFF6C9 on mid-grey measured 2.28-3.17:1 and the engaged state was the
+        least legible label on the panel), and that `lampLegendOff` is `[state]` rather than
+        `[functional]` (2026-08-19, a misclassification rather than a waiver, since an unlit legend
+        says which position is NOT selected and the lamp carries that).
 
-        **Reclassifying is cheating when the role genuinely carries meaning.** This one does not: an
-        unlit legend on a lamp button says which position is *not* selected, the lamp carries that,
-        and the panel stays legible with the unlit text illegible. That is precisely what `[state]`
-        is for — and Chorus-60 already classifies its `legendUnlit` the same way at the same floor,
-        so this is Elmer disagreeing with the suite rather than the suite being bent for Elmer.
+        **Both rulings were correct and both are now moot, which is a different thing from both
+        being wrong.** They were about a part this panel does not have. The `[state]` argument in
+        particular rested on "the lamp beside it is the indicator" — there is no lamp, and no unlit
+        legend, so the premise is gone rather than the conclusion being overturned. Neither figure
+        is carried forward and neither should be resurrected if a lamp ever returns: they were
+        measured against faces that are also gone.
 
-        The test is whether anything is lost when the role is unreadable. For functional text the
-        answer is the text; here it is nothing, because the lamp beside it is the indicator.
-
-        **The stated range was also written backwards** — `6.90-4.90`, high end first. The tool
-        caught it (its stated-figure arm compares lo against lo, so 4.94 against 6.90 failed by
-        1.96) — what the order defeated was the *reading*: 6.90 leads, sits comfortably above a
-        7-ish bar at a glance, and 4.90 reads as the tail rather than as the figure the floor
-        applies to. A range whose ends are swapped still fails the machine and stops failing the
-        person, which is the half that had been true for as long as the comment existed.
-        // contrast: 4.94-6.86:1 vs lampFaceTop,lampFaceBottom [state] */
-    inline const juce::Colour lampLegendOff  { 0xFF1D1C17 };
-    inline const juce::Colour lampFaceLitTop    { 0xFF46402F };
-    inline const juce::Colour lampFaceLitBottom { 0xFF322D21 };
-    // contrast: 9.50-12.60:1 vs lampFaceLitTop,lampFaceLitBottom [functional]
-    inline const juce::Colour lampLegendOn   { 0xFFFFF6C9 };
-
-    /** The one accent, per BRAND.md, and the ONLY lit indicator anywhere on this panel. Reserved
-        for the selected KNEE dot. Orange and red belong to siblings and are deliberately avoided;
-        gain reduction is not a fault, so the meter has no red zone either. */
-    inline const juce::Colour accent         { 0xFFF3D021 };
-    inline const juce::Colour ledOnCore      { 0xFFFFFDF0 };
-    inline const juce::Colour ledOnEdge      { 0xFF8A7108 };
-    inline const juce::Colour ledOffCore     { 0xFF7D7466 };
-    inline const juce::Colour ledOffMid      { 0xFF43403A };
-    inline const juce::Colour ledOffEdge     { 0xFF2A2825 };
+        `accent` goes with them. It was declared as "the one accent, per BRAND.md, and the ONLY lit
+        indicator anywhere on this panel", reserved for the selected KNEE dot — and with the dot
+        withdrawn this panel has no lit indicator at all, which is a fact about the design rather
+        than an omission. */
+    inline const juce::Colour shoeLiveTop    { 0xFFDCD6C6 };
+    inline const juce::Colour shoeLiveBottom { 0xFFBDB6A4 };
+    inline const juce::Colour shoeIdleTop    { 0xFF413B31 };
+    inline const juce::Colour shoeIdleBottom { 0xFF2E2921 };
+    inline const juce::Colour shoeRing       { 0xFF6D6759 };   // inset 0 0 0 1px #6d6759
 
     // --- scribble strip ------------------------------------------------------
     inline const juce::Colour tapeTop        { 0xFFEFE9D6 };
@@ -993,12 +982,137 @@ namespace Layout
         }
     }
 
+    /*  ================ §3.1's SHADOWS, TRANSLATED FROM CSS RATHER THAN APPROXIMATED ============
+
+        **A CSS blur is a Gaussian of standard deviation blur/2**, so the alpha across a shadow's
+        edge is that Gaussian's CDF: full alpha about three sigma inside the shape, exactly HALF at
+        the edge itself, and a tail three sigma outside. The obvious construction — a linear ramp
+        between two radii — is wrong at both ends at once, too dark against the rim and truncated
+        where CSS still has a visible tail.
+
+        Written here rather than reached for: no plugin in this suite may depend on a sibling, and
+        the same translation was needed in TapeRot on 2026-08-22. If a third casting needs it, it
+        belongs in `neon-foundry-core` beside `printedScaleDefects`, not in a fourth copy. */
+    inline float shadowEdgeAlpha (float dist, float edge, float sigma) noexcept
+    {
+        return 0.5f * (1.0f + std::erf ((dist - edge)
+                                        / (sigma * juce::MathConstants<float>::sqrt2)));
+    }
+
+    /** A radial gradient whose alpha follows an arbitrary profile, sampled finely enough that the
+        straight interpolation `ColourGradient` does between stops cannot be seen. */
+    template <typename AlphaFn>
+    inline juce::ColourGradient profiledRadial (juce::Colour ink, juce::Point<float> at,
+                                                float reach, AlphaFn&& alphaAt)
+    {
+        juce::ColourGradient grad (ink.withAlpha (alphaAt (0.0f)), at,
+                                   ink.withAlpha (alphaAt (reach)), at.translated (reach, 0.0f),
+                                   true);
+
+        for (int i = 1; i < 24; ++i)
+        {
+            const double proportion = (double) i / 24.0;
+            grad.addColour (proportion, ink.withAlpha (alphaAt ((float) proportion * reach)));
+        }
+
+        return grad;
+    }
+
+    /** `0 <offsetY>px <blur>px rgba(0,0,0,a)` on a circle — an OUTER drop, so it is drawn before
+        the fill that covers all but its fringe. */
+    inline void paintCircleDrop (juce::Graphics& g, juce::Point<float> centre, float radius,
+                                 float offsetY, float blur, float alpha)
+    {
+        const juce::Point<float> at (centre.x, centre.y + offsetY);
+        const float sigma = juce::jmax (0.01f, blur * 0.5f);
+        const float reach = radius + juce::jmax (blur * 2.0f, 1.0f);   // four sigma out is nothing
+
+        g.setGradientFill (profiledRadial (juce::Colours::black, at, reach,
+                                           [=] (float d)
+                                           {
+                                               return alpha * (1.0f - shadowEdgeAlpha (d, radius, sigma));
+                                           }));
+        g.fillEllipse (juce::Rectangle<float> (reach * 2.0f, reach * 2.0f).withCentre (at));
+    }
+
+    /*  `inset 0 <offsetY>px <blur>px <ink>` on a circle.
+
+        An inset shadow is cast by everything OUTSIDE the shape after the shape is offset, so the
+        profile is measured from a centre moved BY the offset — `-7px` moves it up, which is what
+        puts the darkening at the bottom — and the clip drops whatever falls outside. */
+    inline void paintCircleInset (juce::Graphics& g, juce::Rectangle<float> circle,
+                                  float offsetY, float blur, juce::Colour ink)
+    {
+        juce::Graphics::ScopedSaveState saved (g);
+        juce::Path clip;
+        clip.addEllipse (circle);
+        g.reduceClipRegion (clip);
+
+        const float radius = circle.getWidth() * 0.5f;
+        const auto at = circle.getCentre().translated (0.0f, offsetY);
+        const float sigma = juce::jmax (0.01f, blur * 0.5f);
+        const float reach = radius + std::abs (offsetY);
+        const float alpha = ink.getFloatAlpha();
+
+        g.setGradientFill (profiledRadial (ink.withAlpha (1.0f), at, reach,
+                                           [=] (float d)
+                                           {
+                                               return alpha * shadowEdgeAlpha (d, radius, sigma);
+                                           }));
+        g.fillEllipse (circle);
+    }
+
+    /*  One of §3.1's two specular ellipses, which live in their OWN element over the cap —
+        `inset:6px` with two `radial-gradient(w% h% at x% y%, ...)` backgrounds.
+
+        **They were not drawn at all until 2026-08-23**, and nothing in the source looked wrong:
+        the cap's own fill brightens toward 34/24 and reads as a lit sphere, so the panel had a
+        plausible amount of light on it. Measured at THRESHOLD's light point the miss is 287
+        sum-RGB units against the delivered prototype.
+
+        `w%` and `h%` are the ELLIPSE's two radii against the box's width and height, so a circular
+        gradient is drawn and squashed about its own centre. In CSS the FIRST background paints on
+        top, so the caller draws them last-first. */
+    inline void paintSpecularBlob (juce::Graphics& g, juce::Rectangle<float> box,
+                                   float atXFrac, float atYFrac, float rxFrac, float ryFrac,
+                                   std::initializer_list<std::pair<double, float>> stops)
+    {
+        const juce::Point<float> at (box.getX() + atXFrac * box.getWidth(),
+                                     box.getY() + atYFrac * box.getHeight());
+        const float rx = rxFrac * box.getWidth();
+        const float ry = ryFrac * box.getHeight();
+
+        if (rx <= 0.0f || ry <= 0.0f || stops.size() == 0)
+            return;
+
+        juce::Graphics::ScopedSaveState saved (g);
+        juce::Path clip;
+        clip.addEllipse (box);
+        g.reduceClipRegion (clip);
+        g.addTransform (juce::AffineTransform::scale (1.0f, ry / rx, at.x, at.y));
+
+        juce::ColourGradient spec (juce::Colours::white.withAlpha (stops.begin()->second), at,
+                                   juce::Colours::transparentWhite, at.translated (rx, 0.0f), true);
+
+        for (auto stop = stops.begin() + 1; stop != stops.end(); ++stop)
+            if (stop->first > 0.0 && stop->first < 1.0)
+                spec.addColour (stop->first, juce::Colours::white.withAlpha (stop->second));
+
+        g.setGradientFill (spec);
+        g.fillEllipse (juce::Rectangle<float> (rx * 2.0f, rx * 2.0f).withCentre (at));
+    }
+
     /*  **THE STATIC LAYER — everything that does not move with the value.** Drawn at the
         component's own origin so the cached image is position-independent. */
     inline void paintKnobStatic (juce::Graphics& g, juce::Rectangle<float> area, Strip strip)
     {
         const auto centre = area.getCentre();
         const float r = juce::jmin (area.getWidth(), area.getHeight()) * 0.5f;
+        const auto skirt = juce::Rectangle<float> (r * 2.0f, r * 2.0f).withCentre (centre);
+
+        // §3.1's skirt element carries `0 3px 7px rgba(0,0,0,.34)` beneath it. Drawn first so the
+        // conic covers all but the fringe, which is what a drop shadow is.
+        paintCircleDrop (g, centre, r, 3.0f, 7.0f, 0.34f);
 
         /*  The machined skirt. JUCE has no conic gradient, so it is swept as thin wedges — 360 of
             them, one per degree, which is well under a pixel of arc at these diameters. Sweeping it
@@ -1037,9 +1151,27 @@ namespace Layout
             }
         }
 
+        /*  The skirt's two INSET shadows. CSS paints the first-listed inset on top, so they go on
+            last-first: `inset 0 -2px 4px rgba(0,0,0,.30)` then `inset 0 0 0 1px rgba(255,255,255,.55)`,
+            the second being a spread with no blur and therefore a 1 px ring rather than a gradient. */
+        paintCircleInset (g, skirt, -2.0f, 4.0f, juce::Colours::black.withAlpha (0.30f));
+        g.setColour (juce::Colours::white.withAlpha (0.55f));
+        g.drawEllipse (skirt.reduced (0.5f), 1.0f);
+
         const auto cap = area.reduced (knobCapInset);
         const auto& stops = capStopsFor (strip);
 
+        /*  The cap element's two OUTER shadows, before its own fill. `0 0 0 1px rgba(0,0,0,.35)` is
+            a SPREAD, not a blur — the shape grown by one pixel and painted behind — so it reads as
+            the hairline separating the cap from its skirt. Its absence is most of why the cap used
+            to sit on the skirt with no seam at all. */
+        paintCircleDrop (g, cap.getCentre(), cap.getWidth() * 0.5f, 1.0f, 2.0f, 0.45f);
+        g.setColour (juce::Colours::black.withAlpha (0.35f));
+        g.drawEllipse (cap.expanded (0.5f), 1.0f);
+
+        /*  `radial-gradient(circle at 34% 24%, hi, base 52%, lo 100%)`. A `circle` with no size is
+            `farthest-corner` and the corner is the BOX's, which is what `cap.getRight(),
+            cap.getBottom()` passes — the far corner directly, so this one was already right. */
         juce::ColourGradient capFill { stops.hi,
                                        cap.getX() + cap.getWidth() * knobCapHighlightX,
                                        cap.getY() + cap.getHeight() * knobCapHighlightY,
@@ -1047,6 +1179,17 @@ namespace Layout
         capFill.addColour (knobCapMidStop, stops.base);
         g.setGradientFill (capFill);
         g.fillEllipse (cap);
+
+        // The cap's two insets, again last-listed first.
+        paintCircleInset (g, cap, 2.0f, 3.0f, juce::Colours::white.withAlpha (0.22f));
+        paintCircleInset (g, cap, -7.0f, 12.0f, juce::Colours::black.withAlpha (0.42f));
+
+        /*  §3.1's specular element, over everything. Two ellipses in one declaration — a hard
+            highlight up and left, and a wide soft sheen low and right — and the first-listed paints
+            on top, so the sheen goes down first. */
+        paintSpecularBlob (g, cap, 0.58f, 0.87f, 0.28f, 0.11f, { { 0.0, 0.26f } });
+        paintSpecularBlob (g, cap, 0.32f, 0.18f, 0.13f, 0.09f,
+                           { { 0.0, 0.98f }, { 0.38, 0.98f }, { 0.64, 0.50f } });
     }
 
     /** §3.1's pointer. **The only part that moves with the value**, and therefore the only part
@@ -1108,34 +1251,30 @@ namespace Layout
         { 30, 85, "%" },        // MIX     - knobs[6]
         { 30, 85, "dB" } } };   // MAKEUP  - knobs[7]
 
-    /** The KNEE column: 140px wide, centred at the same x as RATIO, in row 2 of DETECTION.
+    /*  §3's KNEE shoe, in the LEFT COLUMN directly under SIDECHAIN HP — not beside it.
 
-        **The label sits BELOW the buttons**, like every other control name on the panel, and shares
-        SIDECHAIN HP's label line - it used to sit above them, which made KNEE the only control on
-        the panel named from the top.
+        Every figure here is the delivered prototype's own: the shoe at (73, 489) 180 x 32 with a
+        3 px radius and two equal halves, the SOFT/HARD legend row at 525, and the KNEE caption at
+        543. The shoe's centre x is 163, which is SIDECHAIN HP's centre and the left column's, so
+        the three stack on one axis.
 
-        Note that `design/screenshots/panel.png` still shows the label above: the render is stale on
-        this one element, and `design/Elmer.dc.html` and the handoff prose both agree it goes below
-        (`padding-top: 38px`, buttons, then `margin-top: 15px`). Raised with the designers; do not
-        "correct" this back to the render.
+        **What this replaces was in the wrong place, the wrong shape, and unnamed.** The lamp pair
+        sat at (232, 399) — beside the knob, in RATIO's column — and its label constant `kneeLabelY`
+        had **no consumer anywhere**, so the panel drew a control with no name on it for the life of
+        the casting. `tools/check_unused_constants.py` reports it, and that is the third time this
+        session a correct-but-unread constant has been the whole of a missing element: Gatecrasher's
+        unit row, Chorus-60's button column, this.
 
-        The buttons start at 399 rather than the prototype's literal 400 so that 63px of buttons
-        plus the 15px label margin lands the label on SIDECHAIN HP's 477 exactly. The prototype's
-        own arithmetic (38 + 63 + 15 = 116 against the knob column's 100 + 15 = 115) puts it 1px
-        lower; a shared baseline is the property that is visible, so it wins over the literal
-        padding figure. */
-    inline constexpr juce::Point<float> kneeButtonsTopLeft { 232.0f, 399.0f };
-    inline constexpr float kneeLabelY = 477.0f;
+        The block it replaces also carried a note saying `design/screenshots/panel.png` was stale on
+        the label's position and telling the next reader not to "correct" it back to the render.
+        That was true of the revision it was written against; the current panel prototype moves the
+        whole control, so the note is retired with the geometry rather than kept. */
+    inline constexpr float kneeShoeX = 73.0f, kneeShoeY = 489.0f;
+    inline constexpr float kneeShoeW = 180.0f, kneeShoeH = 32.0f, kneeShoeRadius = 3.0f;
 
-    // --- KNEE lamp buttons ----------------------------------------------------
-    inline constexpr float lampW = 74.0f;
-    inline constexpr float lampH = 28.0f;
-    inline constexpr float lampRadius = 2.0f;
-    inline constexpr float lampGap = 7.0f;
-    inline constexpr float lampLedDiameter = 6.0f;
-    inline constexpr float lampContentGap = 7.0f;
-    inline constexpr float lampLegendSize = 11.0f;
-    inline constexpr float lampLegendTracking = 1.6f;
+    inline constexpr float kneeLegendY = 525.0f, kneeLegendLineBox = 13.0f;
+    inline constexpr float kneeLegendSize = 10.0f, kneeLegendTracking = 1.6f;   // 10 px at .16 em
+    inline constexpr float kneeLabelY = 543.0f, kneeLabelLineBox = 15.0f;
 
     // --- meter mapping --------------------------------------------------------
     /** Face source is 1000 x 402 with the needle pivot at (500, 500) - BELOW the visible face, by
