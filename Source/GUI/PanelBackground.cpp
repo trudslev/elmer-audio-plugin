@@ -99,7 +99,11 @@ void PanelBackground::paintFascia (juce::Graphics& g)
 {
     const juce::Rectangle<float> panel { Layout::canvasWidth, Layout::canvasHeight };
 
-    g.setColour (Colour::fascia);
+    // §1: linear-gradient(180deg, #b3ac9d, #aca596). It was a flat fill until 2026-08-23, which
+    // is why the contrast annotations could name only one ground - an ink has to clear its floor
+    // at BOTH ends of a gradient, and a flat fill cannot express the question.
+    g.setGradientFill ({ Colour::fasciaTop, panel.getX(), panel.getY(),
+                         Colour::fasciaBottom, panel.getX(), panel.getBottom(), false });
     g.fillRect (panel);
 
     // Brushed grain: repeating-linear-gradient(96deg, white .05 0-1px, black .035 1-2px,

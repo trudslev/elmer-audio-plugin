@@ -99,6 +99,33 @@ Both defects were found by a check aimed at something else entirely — whether 
 a printed ring while having different tapers. Elmer shares no ring; it fails the level below, which
 is whether a ring's three parts agree about the knob they belong to.
 
+## SUPERSEDED — the GL-87 prototype IS current, and this section said otherwise
+
+**Corrected 2026-08-23.** The section below states that `design/Elmer GL-87 Panel.dc.html` is
+bundle 2's **four-section** cut. It is not, and may not have been for some time: it declares
+**dividers at x 324 and x 1010 and none at 500 or 700**, which is §2's three-column layout, on the
+1340 × 660 canvas — and `GUI-SPEC.md` line 3 names that file as its own **source of record**.
+
+**So the in-situ knob comparison is not blocked**, and `design-asks/elmer-prototype-for-current-layout.md`
+is answered by a file already in the tree.
+
+**This is the fourth time in this suite that which-artefact-is-current has been wrong, and the
+second direction it has gone.** The usual failure is reading a superseded file as current; this one
+is the reverse — a current file recorded as superseded, which is worse, because it stops anyone
+looking at the artefact that would settle the question. Nothing here changed under it; the note was
+written once and never re-checked against the file.
+
+**What it cost, and what it caught.** The fascia below was flat `#A9A294` in the build against §1's
+`linear-gradient(180deg, #b3ac9d, #aca596)`, and the ink `#0F0F0C` against `#0e0d08` — the
+prototype uses `#0e0d08` at **14 sites** and `#0f0f0c` at one. Both fixed. `#0e0d08` measures
+**8.62** on the light stop and **7.94** on the dark one, reproducing GUI-SPEC §14's published pair
+to two decimals, which is what confirms the pairing rather than merely agreeing with it.
+
+The section below is kept for its two controls, which are still the right ones for any future
+capture comparison.
+
+---
+
 ## THE IN-SITU KNOB COMPARISON CANNOT BE RUN — the only prototype is the superseded layout
 
 Attempted 2026-08-19 and stopped before capturing, which is the point of the entry.

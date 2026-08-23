@@ -36,7 +36,14 @@ namespace Colour
     // #8b8579 even pure black ink tops out at 5.7:1, so the panel could not reach the floor by
     // darkening text - the fascia itself had to come up. Every bitmap in design/assets was
     // re-rendered against this value. If it changes again, they must be re-rendered too.
-    inline const juce::Colour fascia         { 0xFFA9A294 };
+    /*  **§1's fascia is a VERTICAL GRADIENT, not a flat fill**, and this was one flat
+        `0xFFA9A294` until 2026-08-23 — a colour that is neither stop and darker than both.
+        `linear-gradient(180deg, #b3ac9d, #aca596)`, per GUI-SPEC §1 and the delivered prototype's
+        own panel div, which agree. Two constants because a contrast requirement names two
+        colours: an ink here has to clear its floor at BOTH ends, and one flat ground could not
+        express that. */
+    inline const juce::Colour fasciaTop      { 0xFFB3AC9D };
+    inline const juce::Colour fasciaBottom   { 0xFFACA596 };
     inline const juce::Colour railDark       { 0xFF847E73 };
     inline const juce::Colour railLight      { 0xFFB4AE9F };
     inline const juce::Colour railEdge       { 0xFF98917F };
@@ -45,13 +52,13 @@ namespace Colour
 
     // --- ink -----------------------------------------------------------------
     // One value for all functional text.
-    // contrast: 7.57:1 vs fascia [functional]
-    inline const juce::Colour ink            { 0xFF0F0F0C };
+    // contrast: 7.94-8.62:1 vs fasciaBottom,fasciaTop [functional]
+    inline const juce::Colour ink            { 0xFF0E0D08 };
     inline const juce::Colour wordmarkInk    { 0xFF24231F };
     inline const juce::Colour markerInk      { 0xFF2B2A26 };
     /** §6's meter sub-caption — flavour, not functional, and the only ink on this panel BRAND.md
         lets sit below the 7:1 bar.
-        // contrast: 5.59:1 vs fascia [flavour] */
+        // contrast: 5.78-6.28:1 vs fasciaBottom,fasciaTop [flavour] */
     inline const juce::Colour inkFlavour     { 0xFF2D2B24 };
 
     // --- panels --------------------------------------------------------------
