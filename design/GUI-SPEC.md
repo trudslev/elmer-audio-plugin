@@ -549,3 +549,42 @@ end of its own ground.
 | — | Both copies of every bitmap written | **Met** — checksum-identical, §4 |
 
 **One item outstanding: §4.2.** It needs a design decision and a re-cut, not a nudge.
+
+
+---
+
+## 9 · The About part — this casting's material
+
+**Shared contract: `../shared/ABOUT-PART.md` revision 2.** Nothing here restates its geometry; these
+are the five figures that are **this casting's** and the two coordinates that depend on its canvas.
+**Fitted in the prototype, change set 38.**
+
+### 9.1 The tab
+
+| | |
+|---|---|
+| Right edge | **1302** · bottom edge **640** (canvas height 660 − 20), height **24**, width shrink-to-fit on padding 10 |
+| Well face | `#1f1e17 → #2a281f` |
+| Ink | `#e2dcc9` — **10.77:1** on the well's lighter stop |
+| Face | IBM Plex Mono **10 / 13**, this casting's own mono |
+| Hover | well one step lighter, ink to `#e6dcae` |
+
+**The ink is measured against the well, not the fascia** — `../shared/CONTRAST-CEILING.md` §1: no ink
+reaches 7:1 on a ground of luminance 0.100–0.300, and a mid-value fascia is exactly that. The recess
+is a surface this casting chooses.
+
+### 9.2 The box
+
+| | |
+|---|---|
+| Position | **230, 60** — x from §4's law, y = (660 − 540) / 2 |
+| Surface | `#0e0d08`, this casting's display glass — **a screen, not a plate** |
+| Body ink | `#efeae1` — **16.23:1** |
+| Dim ink | `#a8a291` — **7.63:1** |
+| Accent / links | `#e6dcae` — **14.09:1** |
+| Repository | `github.com/trudslev/elmer-audio-plugin` |
+
+**Typeface credits, embedded faces only:** Barlow Condensed, IBM Plex Mono, Share Tech Mono and **Archivo Expanded**, all under the SIL Open Font License.
+
+**The dim ink is the tight one across the suite** — TapeRot's 7.12 is the narrowest margin, so **no
+casting may darken its dim ink to taste.**

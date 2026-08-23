@@ -7,10 +7,15 @@
 </head>
 <body>
 <x-dc>
-<helmet>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,700&family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Share+Tech+Mono&family=Permanent+Marker&display=swap" rel="stylesheet" />
-<style>
+<helmet><style>
+
+  @font-face { font-family: 'Permanent Marker'; src: url('fonts/PermanentMarker-Regular.ttf') format('truetype'); font-display: block; }
+
+  @font-face { font-family: 'Barlow Condensed'; font-weight: 500; src: url('fonts/BarlowCondensed-Medium.ttf') format('truetype'); font-display: block; }
+  @font-face { font-family: 'Barlow Condensed'; font-weight: 600; src: url('fonts/BarlowCondensed-SemiBold.ttf') format('truetype'); font-display: block; }
+  @font-face { font-family: 'Share Tech Mono'; src: url('fonts/ShareTechMono-Regular.ttf') format('truetype'); font-display: block; }
+  @font-face { font-family: 'IBM Plex Mono'; src: url('fonts/IBMPlexMono-Regular.ttf') format('truetype'); font-display: block; }
+  @font-face { font-family: 'Archivo'; font-weight: 700; src: url('fonts/Archivo_Expanded-Bold.ttf') format('truetype'); font-display: block; }
   body { margin: 0; background: #6f6d63; }
   a { color: #4a3f22; }
   a:hover { color: #2a2312; }
@@ -21,7 +26,7 @@
 
   <div style="position:absolute;left:16px;top:16px;width:1308px;height:104px;box-sizing:border-box;border-radius:5px;background:linear-gradient(180deg,#b6afa0,#ada697);box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.10), 0 3px 5px rgba(0,0,0,.14), 0 1px 0 rgba(255,255,255,.35);">
     <div style="position:absolute;left:22px;top:14px;width:303px;height:84px;">
-      <div style="font-family:'Archivo','Archivo Black',sans-serif;font-weight:700;font-stretch:125%;font-size:31px;line-height:34px;letter-spacing:.10em;color:#26221a;margin-top:2px;text-shadow:0 -1px 0 rgba(0,0,0,.42), 0 -1.5px 1.5px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.55), 0 1.5px 1.5px rgba(255,255,255,.22);">ELMER</div>
+      <div onClick="{{ aboutOpen }}" title="About" style="font-family:'Archivo','Archivo Black',sans-serif;font-weight:700;font-stretch:125%;font-size:31px;line-height:34px;letter-spacing:.10em;color:#26221a;margin-top:2px;text-shadow:0 -1px 0 rgba(0,0,0,.42), 0 -1.5px 1.5px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.55), 0 1.5px 1.5px rgba(255,255,255,.22);;cursor:help">ELMER</div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;line-height:17px;letter-spacing:.26em;color:#0e0d08;margin-top:12px;">BUS COMPRESSOR</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;line-height:14px;letter-spacing:.20em;color:#0f0f0c;">MODEL GL-87 · STEREO</div>
     </div>
@@ -98,13 +103,43 @@
   <div style="position:absolute;left:73px;top:543px;width:180px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;line-height:15px;letter-spacing:.18em; text-indent: .18em;color:#0e0d08;">KNEE</div>
 
   <div style="position:absolute;left:396px;top:566px;transform:rotate(-2.4deg);transform-origin:center;padding:10.5px 39px 13.5px 42px;background:linear-gradient(178deg,#efe9d6,#ded7c0 55%,#e6dfca);clip-path:polygon(1.6% 0%, 98.6% 0%, 99.4% 17%, 97.6% 33%, 100% 52%, 98% 70%, 99.2% 86%, 97.8% 100%, 2.2% 100%, 0.8% 84%, 2.6% 66%, 0% 49%, 1.8% 31%, 0.6% 15%);font-family:'Permanent Marker',cursive;font-size:28.5px;line-height:1;letter-spacing:.75px;color:#2b2a26;text-shadow:0 1px 0 rgba(255,255,255,.5);">CH 24 — MIX BUS / GLUE</div>
-  <div style="position:absolute;left:924px;top:640px;width:400px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;line-height:13px;letter-spacing:.18em;color:#34322a;">GL-87 · SN 0042 &nbsp;·&nbsp; v1.0</div>
+  <div onClick="{{ aboutOpen }}" title="About" style="position:absolute;right:38px;top:616px;height:24px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;border-radius:2px;background:linear-gradient(180deg,#1f1e17,#2a281f);box-shadow:inset 0 0 0 1px #15140f, inset 0 1px 3px rgba(0,0,0,.55);cursor:help;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:10px;line-height:13px;letter-spacing:.18em;color:#e2dcc9;" style-hover="background:linear-gradient(180deg,#2a281f,#333026);color:#e6dcae;">GL-87 &middot; SN 0042 &nbsp;&middot;&nbsp; v1.0.0</div>
 
+  <sc-if value="{{ aboutIsOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ aboutClose }}" style="position:absolute;inset:0;z-index:60;background:rgba(8,9,11,.72);cursor:default;"></div>
+    <div style="position:absolute;z-index:61;left:230px;top:60px;width:880px;height:540px;box-sizing:border-box;border-radius:3px;background:linear-gradient(#0e0d08,#0a0906);box-shadow:inset 0 0 0 1px #2a2820, 0 24px 60px rgba(0,0,0,.7);">
+      <div style="position:absolute;left:40px;top:40px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:34px;line-height:40px;letter-spacing:.10em;color:#efeae1;">ELMER</div>
+      <div style="position:absolute;left:40px;top:84px;font-family:'IBM Plex Mono',monospace;font-size:18px;line-height:24px;letter-spacing:.14em;color:#e6dcae;">MODEL GL-87 &nbsp;&middot;&nbsp; VERSION 1.0.0</div>
+      <div style="position:absolute;left:40px;top:120px;width:800px;height:1px;background:rgba(242,245,246,.18);"></div>
+      <div style="position:absolute;left:40px;top:144px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:20px;line-height:26px;letter-spacing:.20em;color:#efeae1;">NEON FOUNDRY</div>
+      <div style="position:absolute;left:40px;top:174px;font-family:'IBM Plex Mono',monospace;font-size:18px;line-height:24px;letter-spacing:.14em;color:#e6dcae;">SUITE RELEASE 1.2.1</div>
+      <div style="position:absolute;left:40px;top:210px;width:800px;height:1px;background:rgba(242,245,246,.18);"></div>
+      <div style="position:absolute;left:40px;top:234px;width:150px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px;line-height:24px;letter-spacing:.22em;color:#a8a291;">LICENCE</div>
+      <div style="position:absolute;left:200px;top:234px;font-family:'IBM Plex Mono',monospace;font-size:18px;line-height:24px;letter-spacing:.10em;color:#efeae1;">AGPLv3 &nbsp;&middot;&nbsp; SOURCE AVAILABLE</div>
+      <div style="position:absolute;left:40px;top:270px;width:150px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px;line-height:24px;letter-spacing:.22em;color:#a8a291;">REPOSITORY</div>
+      <a href="https://github.com/trudslev/elmer-audio-plugin" target="_blank" rel="noopener" style="position:absolute;left:200px;top:270px;font-family:'IBM Plex Mono',monospace;font-size:18px;line-height:24px;letter-spacing:.10em;color:#e6dcae;text-decoration:none;border-bottom:1px solid #e6dcae80;" style-hover="color:#f2ead0;border-bottom-color:#f2ead0;">github.com/trudslev/elmer-audio-plugin</a>
+      <div style="position:absolute;left:40px;top:306px;width:150px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px;line-height:24px;letter-spacing:.22em;color:#a8a291;">FOUNDRY</div>
+      <a href="https://neonfoundry.io" target="_blank" rel="noopener" style="position:absolute;left:200px;top:306px;font-family:'IBM Plex Mono',monospace;font-size:18px;line-height:24px;letter-spacing:.10em;color:#e6dcae;text-decoration:none;border-bottom:1px solid #e6dcae80;" style-hover="color:#f2ead0;border-bottom-color:#f2ead0;">neonfoundry.io</a>
+      <div style="position:absolute;left:40px;top:342px;width:800px;height:1px;background:rgba(242,245,246,.18);"></div>
+      <div style="position:absolute;left:40px;top:366px;width:150px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px;line-height:24px;letter-spacing:.22em;color:#a8a291;">TYPEFACES</div>
+      <div style="position:absolute;left:200px;top:366px;width:640px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:18px;line-height:24px;letter-spacing:.04em;color:#efeae1;text-wrap:pretty;">Barlow Condensed, IBM Plex Mono, Share Tech Mono and Archivo Expanded under the SIL Open Font License, and Permanent Marker under the Apache License 2.0.</div>
+      <div style="position:absolute;left:40px;top:426px;width:800px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:16px;line-height:21px;letter-spacing:.04em;color:#a8a291;text-wrap:pretty;">Full licence text ships as THIRD-PARTY-LICENCES.txt in this bundle&rsquo;s Resources.</div>
+      <div onClick="{{ aboutClose }}" style="position:absolute;left:744px;top:470px;width:96px;height:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:3px;background:linear-gradient(180deg,#2a281f,#1f1e17);box-shadow:inset 0 0 0 1px #2a2820;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;line-height:20px;letter-spacing:.22em;text-indent:.22em;color:#efeae1;" style-hover="color:#e6dcae;">CLOSE</div>
+    </div>
+  </sc-if>
 </div>
 </div>
+
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1420,&quot;height&quot;:740},&quot;programState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;factory&quot;,&quot;factory-edited&quot;,&quot;user&quot;,&quot;user-edited&quot;,&quot;naming&quot;],&quot;default&quot;:&quot;factory&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Panel state&quot;},&quot;knee&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;soft&quot;,&quot;hard&quot;],&quot;default&quot;:&quot;soft&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Panel state&quot;},&quot;grDb&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:5,&quot;min&quot;:0,&quot;max&quot;:20,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;dB&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Panel state&quot;}}">
 class Component extends DCLogic {
+  state = { aboutOpen: false };
+  componentDidMount() {
+    this._esc = (e) => { if (e.key === 'Escape') this.setState({ aboutOpen: false }); };
+    window.addEventListener('keydown', this._esc);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this._esc); }
+
   // Elmer sweeps 280°, start −140°, per BRAND.md's per-casting sweep freedom. Angle = −140 + f × 280.
   a(f) { return -140 + f * 280; }
 
@@ -229,6 +264,9 @@ class Component extends DCLogic {
     const hard = kneeSoft ? shoeIdle : shoeLive;
 
     return {
+      aboutIsOpen: !!this.state.aboutOpen,
+      aboutOpen: () => this.setState({ aboutOpen: true }),
+      aboutClose: () => this.setState({ aboutOpen: false }),
       caption: naming ? 'NAME PROGRAM' : 'PROGRAM',
       bankTag, programName, naming,
       saveInk: (!naming && edited ? lit : idle).ink, saveGlow: (!naming && edited ? lit : idle).glow,
