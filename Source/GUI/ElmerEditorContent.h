@@ -7,6 +7,8 @@
 #include "PanelBackground.h"
 #include "ProgramHeader.h"
 
+#include <nf/AboutPart.h>
+
 class ElmerAudioProcessor;
 
 /**
@@ -33,6 +35,12 @@ private:
     /** Paints nothing and takes no clicks of its own; it exists so the Program list has a parent
         area to lay out in, which is what stops it moving or outgrowing the panel. */
     juce::Component menuHost;
+
+    /*  `ABOUT-PART.md`. The tab, the wordmark hit region and the box all live in `nf::AboutPart` —
+        this casting supplies §9's materials and §1's five strings and nothing else. */
+    std::unique_ptr<nf::AboutTab> aboutTab;
+    std::unique_ptr<nf::AboutWordmarkHit> aboutWordmark;
+    std::unique_ptr<nf::AboutBox> aboutBox;
 
     std::vector<std::unique_ptr<KnobFilmstrip>> knobs;
     std::vector<std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>> attachments;

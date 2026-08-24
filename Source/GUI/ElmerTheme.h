@@ -76,6 +76,27 @@ namespace Colour
         // contrast: 5.78-6.28:1 vs fasciaBottom,fasciaTop [flavour] */
     inline const juce::Colour inkFlavour     { 0xFF2D2B24 };
 
+    /*  `ABOUT-PART.md` §9.1 and §9.2, and every ratio here is the spec's own measured figure.
+
+        §9: **the box is this casting's display GLASS, not its fascia** — a screen, not a plate.
+        Note that `aboutGlass` and `ink` are the same `#0e0d08` and are not one constant: one is a
+        surface and the other is an ink on a different surface, and they agree today by coincidence
+        rather than by derivation. Splitting constants by what they DESCRIBE is the rule this file
+        already applies to `modelLineInk` directly above.
+
+        §9.2: **the tab's ink is measured against the WELL, not the fascia** — this casting only
+        just clears 7:1 on fascia at all, and only by going almost black. The recess is a surface
+        the casting chooses; the fascia is not. */
+    inline const juce::Colour aboutGlass      { 0xFF0E0D08 };   // §9.1
+    inline const juce::Colour aboutBody       { 0xFFEFEAE1 };   // 16.23 on glass
+    inline const juce::Colour aboutDim        { 0xFFA8A291 };   //  7.63 — the tight one; do not darken
+    inline const juce::Colour aboutAccent     { 0xFFE6DCAE };   // 14.09
+    inline const juce::Colour aboutRing       { 0xFF2A2820 };   // §9.1, glass lightened ~18 %
+
+    inline const juce::Colour aboutWellTop    { 0xFF1F1E17 };   // §9.2
+    inline const juce::Colour aboutWellBottom { 0xFF2A281F };
+    inline const juce::Colour aboutWellInk    { 0xFFE2DCC9 };   // 10.77 on the well
+
     // --- panels --------------------------------------------------------------
     inline const juce::Colour dividerLeft    { juce::Colour::fromRGBA (60, 54, 44, 115) };  // .45
     inline const juce::Colour dividerRight   { juce::Colour::fromRGBA (60, 54, 44, 46) };   // .18
@@ -183,6 +204,15 @@ namespace Font
         return t;
     }
 
+    /** §4's prose weight. The About box's credits and note are Barlow Condensed **500** in all
+        six delivered prototypes; this casting drew them in its mono until the face landed. */
+    inline juce::Typeface::Ptr barlowMedium()
+    {
+        static const juce::Typeface::Ptr t = juce::Typeface::createSystemTypefaceFor (
+            BinaryData::BarlowCondensedMedium_ttf, (size_t) BinaryData::BarlowCondensedMedium_ttfSize);
+        return t;
+    }
+
     inline juce::Typeface::Ptr barlowSemiBold()
     {
         static const juce::Typeface::Ptr t = juce::Typeface::createSystemTypefaceFor (
@@ -240,6 +270,29 @@ namespace Font
     inline juce::Font monoMed (float px)  { return of (monoMedium(), px); }
     inline juce::Font monoBold (float px) { return of (monoSemiBold(), px); }
     inline juce::Font marker (float px)   { return of (permanentMarker(), px); }
+}
+
+//==============================================================================
+namespace Cursor
+{
+    /*  §2b: `help`, not `pointer`. `pointer` says *this acts*; `help` says *this explains
+        something*, and an About box explains. JUCE has no help cursor in `StandardCursorType`, so
+        the delivered 64 x 64 @2x asset is embedded and a cursor built from it.
+
+        **Hotspot (7, 4) in image pixels**, which is the arrow's tip — read off the artwork rather
+        than assumed at the origin, because a cursor whose hotspot is wrong is off by the distance
+        from the corner to the tip on every click. */
+    inline juce::MouseCursor help()
+    {
+        static const juce::MouseCursor c = []
+        {
+            const auto img = juce::ImageFileFormat::loadFrom (BinaryData::aboutcursor2x_png,
+                                                              (size_t) BinaryData::aboutcursor2x_pngSize);
+            return img.isValid() ? juce::MouseCursor (img, 7, 4, 2.0f)
+                                 : juce::MouseCursor (juce::MouseCursor::PointingHandCursor);
+        }();
+        return c;
+    }
 }
 
 //==============================================================================
@@ -702,7 +755,15 @@ namespace Layout
     inline constexpr float footerRightX = 914.0f;
     inline constexpr float footerLineBox = 13.0f;
     inline constexpr float footerTextSize = 10.0f;
-    inline constexpr float footerTracking = 1.8f;
+    /** §5 states this as **`.18 em`**, and an em is what `nf::AboutTab` takes — so the em is the
+        figure and the px form is derived from it rather than typed beside it.
+
+        It was `footerTracking = 1.8f`, the same value in the other unit, with the px form as the
+        one written down. Two constants for one figure is the shape this file already argues
+        against for `modelLineInk`; and the static_assert that would have held them together does
+        not compile, because `0.18f * 10.0f` is not exactly `1.8f`. A derivation needs no assert. */
+    inline constexpr float footerTrackingEm = 0.18f;
+    inline constexpr float footerTracking = footerTrackingEm * footerTextSize;
     /*  **28.5, scaled 1.5x from the original 19 px this round — and this read 21.**
 
         §5 states the scale explicitly and states that padding and tracking scale WITH the type, so

@@ -478,16 +478,23 @@ void PanelBackground::paintFooter (juce::Graphics& g)
                            juce::Justification::left, Colour::markerInk, false);
     }
 
-    /*  **ONE right-aligned footer line — §5 consolidates the pair.** Yesterday this became two
-        strings, a left `GL-87 · SN 0871` and a right `v1.0`, to stop a single full-width run
-        crossing OUTPUT's scale. §5 supersedes that with one line at (924, 640): the collision it
-        solved cannot recur because the line no longer reaches the middle of the panel. */
-    const auto footFont = Font::monoBold (Layout::footerTextSize);
-    const auto dot = Text::middleDot();
+    /*  **§5's one consolidated footer line is no longer painted here: `ABOUT-PART.md` §2 PROMOTED
+        it to a recessed tab**, and the tab is `nf::AboutTab`, built in `ElmerEditorContent`.
+        Drawing it in both places would double-print one string in two positions.
 
-    Text::drawTracked (g, "GL-87 " + dot + " SN 0871 " + dot + " v" NF_VERSION_SHORT,
-                       footFont, Layout::footerTracking,
-                       { Layout::footerLineX, Layout::footerLineY, Layout::footerLineW,
-                         Layout::footerLineBox },
-                       juce::Justification::right, Colour::ink);
+        **Three things were wrong with the string this used to draw, and all three are corrected in
+        the tab from the DELIVERED prototype rather than from the build.** It read
+        `GL-87 · SN 0871 · v1.0` in IBM Plex Mono SemiBold; `Elmer GL-87 Panel.dc.html` declares
+        `GL-87 · SN 0042 · v1.0.0` in **IBM Plex Mono 500**, and §5's own text agrees on the serial
+        and the weight.
+
+        **`SN 0871` came from `Elmer.dc.html`, the SUPERSEDED prototype** — `GL-87 · CONSOLE MODULE
+        · SN 0871 · v1.0`. This casting's own which-artefact-is-current failure, arriving in a
+        string: the build was drawing yesterday's panel, and nothing could have caught it, because
+        a serial is not a figure anything checks.
+
+        `footerLineX`, `footerLineY` and `footerLineW` now have no consumer — the fossil shape
+        `tools/check_unused_constants.py` reports, noted here so the next reader of that report has
+        the answer without going looking. `footerTextSize` and both tracking forms are still read,
+        by the tab. */
 }

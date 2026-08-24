@@ -64,6 +64,10 @@ juce_add_binary_data(ElmerBinaryData
         # Black". Archivo_Expanded-Bold is that instance cut static, which is what JUCE can use.
         design/fonts/Archivo_Expanded-Bold.ttf
         design/fonts/barlow-condensed/BarlowCondensed-SemiBold.ttf
+        # ABOUT-PART.md §4 sets the About box's credits and note in Barlow Condensed **500**,
+        # in all six - verified in every delivered prototype, not read off the prose. This
+        # casting embedded 600 only, so the two prose rows had no face to draw in.
+        design/fonts/barlow-condensed/BarlowCondensed-Medium.ttf
         # §11's gate: the shared LCD budget of 49 and cap of 47 are measured on Share Tech Mono
         # and on the 538 px name area. This casting could not adopt them until the face was in the
         # BUILD rather than merely in fonts/ — adopting a measurement against a face the binary does
@@ -72,7 +76,10 @@ juce_add_binary_data(ElmerBinaryData
         design/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Medium.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-SemiBold.ttf
-        design/fonts/permanent-marker/PermanentMarker-Regular.ttf)
+        design/fonts/permanent-marker/PermanentMarker-Regular.ttf
+        # ABOUT-PART.md §2b's cursor. JUCE has no help cursor in StandardCursorType, so the
+        # delivered asset is embedded and a MouseCursor is built from it.
+        design/assets/about-cursor-2x.png)
 
 # AU is Apple-only. VST3_COPY_DIR/AU_COPY_DIR are set only on Apple - leaving them unset elsewhere
 # lets JUCE apply its own correct per-OS default rather than a macOS path built on $ENV{HOME}.
@@ -152,6 +159,7 @@ target_compile_definitions(Elmer PUBLIC
 
 target_compile_definitions(Elmer PUBLIC
     NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    NF_VERSION="${PROJECT_VERSION}"
     NF_COMPANY_NAME="${ELMER_COMPANY_NAME}"
     NF_PRODUCT_NAME="${ELMER_PRODUCT_NAME}")
 

@@ -4,6 +4,7 @@ juce_add_console_app(ElmerTests PRODUCT_NAME "ElmerTests")
 # or it silently drops out of test coverage.
 target_sources(ElmerTests PRIVATE
     RealtimeSafetyTests.cpp
+    AboutPartTests.cpp
     CpuBaselineTests.cpp
     NumericalRobustnessTests.cpp
     InvarianceTests.cpp
@@ -77,7 +78,8 @@ target_compile_definitions(ElmerTests PRIVATE
     NF_PRODUCT_NAME="${ELMER_PRODUCT_NAME}"
     JucePlugin_Name="${ELMER_PRODUCT_NAME}"
     JucePlugin_Manufacturer="${ELMER_COMPANY_NAME}"
-    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+    NF_VERSION_SHORT="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+    NF_VERSION="${PROJECT_VERSION}")
 
 target_include_directories(ElmerTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../Source)
 
