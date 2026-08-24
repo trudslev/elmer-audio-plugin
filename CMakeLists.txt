@@ -76,10 +76,7 @@ juce_add_binary_data(ElmerBinaryData
         design/fonts/ibm-plex-mono/IBMPlexMono-Regular.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-Medium.ttf
         design/fonts/ibm-plex-mono/IBMPlexMono-SemiBold.ttf
-        design/fonts/permanent-marker/PermanentMarker-Regular.ttf
-        # ABOUT-PART.md §2b's cursor. JUCE has no help cursor in StandardCursorType, so the
-        # delivered asset is embedded and a MouseCursor is built from it.
-        design/assets/about-cursor-2x.png)
+        design/fonts/permanent-marker/PermanentMarker-Regular.ttf)
 
 # AU is Apple-only. VST3_COPY_DIR/AU_COPY_DIR are set only on Apple - leaving them unset elsewhere
 # lets JUCE apply its own correct per-OS default rather than a macOS path built on $ENV{HOME}.
