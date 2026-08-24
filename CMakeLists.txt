@@ -102,6 +102,19 @@ endif()
 set(ELMER_COMPANY_NAME "Neon Foundry")
 set(ELMER_PRODUCT_NAME "Elmer")
 
+# **Local builds install into the user's plugin folders; CI must not.**
+#
+# A runner has no DAW to load them into, so the copy is pure waste there — but the reason it is an
+# option rather than a tidy-up is the other direction. On a machine that DOES have those folders, a
+# build overwrites what is installed, and this repository has already paid for that: a
+# defect-causing run copied a deliberately broken AU over the user's working one, minutes after the
+# fix was committed, with the tree clean and the remote up to date. Every signal said done.
+#
+# Defaults ON because the local loop depends on it — build, then load in the DAW. CI passes
+# -DNF_COPY_PLUGIN_AFTER_BUILD=OFF.
+option(NF_COPY_PLUGIN_AFTER_BUILD
+       "Install the built plugin into the user's plugin folders after building" ON)
+
 juce_add_plugin(Elmer
     PRODUCT_NAME "${ELMER_PRODUCT_NAME}"
     COMPANY_NAME "${ELMER_COMPANY_NAME}"
@@ -125,7 +138,7 @@ juce_add_plugin(Elmer
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
-    COPY_PLUGIN_AFTER_BUILD TRUE
+    COPY_PLUGIN_AFTER_BUILD ${NF_COPY_PLUGIN_AFTER_BUILD}
     # JUCE derives every platform icon from these two. The macOS .icns takes one entry per file at
     # the largest exact size of 16/32/64/128/256/512/1024 that fits, so both must be EXACTLY square
     # at a valid size. Both are generated at CONFIGURE time and the PNGs are not configure
