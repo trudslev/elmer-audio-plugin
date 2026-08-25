@@ -304,41 +304,29 @@ jobs:
       # Each arm bounds ITSELF with `timeout` so the step exits on its own terms and the log
       # survives. Same point in both -> it hung. Earlier when unbuffered -> we were blind, the hang
       # is later than it looked, and the four previous runs were misdiagnosed too.
-      # ** TEMPORARY DIAGNOSTIC — REMOVE ONCE THE HANG IS LOCATED. **
+      # **ONE-OFF PROBE — is a DISPLAY needed at all?** Delete once answered.
       #
-      # The buffered/unbuffered discriminator ran in 32810689871 and answered: BOTH arms exited 124
-      # having emitted nothing, 480 s each. Output at the same point either way means it HUNG, and
-      # runs 1-4 were not misdiagnosed — we were not blind, there is genuinely nothing to see.
+      # xvfb was added on the theory that `ScopedJuceInitialiser_GUI` blocked on an X11 connection.
+      # That theory is refuted: the stall was our own malloc interposition recursing during
+      # `_dl_init`, before `main`, so the process never reached the initialiser and the display was
+      # never the question. Adding xvfb changed nothing because it could not.
       #
-      # It also refuted the reason xvfb was added. macOS prints `Random seed:` 0.51 s into its own
-      # step, and `UnitTestRunner::runAllTests` prints that first — so the hang is at or before
-      # `TestMain.cpp:10`, `ScopedJuceInitialiser_GUI`. xvfb was added on the theory that the X11
-      # connection blocked there, and adding it changed NOTHING. That theory is measured wrong.
-      #
-      # So stop theorising and read the stack. Everything below is throwaway.
-      - name: Locate the hang (temporary diagnostic)
+      # Which leaves the original question UNANSWERED rather than settled — and one bounded run
+      # answers it, where carrying xvfb forever on a refuted theory would not.
+      - name: Does it need a display? (one-off probe)
         run: |
           set +e
-          sudo sysctl -w kernel.yama.ptrace_scope=0 >/dev/null 2>&1
-          sudo apt-get install -y gdb >/dev/null 2>&1 || echo "gdb install failed"
-          BIN=./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
-          xvfb-run -a "$BIN" &
-          WRAPPER=$!
-          # pgrep -f matched the xvfb-run WRAPPER last time: its command line ends with the same
-          # path. -x matches the process NAME exactly, which the wrapper (/bin/sh) cannot collide
-          # with. The wrapper was reported at 0% CPU while the real process sat at 99%.
-          for T in 45 90 135; do
-            sleep 45
-            PID=$(pgrep -x "${TEST_TARGET}" | head -1)
-            echo "===================== sample at ~${T}s — pid ${PID:-<none>} ====================="
-            [ -z "$PID" ] && { echo "process gone: it finished or died"; break; }
-            ps -o pid,pcpu,etime,time,stat,comm -p "$PID"
-            sudo gdb -p "$PID" -batch -ex "set pagination off" -ex "bt 40" 2>&1 \
-              | grep -v '^\[' | head -45
-          done
-          kill -9 $WRAPPER 2>/dev/null
-          pkill -x "${TEST_TARGET}" 2>/dev/null
+          timeout --signal=INT --kill-after=30s 300 \
+            ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET} >/dev/null 2>&1
+          echo "::notice::without xvfb, exit $? (0 = no display needed, 124 = hung, other = failed)"
           exit 0
+
+      # `TestMain.cpp:10` is `juce::ScopedJuceInitialiser_GUI`, which on Linux opens an X11
+      # connection; the runner has the X libraries and no X server. Kept until the probe above says
+      # otherwise. The initialiser itself is not optional — three castings' Program tests once
+      # passed while proving nothing without it, and `run_tests.py` refuses a target that lacks it.
+      - name: Run DSP test suite
+        run: xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
 
       - name: Stage raw bundles
         run: |
