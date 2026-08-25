@@ -283,14 +283,48 @@ jobs:
       # **Under xvfb: the test binary needs a DISPLAY before it prints anything.**
       #
       # `TestMain.cpp`'s first line is `juce::ScopedJuceInitialiser_GUI`, which on Linux opens an
-      # X11 connection. The runner has the X libraries and no X server, so the binary hung for the
-      # full 6-hour job limit having produced no output at all — not a failure, a stall, which is
-      # why it read as `cancelled` rather than `failure` and cost a whole runner each time.
+      # X11 connection. The runner has the X libraries and no X server.
       #
       # The initialiser is not optional: three castings' Program tests once passed while proving
       # nothing because it was missing, and `run_tests.py` refuses a target without it.
-      - name: Run DSP test suite
-        run: xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
+      #
+      # **XVFB WAS NECESSARY AND IS NOT SUFFICIENT — measured, run 32807628797.** With xvfb in
+      # place the step still emitted nothing for 35 minutes and was cancelled at the 45-minute cap.
+      # macOS, in that same run, printed its first line 0.93 s into its own step. So the X11 story
+      # explains why a display is needed and does NOT explain the stall, and this comment used to
+      # read as though it did — an explanation of a solved problem sitting over an open one.
+      #
+      # **THE TWO ARMS BELOW ARE A DISCRIMINATOR, NOT A FIX.** "Emitted nothing" was read as "hung
+      # before the first test", and that reading has a hole: a job killed by `timeout-minutes` is
+      # CANCELLED, and a cancelled step's pipe buffer is discarded. A binary that ran for twenty
+      # minutes and buffered its output is indistinguishable from one that never started — the
+      # evidence for the diagnosis was produced by the mechanism that would destroy the
+      # counter-evidence.
+      #
+      # Each arm bounds ITSELF with `timeout` so the step exits on its own terms and the log
+      # survives. Same point in both -> it hung. Earlier when unbuffered -> we were blind, the hang
+      # is later than it looked, and the four previous runs were misdiagnosed too.
+      - name: Run DSP test suite (buffered arm)
+        run: |
+          # THE BUFFERED ARM IS THE KNOWN CASE AND RUNS FIRST. If the stall does not reproduce
+          # here, the unbuffered arm below is measuring nothing and must not be read.
+          set +e
+          timeout --signal=INT --kill-after=30s 480 \
+            xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
+          echo "::notice::buffered arm exited $? (124 = timed out)"
+          exit 0
+
+      # THE UNBUFFERED ARM. `stdbuf -o0 -e0` is the ONLY difference from the step above.
+      #
+      # PYTHONUNBUFFERED has nothing to act on: CI invokes the test binary directly rather than
+      # through tools/run_tests.py, so libc-level buffering is the whole variable.
+      - name: Run DSP test suite (unbuffered arm)
+        run: |
+          set +e
+          timeout --signal=INT --kill-after=30s 480 \
+            xvfb-run -a stdbuf -o0 -e0 ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
+          echo "::notice::unbuffered arm exited $? (124 = timed out)"
+          exit 0
 
       - name: Stage raw bundles
         run: |
