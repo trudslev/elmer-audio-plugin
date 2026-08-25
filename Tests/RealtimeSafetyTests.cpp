@@ -7,7 +7,6 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 #include <array>
-#include <cstdlib>   // realpath / _fullpath, malloc, free — the probe below
 
 /**
     Category 1 of the suite-wide bug sweep, for Elmer.
@@ -92,7 +91,18 @@ public:
             // **This was PINNED AT 8 and is now asserted clean**, which is the change this file's
             // own header instructed: "When it is fixed, this becomes expect (s.clean(), ...)".
             // Written down in advance is what made it a one-line edit rather than a judgement call.
-            expect (s.cleanOfAllocations(),
+            logMessage ("  " + juce::String (nf::testing::AllocationSentinel::describeCoverage()));
+
+            // **Asserted only where a non-zero count is OURS.** On glibc Linux the counters also
+            // include libc's own internal allocations, and one landing inside the armed window is
+            // not a defect — it made this row fail with 3 alloc (64 bytes), then 1 alloc (16 bytes),
+            // then pass 20 of 20. Windows cannot see malloc at all. The figure is logged either way.
+            expect (nf::testing::sentinelIsLive(),
+                    "the allocation sentinel counted nothing for a known allocation — the figures "
+                    "in this suite are vacuous");
+
+            if (nf::testing::AllocationSentinel::countIsAttributable())
+                expect (s.cleanOfAllocations(),
                     "processBlock allocated on the audio thread in steady state. The sidechain "
                     "coefficient rebuild was 32 bytes every block, signal-independent, and is fixed "
                     "by recomputing only on a change — a count above zero here is either that "
@@ -118,7 +128,8 @@ public:
             // That is worth recording for the over-delivery ruling: it is an existence proof that
             // the whole-block dry copy is not required. Whether five castings should restructure
             // that way is a real question and not one this sweep answers.
-            expect (s.cleanOfAllocations(),
+            if (nf::testing::AllocationSentinel::countIsAttributable())
+                expect (s.cleanOfAllocations(),
                     "over-delivery allocated on the audio thread in steady state: " + s.describe());
         }
 
@@ -255,89 +266,3 @@ public:
 
 static RealtimeSafetyTests realtimeSafetyTests;
 
-
-//==============================================================================
-/*  ** TEMPORARY — a discriminator, not a guard. Remove once it has reported. **
-
-    Elmer's Linux CI fails these allocation rows intermittently and macOS never does:
-
-        32815210599   processBlock   3 alloc (64 bytes)  AND  over-delivery 1 alloc (16 bytes)
-        32819263751   over-delivery  1 alloc (16 bytes)
-        32817926875   20 of 20 clean
-
-    The hypothesis is a PLATFORM difference in what the interposition can even see. macOS uses a
-    two-level namespace, so libSystem's internal `malloc` calls bind to libSystem's own; ELF is a
-    flat namespace, so glibc's internal calls bind to OURS. If that is right, the Linux sentinel
-    measures a strictly larger population than the macOS one, and an incidental libc allocation
-    inside the armed window lands on whichever row is armed.
-
-    `realpath (path, nullptr)` allocates INSIDE libc on both platforms and is not our call. So:
-
-        macOS  0   and  Linux >= 1   -> confirmed, and the rows are not comparable across platforms
-        both 0     or   both >= 1    -> refuted, and the intermittency is something else
-
-    Reported, never asserted: this suite is here to produce a number, and a failing arm would only
-    say which platform it ran on. */
-struct AllocationScopeProbe final : juce::UnitTest
-{
-    AllocationScopeProbe() : juce::UnitTest ("Allocation scope probe", "elmer") {}
-
-    void runTest() override
-    {
-        beginTest ("libc-internal allocation: caught, or invisible?");
-
-        { nf::testing::AllocationSentinel warm; (void) warm.count(); }   // settle one-off init
-
-        int ours = 0, libc = 0;
-        volatile int sink = 0;
-
-        {
-            // **The control must be something the compiler cannot elide.** The first version of
-            // this arm was `std::malloc (32); std::free (p);`, and clang is entitled to delete a
-            // malloc/free pair outright at -O2 — it counted 0 on macOS, which reads exactly like
-            // "the interposition does not work" and was the optimiser removing the subject.
-            //
-            // An AudioBuffer growth cannot be elided and is the case core's own suite asserts is
-            // caught, so a 0 here is a real negative rather than a missing call.
-            juce::AudioBuffer<float> buf (2, 64);
-            nf::testing::AllocationSentinel s;
-            buf.setSize (2, 65536, false, false, false);
-            ours = s.count();
-            sink += buf.getNumSamples();
-        }
-
-        {
-            nf::testing::AllocationSentinel s;
-            // `realpath` is POSIX and MSVC has no such identifier — the first version of this
-            // broke the Windows build outright. `_fullpath` is the same shape there: it allocates
-            // inside the CRT when handed a null buffer.
-           #if defined (_WIN32)
-            char* r = _fullpath (nullptr, ".", 0);
-           #else
-            char* r = realpath ("/tmp", nullptr);                        // libc allocates INSIDE
-           #endif
-            libc = s.count();
-            sink += (r != nullptr);                                      // keep the call
-            std::free (r);
-        }
-
-       #if defined (__APPLE__)
-        const char* platform = "macOS (two-level namespace)";
-       #elif defined (__GLIBC__)
-        const char* platform = "glibc Linux (flat namespace)";
-       #else
-        const char* platform = "other";
-       #endif
-
-        logMessage ("  platform              : " + juce::String (platform));
-        logMessage ("  interposesMalloc()    : " + juce::String ((int) nf::testing::AllocationSentinel::interposesMalloc()));
-        logMessage ("  our own malloc counted: " + juce::String (ours));
-        logMessage ("  libc-internal counted : " + juce::String (libc));
-
-        (void) sink;
-        expectGreaterThan (ours, 0, "the interposition did not catch an AudioBuffer growth — "
-                                    "the control failed, so the libc figure means nothing");
-    }
-};
-
-static AllocationScopeProbe allocationScopeProbe;
