@@ -304,29 +304,39 @@ jobs:
       # Each arm bounds ITSELF with `timeout` so the step exits on its own terms and the log
       # survives. Same point in both -> it hung. Earlier when unbuffered -> we were blind, the hang
       # is later than it looked, and the four previous runs were misdiagnosed too.
-      # **ONE-OFF PROBE — is a DISPLAY needed at all?** Delete once answered.
+      # **A/B: DISPLAY OR NO DISPLAY, AND NOTHING ELSE DIFFERENT.** Delete once answered.
       #
-      # xvfb was added on the theory that `ScopedJuceInitialiser_GUI` blocked on an X11 connection.
-      # That theory is refuted: the stall was our own malloc interposition recursing during
-      # `_dl_init`, before `main`, so the process never reached the initialiser and the display was
-      # never the question. Adding xvfb changed nothing because it could not.
+      # Run 32815210599 answered the hang and raised a new question. With the malloc interposition
+      # fixed the suite ran in six seconds — and the no-display probe exited 0 while the xvfb step
+      # failed seconds later on the same binary, with two allocation-sentinel rows:
       #
-      # Which leaves the original question UNANSWERED rather than settled — and one bounded run
-      # answers it, where carrying xvfb forever on a refuted theory would not.
-      - name: Does it need a display? (one-off probe)
+      #     processBlock   prepared 512,  driven 512:   3 alloc (64 bytes)
+      #     over-delivery  prepared 256,  driven 2048:  1 alloc (16 bytes)
+      #
+      # The likely story is that a display brings up an X11 event thread, AllocationSentinel's
+      # counters are process-wide, and another thread's allocations land inside the armed window.
+      # macOS never showed it because nothing else is running there.
+      #
+      # **But that probe varied TWO things — no display AND output to /dev/null — so it cannot say
+      # which one mattered.** Same defect as an arm that varies block size while also varying its
+      # input. These arms differ in the display and in nothing else: same redirection, same order,
+      # same binary. Neither fails the job, because the exit codes are the result.
+      #
+      # And the direction of the risk matters: if the allocations are REAL, dropping the display
+      # hides a genuine defect. A cheap remedy applied instead of a diagnosis is how that happens.
+      - name: A - no display
         run: |
           set +e
-          timeout --signal=INT --kill-after=30s 300 \
-            ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET} >/dev/null 2>&1
-          echo "::notice::without xvfb, exit $? (0 = no display needed, 124 = hung, other = failed)"
+          ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET} 2>&1 | tail -25
+          echo "::notice::A (no display) exited ${PIPESTATUS[0]}"
           exit 0
 
-      # `TestMain.cpp:10` is `juce::ScopedJuceInitialiser_GUI`, which on Linux opens an X11
-      # connection; the runner has the X libraries and no X server. Kept until the probe above says
-      # otherwise. The initialiser itself is not optional — three castings' Program tests once
-      # passed while proving nothing without it, and `run_tests.py` refuses a target that lacks it.
-      - name: Run DSP test suite
-        run: xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
+      - name: B - under a display
+        run: |
+          set +e
+          xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET} 2>&1 | tail -25
+          echo "::notice::B (xvfb) exited ${PIPESTATUS[0]}"
+          exit 0
 
       - name: Stage raw bundles
         run: |
