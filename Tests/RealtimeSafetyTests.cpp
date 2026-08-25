@@ -7,7 +7,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 #include <array>
-#include <cstdlib>   // realpath, malloc, free — the probe below
+#include <cstdlib>   // realpath / _fullpath, malloc, free — the probe below
 
 /**
     Category 1 of the suite-wide bug sweep, for Elmer.
@@ -308,7 +308,14 @@ struct AllocationScopeProbe final : juce::UnitTest
 
         {
             nf::testing::AllocationSentinel s;
+            // `realpath` is POSIX and MSVC has no such identifier — the first version of this
+            // broke the Windows build outright. `_fullpath` is the same shape there: it allocates
+            // inside the CRT when handed a null buffer.
+           #if defined (_WIN32)
+            char* r = _fullpath (nullptr, ".", 0);
+           #else
             char* r = realpath ("/tmp", nullptr);                        // libc allocates INSIDE
+           #endif
             libc = s.count();
             sink += (r != nullptr);                                      // keep the call
             std::free (r);
