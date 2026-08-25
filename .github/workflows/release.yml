@@ -304,26 +304,43 @@ jobs:
       # Each arm bounds ITSELF with `timeout` so the step exits on its own terms and the log
       # survives. Same point in both -> it hung. Earlier when unbuffered -> we were blind, the hang
       # is later than it looked, and the four previous runs were misdiagnosed too.
-      - name: Run DSP test suite (buffered arm)
-        run: |
-          # THE BUFFERED ARM IS THE KNOWN CASE AND RUNS FIRST. If the stall does not reproduce
-          # here, the unbuffered arm below is measuring nothing and must not be read.
-          set +e
-          timeout --signal=INT --kill-after=30s 480 \
-            xvfb-run -a ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
-          echo "::notice::buffered arm exited $? (124 = timed out)"
-          exit 0
-
-      # THE UNBUFFERED ARM. `stdbuf -o0 -e0` is the ONLY difference from the step above.
+      # ** TEMPORARY DIAGNOSTIC — REMOVE ONCE THE HANG IS LOCATED. **
       #
-      # PYTHONUNBUFFERED has nothing to act on: CI invokes the test binary directly rather than
-      # through tools/run_tests.py, so libc-level buffering is the whole variable.
-      - name: Run DSP test suite (unbuffered arm)
+      # The buffered/unbuffered discriminator ran in 32810689871 and answered: BOTH arms exited 124
+      # having emitted nothing, 480 s each. Output at the same point either way means it HUNG, and
+      # runs 1-4 were not misdiagnosed — we were not blind, there is genuinely nothing to see.
+      #
+      # It also refuted the reason xvfb was added. macOS prints `Random seed:` 0.51 s into its own
+      # step, and `UnitTestRunner::runAllTests` prints that first — so the hang is at or before
+      # `TestMain.cpp:10`, `ScopedJuceInitialiser_GUI`. xvfb was added on the theory that the X11
+      # connection blocked there, and adding it changed NOTHING. That theory is measured wrong.
+      #
+      # So stop theorising and read the stack. Everything below is throwaway.
+      - name: Locate the hang (temporary diagnostic)
         run: |
           set +e
-          timeout --signal=INT --kill-after=30s 480 \
-            xvfb-run -a stdbuf -o0 -e0 ./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
-          echo "::notice::unbuffered arm exited $? (124 = timed out)"
+          sudo sysctl -w kernel.yama.ptrace_scope=0 >/dev/null 2>&1
+          sudo apt-get install -y gdb >/dev/null 2>&1 || echo "gdb install failed"
+          BIN=./build/Tests/${TEST_TARGET}_artefacts/Release/${TEST_TARGET}
+          echo "--- launching under xvfb, will attach after 90 s ---"
+          xvfb-run -a "$BIN" &
+          WRAPPER=$!
+          sleep 90
+          PID=$(pgrep -f "Release/${TEST_TARGET}$" | head -1)
+          echo "wrapper pid $WRAPPER, test pid ${PID:-<none found>}"
+          ps -eLf | grep -i "${TEST_TARGET}" | grep -v grep | head -20
+          if [ -n "$PID" ]; then
+            echo "--- /proc/$PID/status ---"
+            grep -E 'State|Threads' /proc/$PID/status
+            echo "--- wchan ---"
+            cat /proc/$PID/wchan 2>/dev/null; echo
+            echo "--- all thread backtraces ---"
+            sudo gdb -p "$PID" -batch -ex "set pagination off" -ex "thread apply all bt" 2>&1 | head -150
+          else
+            echo "no test process found — the wrapper itself may be what hangs"
+          fi
+          kill -9 $WRAPPER 2>/dev/null
+          [ -n "$PID" ] && kill -9 "$PID" 2>/dev/null
           exit 0
 
       - name: Stage raw bundles
