@@ -78,6 +78,13 @@ public:
     void runTest() override
     {
         beginTest ("processBlock allocation — matched block size, cold and steady");
+        {
+            ElmerAudioProcessor cold;
+            const auto c = nf::testing::probeProcessBlockAllocation (cold, 48000.0, 512, 512, 2, 1, 0);
+
+            ElmerAudioProcessor steadyProc;
+            const auto s = nf::testing::probeProcessBlockAllocation (steadyProc, 48000.0, 512, 512, 2);
+
             logMessage ("  512/512 cold   -> " + c.describe());
             logMessage ("  512/512 steady -> " + s.describe());
 
@@ -93,13 +100,6 @@ public:
             expect (nf::testing::sentinelIsLive(),
                     "the allocation sentinel counted nothing for a known allocation — the figures "
                     "in this suite are vacuous");
-
-        {
-            ElmerAudioProcessor cold;
-            const auto c = nf::testing::probeProcessBlockAllocation (cold, 48000.0, 512, 512, 2, 1, 0);
-
-            ElmerAudioProcessor steadyProc;
-            const auto s = nf::testing::probeProcessBlockAllocation (steadyProc, 48000.0, 512, 512, 2);
 
             if (nf::testing::AllocationSentinel::countIsAttributable())
                 expect (s.cleanOfAllocations(),
