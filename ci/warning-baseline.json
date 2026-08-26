@@ -1,0 +1,20 @@
+{
+  "macos": {
+    "-Wdeprecated-declarations": 2,
+    "-Wfloat-equal": 8,
+    "-Wmissing-prototypes": 4,
+    "-Wunused-function": 4,
+    "-Wunused-lambda-capture": 8,
+    "-Wunused-private-field": 4
+  },
+  "linux": {
+    "-Wdeprecated-declarations": 1,
+    "-Wfloat-equal": 7,
+    "-Woverloaded-virtual": 17,
+    "-Wshadow": 3,
+    "-Wunused-function": 2
+  },
+  "windows": {
+    "C4458": 3
+  }
+}
