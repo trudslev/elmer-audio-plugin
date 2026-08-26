@@ -15,7 +15,7 @@ namespace
     class LayoutHost final : public juce::AudioProcessor
     {
     public:
-        LayoutHost() : apvts (*this, nullptr, "PARAMETERS", Elmer::createParameterLayout()) {}
+        LayoutHost() : apvts (*this, nullptr, ParamIDs::stateTreeType, Elmer::createParameterLayout()) {}
 
         juce::AudioProcessorValueTreeState apvts;
 

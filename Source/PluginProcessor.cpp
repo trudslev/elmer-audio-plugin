@@ -9,7 +9,7 @@ ElmerAudioProcessor::ElmerAudioProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      apvts (*this, nullptr, "ELMER", Elmer::createParameterLayout())
+      apvts (*this, nullptr, ParamIDs::stateTreeType, Elmer::createParameterLayout())
 {
     // Cached once. Calling getRawParameterValue per block is a map lookup per parameter per block.
     thresholdParam   = apvts.getRawParameterValue (ParamIDs::threshold);

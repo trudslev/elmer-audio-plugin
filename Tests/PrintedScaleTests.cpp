@@ -75,7 +75,7 @@ public:
         struct Dummy final : juce::AudioProcessor
         {
             explicit Dummy (juce::AudioProcessorValueTreeState::ParameterLayout&& l)
-                : apvts (*this, nullptr, "ELMER", std::move (l)) {}
+                : apvts (*this, nullptr, ParamIDs::stateTreeType, std::move (l)) {}
             const juce::String getName() const override { return "Dummy"; }
             void prepareToPlay (double, int) override {}
             void releaseResources() override {}
